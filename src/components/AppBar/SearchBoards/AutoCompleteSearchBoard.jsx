@@ -1,86 +1,116 @@
-import { useState, useEffect } from 'react'
-import TextField from '@mui/material/TextField'
-import Autocomplete from '@mui/material/Autocomplete'
-import CircularProgress from '@mui/material/CircularProgress'
-import InputAdornment from '@mui/material/InputAdornment'
-import SearchIcon from '@mui/icons-material/Search'
-import { createSearchParams, useNavigate } from 'react-router-dom'
-import { fetchBoardsAPI } from '~/apis'
-import { useDebounceFn } from '~/customHooks/useDebounceFn'
+import { useState, useEffect } from 'react';
+import TextField from '@mui/material/TextField';
+import Autocomplete from '@mui/material/Autocomplete';
+import CircularProgress from '@mui/material/CircularProgress';
+import InputAdornment from '@mui/material/InputAdornment';
+import SearchIcon from '@mui/icons-material/Search';
+import { createSearchParams, useNavigate } from 'react-router-dom';
+import { fetchBoardsAPI } from '~/apis';
+import { useDebounceFn } from '~/customHooks/useDebounceFn';
 
-/**
- * https://mui.com/material-ui/react-autocomplete/#asynchronous-requests
- */
-function AutoCompleteSearchBoard() {
-  const navigate = useNavigate()
-
-  // State xử lý hiển thị kết quả fetch về từ API
-  const [open, setOpen] = useState(false)
-  // State lưu trữ danh sách board fetch về được
-  const [boards, setBoards] = useState(null)
-  // Sẽ hiện loading khi bắt đầu gọi api fetch boards
-  const [loading, setLoading] = useState(false)
+const AutoCompleteSearchBoard = ({ 
+  onBoardSelect,
+  customStyles = {},
+  variant = 'default',
+  width = 220
+}) => {
+  const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+  const [boards, setBoards] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!open) { setBoards(null) }
-  }, [open])
+    if (!open) {
+      setBoards([]);
+    }
+  }, [open]);
 
-  // Xử lý việc nhận data nhập vào từ input sau đó gọi API để lấy kết quả về (cần cho vào useDebounceFn như bên dưới)
   const handleInputSearchChange = (event) => {
-    const searchValue = event.target?.value
-    if (!searchValue) return
-    // console.log(searchValue)
+    // Kiểm tra xem event có phải là sự kiện input hay không
+    if (!event?.target) {
+      return;
+    }
 
-    // Dùng createSearchParams của react-router-dom để tạo một cái searchPath chuẩn với q[title] để gọi lên API (title là kiểu tìm kiếm, có thể thành description, content, ...)
-    const searchPath = `?${createSearchParams({ 'q[title]': searchValue })}`
-    // console.log(searchPath)
+    const searchValue = event.target.value;
+    
+    // Kiểm tra searchValue là string trước khi gọi trim()
+    if (typeof searchValue !== 'string' || !searchValue.trim()) {
+      setBoards([]);
+      return;
+    }
 
-    // Gọi API...
-    setLoading(true)
+    const searchPath = `?${createSearchParams({ 'q[title]': searchValue })}`;
+
+    setLoading(true);
     fetchBoardsAPI(searchPath)
       .then(response => {
-        setBoards(response.boards || [])
+        setBoards(response.boards || []);
       })
-      .finally(() => { setLoading(false) })
-  }
-  // Làm useDebounceFn...
-  const debouncedHandleInputSearchChange = useDebounceFn(handleInputSearchChange, 1234)
+      .catch(error => {
+        console.error('Error fetching boards:', error);
+        setBoards([]);
+      })
+      .finally(() => { 
+        setLoading(false);
+      });
+  };
 
-  // Khi chúng ta select chọn một cái board cụ thể thì sẽ điều hướng tới board đó luôn
+  const debouncedHandleInputSearchChange = useDebounceFn(handleInputSearchChange, 1234);
+
   const handleSelectedBoard = (event, selectedBoard) => {
-    // Phải kiểm tra nếu tồn tại một cái board cụ thể được select thì mới gọi điều hướng - navigate
     if (selectedBoard) {
-      navigate(`/board/${selectedBoard._id}`)
+      if (onBoardSelect) {
+        onBoardSelect(selectedBoard);
+      } else {
+        navigate(`/board/${selectedBoard._id}`);
+      }
     }
-  }
+  };
+
+  // Define style variants
+  const styleVariants = {
+    default: {
+      '& label': { color: 'white' },
+      '& input': { color: 'white' },
+      '& label.Mui-focused': { color: 'white' },
+      '& .MuiOutlinedInput-root': {
+        '& fieldset': { borderColor: 'white' },
+        '&:hover fieldset': { borderColor: 'white' },
+        '&.Mui-focused fieldset': { borderColor: 'white' }
+      },
+      '.MuiSvgIcon-root': { color: 'white' }
+    },
+    popover: {
+      '& .MuiOutlinedInput-root': {
+        '& fieldset': { borderColor: 'inherit' },
+        '&:hover fieldset': { borderColor: 'inherit' },
+        '&.Mui-focused fieldset': { borderColor: 'primary.main' }
+      }
+    }
+  };
 
   return (
     <Autocomplete
-      sx={{ width: 220 }}
+      sx={{ width, ...styleVariants[variant], ...customStyles }}
       id="asynchronous-search-board"
-      // Cái text này hiện ra khi boards là null hoặc sau khi đã fetch boards nhưng rỗng - không có kết quả
-      noOptionsText={!boards ? 'Type to search board...' : 'No board found!'}
-
+      noOptionsText={boards === null ? 'Type to search board...' : 'No board found!'}
       open={open}
-      onOpen={() => { setOpen(true) }}
-      onClose={() => { setOpen(false) }}
-
-      // getOptionLabel: để thằng Autocomplete nó lấy title của board và hiển thị ra
-      getOptionLabel={(board) => board.title}
-
-      // Options của Autocomplete nó cần đầu vào là 1 Array, mà boards của chúng ta ban đầu cần cho null để làm cái noOptionsText ở trên nên đoạn này cần thêm cái || [] vào
+      onOpen={() => setOpen(true)}
+      onClose={() => setOpen(false)}
+      getOptionLabel={(board) => board?.title || ''}
       options={boards || []}
-
-      // Fix một cái warning của MUI, vì Autocomplete mặc định khi chúng ta chọn giá trị nó sẽ xảy ra sự so sánh object bên dưới, và mặc dù có 2 json objects trông như nhau trong JavaScript nhưng khi compare sẽ ra false. Vậy nên cần compare chuẩn với value dạng Primitive, ví dụ ở đây là dùng String _id thay vì compare toàn bộ cả cái json object board.
-      // Link chi tiết: https://stackoverflow.com/a/65347275/8324172
-      isOptionEqualToValue={(option, value) => option._id === value._id}
+      isOptionEqualToValue={(option, value) => {
+        if (!option || !value) return false;
+        return option._id === value._id;
+      }}
       loading={loading}
-      onInputChange={debouncedHandleInputSearchChange}
-
-      // onChange của cả cái Autocomplete sẽ chạy khi chúng ta select một cái kết quả (ở đây là board)
+      onInputChange={(event, value) => {
+        if (event) {
+          debouncedHandleInputSearchChange(event);
+        }
+      }}
       onChange={handleSelectedBoard}
-
-      // Render ra cái thẻ input để nhập nội dung tìm kiếm
+      filterOptions={(x) => x}
       renderInput={(params) => (
         <TextField
           {...params}
@@ -90,31 +120,20 @@ function AutoCompleteSearchBoard() {
             ...params.InputProps,
             startAdornment: (
               <InputAdornment position="start">
-                <SearchIcon sx={{ color: 'white' }} />
+                <SearchIcon sx={{ color: variant === 'default' ? 'white' : 'inherit' }} />
               </InputAdornment>
             ),
             endAdornment: (
               <>
-                {loading ? <CircularProgress sx={{ color: 'white' }} size={20} /> : null}
+                {loading ? <CircularProgress sx={{ color: variant === 'default' ? 'white' : 'inherit' }} size={20} /> : null}
                 {params.InputProps.endAdornment}
               </>
             )
           }}
-          sx={{
-            '& label': { color: 'white' },
-            '& input': { color: 'white' },
-            '& label.Mui-focused': { color: 'white' },
-            '& .MuiOutlinedInput-root': {
-              '& fieldset': { borderColor: 'white' },
-              '&:hover fieldset': { borderColor: 'white' },
-              '&.Mui-focused fieldset': { borderColor: 'white' }
-            },
-            '.MuiSvgIcon-root': { color: 'white' }
-          }}
         />
       )}
     />
-  )
-}
+  );
+};
 
-export default AutoCompleteSearchBoard
+export default AutoCompleteSearchBoard;

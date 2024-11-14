@@ -29,5 +29,14 @@ export default defineConfig({
       {find: '~', replacement: '/src'}
 
     ]
+  },
+  server: {
+    proxy: {
+      '/api/location': {
+        target: 'https://nominatim.openstreetmap.org',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/location/, '/search'),
+      }
+    }
   }
 })

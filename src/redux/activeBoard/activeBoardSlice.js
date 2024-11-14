@@ -10,8 +10,8 @@ const initialState = {
 }
 
 // các hành động gọi api (bất đồng bộ) và cập nhật dữ liệu vào Redux, dùng Middleware createAsyncThunk đi kèm với extraReducers
-export const fetchBoardDetailsAPI = createAsyncThunk(
-    'activeBoard/fetchBoardDetailsAPI',
+export const fetchBoardDetailsApiRedux = createAsyncThunk(
+    'activeBoard/fetchBoardDetailsApiRedux',
     async (boardId) => {
         const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/board/${boardId}`)
         return response.data
@@ -51,7 +51,7 @@ export const activeBoardSlice = createSlice({
     // extraReducers: chứa các hành động gọi api (bất đồng bộ) và cập nhật dữ liệu vào Redux
     extraReducers: (builder) => {
         builder
-            .addCase(fetchBoardDetailsAPI.fulfilled, (state, action) => {
+            .addCase(fetchBoardDetailsApiRedux.fulfilled, (state, action) => {
                 let board = action.payload
                 
                 //thành viên của board là gộp từ 2 mảng là members và onwers
@@ -71,7 +71,7 @@ export const activeBoardSlice = createSlice({
                     }
                 })
                 
-                // action.payload chính là response.data từ hàm fetchBoardDetailsAPI
+                // action.payload chính là response.data từ hàm fetchBoardDetailsApiRedux
                 state.currentActiveBoard = board
             })
     }

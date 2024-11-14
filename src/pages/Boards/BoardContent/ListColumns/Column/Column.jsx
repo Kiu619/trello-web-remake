@@ -5,7 +5,7 @@ import Cloud from '@mui/icons-material/Cloud';
 import ContentCopy from '@mui/icons-material/ContentCopy';
 import ContentCut from '@mui/icons-material/ContentCut';
 import ContentPaste from '@mui/icons-material/ContentPaste';
-import { Box, Button, TextField, Tooltip } from '@mui/material';
+import { Box, Button, TextField, Tooltip, Typography } from '@mui/material';
 import Divider from '@mui/material/Divider';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -20,27 +20,13 @@ import { createNewCardAPI, deleteColumnDetailsAPI, updateColumnDetailsAPI } from
 import ToggleFocusInput from '~/components/Form/ToggleFocusInput';
 import { selectCurrentActiveBoard, updateCurrentActiveBoard } from '~/redux/activeBoard/activeBoardSlice';
 import ListCards from './ListCards/ListCards';
+import { socketIoIntance } from '~/socketClient';
 
 function Column(props) {
     const { column } = props
-    // const openRedux = useSelector(state => state.modal.isOpen)
 
     const dispatch = useDispatch()
     const board = useSelector(selectCurrentActiveBoard)
-    useEffect(() => {
-        // const handleUpdateColumn = async (data) => {
-        //     if (data.columnId === column._id) {
-        //         setColumnTitle(data.columnTitle)
-        //     }
-        // }
-
-        // socket.on('update_column', handleUpdateColumn)
-
-        // // Clean up function
-        // return () => {
-        //     socket.off('update_column', handleUpdateColumn)
-        // }
-    }, []) // Empty dependency array ensures this runs once on mount and unmount
 
     const { attributes,
         listeners,
@@ -104,6 +90,10 @@ function Column(props) {
             }
         }
         dispatch(updateCurrentActiveBoard(newBoard))
+        setTimeout(() => {
+            socketIoIntance.emit('batch', { boardId: board._id })
+            console.log('batch')
+        }, 2000)
 
 
         // Reset form
@@ -115,8 +105,11 @@ function Column(props) {
         // Call API to update column title
         const updateData = { title: newTitle }
         updateColumnDetailsAPI(column._id, updateData).then((res) => {
-            toast.success(res?.updateResult)
+            // toast.success(res?.updateResult)
+            toast.success('Update column title successfully')
         })
+
+        // setColumnTitle(newTitle)
 
         // Update redux
         const newBoard = cloneDeep(board)
@@ -124,6 +117,10 @@ function Column(props) {
         if (columnToUpdate) {
             columnToUpdate.title = newTitle
         }
+        setTimeout(() => {
+            socketIoIntance.emit('batch', { boardId: board._id })
+            console.log('batch')
+        }, 2000)
         dispatch(updateCurrentActiveBoard(newBoard))
     }
 
@@ -145,6 +142,10 @@ function Column(props) {
                 deleteColumnDetailsAPI(column._id).then((res) => {
                     toast.success(res?.deleteResult)
                 })
+                setTimeout(() => {
+                    socketIoIntance.emit('batch', { boardId: board._id })
+                    console.log('batch')
+                }, 2000)
             })
             .catch(() => {
                 // User cancel
@@ -179,7 +180,8 @@ function Column(props) {
                     justifyContent: 'space-between'
                 }}>
                     <ToggleFocusInput
-                        value={column?.title}
+                        value={column.title}
+                        // value={columnTitle}
                         onChangedValue={onUpdateColumnTitle}
                         data-no-dnd='true' // Prevent DND không cho kéo cột khi click vào input
                     />

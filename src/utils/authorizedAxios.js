@@ -3,6 +3,7 @@ import { toast } from "react-toastify"
 import { interceptorLoadingElements } from "./formmatters"
 import { logoutUserAPI } from "~/redux/user/userSlice"
 import { refreshTokenApi } from "~/apis"
+import { socketIoIntance } from "~/socketClient"
 
 // Không thể import { store } của redux vào đây
 // Dùng injectStore để truyền store vào authorizedAxiosInstance
@@ -24,6 +25,10 @@ authorizedAxiosInstance.interceptors.request.use(
     (config) => {
         // Chawnj spam click khi gọi API
         interceptorLoadingElements(true)
+
+        // socketIoIntance.emit('apiRequest', { url: config.url, method: config.method })
+        // socketIoIntance.emit('batch')
+
         return config
     },
     (error) => {

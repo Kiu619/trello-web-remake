@@ -9,6 +9,7 @@ import { createNewColumnAPI } from '~/apis';
 import { selectCurrentActiveBoard, updateCurrentActiveBoard } from '~/redux/activeBoard/activeBoardSlice';
 import { generatePlaceholderCard } from '~/utils/formmatters';
 import Column from './Column/Column';
+import { socketIoIntance } from '~/socketClient';
 
 function ListColumns(props) {
     const { columns } = props
@@ -50,11 +51,15 @@ function ListColumns(props) {
         // setBoard(newBoard)
         // cập nhật dữ liệu board mới vào Redux
         dispatch(updateCurrentActiveBoard(newBoard))
+        setTimeout(() => {
+            socketIoIntance.emit('batch', { boardId: board._id })
+            console.log('batch')
+          }, 2000)
 
         // Reset form
         setNewColumnTitle('')
         setOpenNewColumnForm(false)
-        console.log('newColumnData', newColumnData)
+        
     }
 
     /* 

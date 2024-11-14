@@ -66,6 +66,7 @@ function BoardList() {
   const updateStateData = (res) => {
     setBoards(res.boards || [])
     setTotalBoards(res.totalBoards || 0)
+    console.log('res', res)
   }
 
   const dispatch = useDispatch()

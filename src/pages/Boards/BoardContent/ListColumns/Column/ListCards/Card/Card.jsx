@@ -1,32 +1,19 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Attachment, Comment, Group } from '@mui/icons-material';
+import { Attachment, Comment, Group, TaskAltOutlined } from '@mui/icons-material';
 import { Box, Button, CardActions, CardContent, CardMedia } from '@mui/material';
 import MuiCard from '@mui/material/Card';
 import Typography from '@mui/material/Typography';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { Link, useNavigate } from 'react-router-dom';
+import { selectCurrentActiveBoard } from '~/redux/activeBoard/activeBoardSlice';
 import { showModalActiveCard, updateCurrentActiveCard } from '~/redux/activeCard/activeCardSlice';
 
 // const socket = io(`${BACKEND_URL}`);
 
-function Card({ card, column }) {
+function Card({ card }) {
     const dispatch = useDispatch()
-
-    // useEffect(() => {
-    //     const handleUpdateCard = async (data) => {
-    //         if (data.cardId === card._id) {
-    //             setTitle(data.cardTitle)
-    //         }
-    //     }
-    
-    //     socket.on('update_card', handleUpdateCard)
-    
-    //     // Clean up function
-    //     return () => {
-    //         socket.off('update_card', handleUpdateCard)
-    //     }
-    // }, []) // Empty dependency array ensures this runs once on mount and unmount
-
+    const currentBoard = useSelector(selectCurrentActiveBoard)
     const shouldShowCardActions = () => card?.memberIds?.length > 0 || card?.comments?.length > 0 || card?.attachments?.length > 0
 
     const { attributes,
@@ -48,20 +35,21 @@ function Card({ card, column }) {
         border: isDragging ? '1px dashed #000' : undefined,
     }
 
-    const setActiveCard = () => {
+    const setActiveCard = (cardId) => {
         dispatch(updateCurrentActiveCard(card))
         dispatch(showModalActiveCard())
     }
 
     return (
-        <>
+        <Link to={`/board/${currentBoard._id}/card/${card._id}`}>
             <Box>
                 <MuiCard
-                    onClick={setActiveCard}
+                    onClick={card?.FE_PlaceholderCard ? undefined : setActiveCard}
                     ref={setNodeRef}
                     style={dndKitCardStyle}
                     {...attributes}
                     {...listeners}
+                    data-no-dnd={card?.FE_PlaceholderCard ? true : undefined}
                     sx={{
                         cursor: 'pointer',
                         boxShadow: card?.FE_PlaceholderCard ? 'none' : '0 1px 1px rgba(0,0,0,0.2)',
@@ -89,7 +77,7 @@ function Card({ card, column }) {
 
 
                     {shouldShowCardActions() &&
-                        <CardActions sx={{ p: '0 4px 8px 4px' }}>
+                        <CardActions sx={{ p: '0 3px 8px 3px' }}>
                             {card?.memberIds?.length > 0 &&
                                 <Button size="small" startIcon={<Group />}>
                                     {card?.memberIds?.length}
@@ -107,11 +95,17 @@ function Card({ card, column }) {
                                     {card?.attachments?.length}
                                 </Button>
                             }
+
+                            {card?.checklists?.length > 0 &&
+                                <Button size="small" startIcon={<TaskAltOutlined />}>
+                                    {card?.checklists?.length}
+                                </Button>
+                            }
                         </CardActions>
                     }
                 </MuiCard>
             </Box>
-        </>
+        </Link>
     )
 }
 

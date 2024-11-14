@@ -78,7 +78,7 @@ function AppBar() {
         </Box>
       </Box>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-        <AutoCompleteSearchBoard />
+        <AutoCompleteSearchBoard variant="default"/>
         {/* Dark mode light mode */}
         <ModeSelect />
         

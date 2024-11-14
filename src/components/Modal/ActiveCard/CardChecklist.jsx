@@ -6,7 +6,7 @@ import { Box, Button, Checkbox, FormControlLabel, IconButton, LinearProgress, Po
 import Avatar from '@mui/material/Avatar'
 import Badge from '@mui/material/Badge'
 import { set } from 'lodash'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import ToggleFocusInput from '~/components/Form/ToggleFocusInput'
 import { selectCurrentActiveBoard } from '~/redux/activeBoard/activeBoardSlice'
@@ -172,23 +172,19 @@ const CardChecklist = ({cardMemberIds=[], cardChecklist, onUpdateChecklist, onUp
     setAssignedMemberIds(cardChecklist.items.find(item => item._id === itemId).assignedTo)
   }
 
-  const handleCloseAssignMemberPopover = () => {
-    setChecklistItemIdToAssign(null)
-  }
-
   const handleTogglePopover = (event) => {
     if (!anchorPopoverElement) setAnchorPopoverElement(event.currentTarget)
     else setAnchorPopoverElement(null)
   }
 
   return (
-    <Box>
+    <Box sx={{mt: 3}}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
         <TaskAltOutlinedIcon />
         {/* <Typography variant="span" sx={{ fontWeight: '600', fontSize: '20px' }}>{cardChecklist?.title}</Typography> */}
         <ToggleFocusInput
           inputFontSize='22px'
-          value={cardChecklist?.title}
+          value={cardChecklist.title}
           onChangedValue={onUpdateCheckListTitle}
         />
         <IconButton

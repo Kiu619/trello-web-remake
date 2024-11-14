@@ -7,27 +7,51 @@ import { moveCardToDifferentColumnAPI, updateBoardDetailsAPI, updateColumnDetail
 import AppBar from "~/components/AppBar/AppBar"
 import PageLoadingSpinner from "~/components/Loading/PageLoadingSpinner"
 import ActiveCard from "~/components/Modal/ActiveCard/ActiveCard"
-import { fetchBoardDetailsAPI, selectCurrentActiveBoard, updateCurrentActiveBoard } from "~/redux/activeBoard/activeBoardSlice"
+import { fetchBoardDetailsApiRedux, selectCurrentActiveBoard, updateCurrentActiveBoard } from "~/redux/activeBoard/activeBoardSlice"
 import BoardBar from "./BoardBar/BoardBar"
 import BoardContent from "./BoardContent/BoardContent"
 import { updateRecentBoards, updateUserAPI } from "~/redux/user/userSlice"
 
+import { socketIoIntance } from '~/socketClient'
+import { selectIsShowModalActiveCard } from "~/redux/activeCard/activeCardSlice"
 
 function Board() {
+  const isShowModalActiveCard = useSelector(selectIsShowModalActiveCard)
+
   const dispatch = useDispatch()
   // Dùng State của Redux Toolkit thay cho useState
   // const [board, setBoard] = useState(null)
   const board = useSelector(selectCurrentActiveBoard)
   const {boardId} = useParams()
 
-  useEffect( () => {
-    // tạm thời fix cứng boardId, sau này sẽ lấy từ params bằng react-router-dom 
-    // const boardId = '667aff87bc4c766e82037b5d'
-    dispatch(fetchBoardDetailsAPI(boardId))
+  useEffect(() => {
+    dispatch(fetchBoardDetailsApiRedux(boardId))
+
+    const handleBatch = (receivedBoardId) => {
+      if (receivedBoardId === boardId) {
+        dispatch(fetchBoardDetailsApiRedux(boardId))
+      }
+    }
+
+    const handleCardCopyInSameBoard = (receivedBoardId) => {
+      if (receivedBoardId === boardId) {
+        dispatch(fetchBoardDetailsApiRedux(boardId))
+      }
+    }
+
+    socketIoIntance.on('batch', handleBatch)
+    // socketIoIntance.on('copyCardInSameBoard', handleCardCopyInSameBoard)
+
+    // Cleanup function to remove the event listener when the component unmounts
+    return () => {
+      socketIoIntance.off('batch', handleBatch)
+      // socketIoIntance.off('copyCardInSameBoard', handleCardCopyInSameBoard)
+    }
   }, [boardId, dispatch])
 
+
   useEffect(() => {
-    let timeoutId;
+    let timeoutId
     
     if (!isEmpty(board)) {
       timeoutId = setTimeout(() => {
@@ -112,6 +136,8 @@ mång)
   return (
     <Container disableGutters maxWidth={false} sx={{ height: '100vh' }}>
       {/* Modal Active Card check đóng mở bằng redux*/}
+      {/* {isShowModalActiveCard && <ActiveCard />} */}
+
       <ActiveCard />
       <AppBar />
       <BoardBar board={board} />

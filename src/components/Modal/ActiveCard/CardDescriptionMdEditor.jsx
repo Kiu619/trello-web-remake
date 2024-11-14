@@ -1,54 +1,72 @@
-import { useState } from 'react'
-import { useColorScheme } from '@mui/material/styles'
-import MDEditor from '@uiw/react-md-editor'
-import rehypeSanitize from 'rehype-sanitize'
+import EditNoteIcon from '@mui/icons-material/EditNote'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
-import EditNoteIcon from '@mui/icons-material/EditNote'
+import { useColorScheme } from '@mui/material/styles'
+import MDEditor from '@uiw/react-md-editor'
+import { useEffect, useState } from 'react'
+import rehypeSanitize from 'rehype-sanitize'
 
 function CardDescriptionMdEditor(props) {
   const { cardDescriptionProp, onUpdateCardDescription } = props
 
-  // Lấy giá trị 'dark', 'light' hoặc 'system' mode từ MUI để support phần Markdown bên dưới: data-color-mode={mode}
-  // https://www.npmjs.com/package/@uiw/react-md-editor#support-dark-modenight-mode
   const { mode } = useColorScheme()
 
-  // State xử lý chế độ Edit và chế độ View
   const [markdownEditMode, setMarkdownEditMode] = useState(false)
-  // State xử lý giá trị markdown khi chỉnh sửa
   const [cardDescription, setCardDescription] = useState(cardDescriptionProp)
+
+  useEffect(() => {
+    setCardDescription(cardDescriptionProp)
+  }, [cardDescriptionProp])
 
   const updateCardDescription = () => {
     setMarkdownEditMode(false)
     onUpdateCardDescription(cardDescription)
   }
 
+  const cancelCardDescriptionEdit = () => {
+    setMarkdownEditMode(false)
+    setCardDescription(cardDescriptionProp)
+  }
+
   return (
     <Box sx={{ mt: -4 }}>
       {markdownEditMode
         ? <Box sx={{ mt: 5, display: 'flex', flexDirection: 'column', gap: 1 }}>
-          <Box 
-            // Dùng data-color-mode={mode} để xác định chế độ màu sắc cho Markdown Editor 
-          data-color-mode={mode}>
+          <Box data-color-mode={mode}>
             <MDEditor
               value={cardDescription}
               onChange={setCardDescription}
-              previewOptions={{ rehypePlugins: [[rehypeSanitize]] }} // https://www.npmjs.com/package/@uiw/react-md-editor#security
+              previewOptions={{ rehypePlugins: [[rehypeSanitize]] }}
               height={400}
-              preview="edit" // Có 3 giá trị để set tùy nhu cầu ['edit', 'live', 'preview']
-              // hideToolbar={true}
+              preview="edit"
             />
           </Box>
-          <Button
-            sx={{ alignSelf: 'flex-end' }}
-            onClick={updateCardDescription}
-            className="interceptor-loading"
-            type="button"
-            variant="contained"
-            size="small"
-            color="info">
-            Save
-          </Button>
+          <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+            <Button
+              onClick={cancelCardDescriptionEdit}
+              type="button"
+              variant="contained"
+              size="small"
+              sx={{
+                justifyContent: 'flex-start',
+                bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#A1BDD914' : '#3f444814'),
+                color: '#7e8b9a',
+                '&:hover': {
+                  bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#45505A' : '#0c93ff1a'),
+                },
+              }}>
+              Cancel
+            </Button>
+            <Button
+              onClick={updateCardDescription}
+              className="interceptor-loading"
+              type="button"
+              variant="contained"
+              size="small"
+              color="info">
+              Save
+            </Button>
+          </Box>
         </Box>
         : <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <Button
@@ -67,7 +85,7 @@ function CardDescriptionMdEditor(props) {
               style={{
                 whiteSpace: 'pre-wrap',
                 padding: cardDescription ? '10px' : '0px',
-                border:  cardDescription ? '0.5px solid rgba(0, 0, 0, 0.2)' : 'none',
+                border: cardDescription ? '0.5px solid rgba(0, 0, 0, 0.2)' : 'none',
                 borderRadius: '8px'
               }}
             />

@@ -2,7 +2,6 @@ import styled from '@emotion/styled';
 import TaskAltOutlinedIcon from '@mui/icons-material/TaskAltOutlined';
 import { Box, Button, Popover, TextField, Typography } from '@mui/material';
 import { useState } from 'react';
-import ToggleFocusInput from '~/components/Form/ToggleFocusInput';
 
 const SidebarItem = styled(Box)(({ theme }) => ({
     display: 'flex',
@@ -102,7 +101,9 @@ function Checklist({ onUpdateChecklist }) {
                             }
                         }}
                     />
-                    <Button onClick={handleAddNewChecklist} variant="contained" size='small' sx={{ mt: 1 }}>Add</Button>
+                    <Button
+                     onClick={handleAddNewChecklist} 
+                    variant="contained" size='small' sx={{ mt: 1 }}>Add</Button>
                 </Box>
             </Popover>
         </>

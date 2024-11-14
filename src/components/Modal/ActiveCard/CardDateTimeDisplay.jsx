@@ -48,47 +48,80 @@ const DateTimeDisplay = ({ startDate, startTime, dueDate, dueDateTime, isComplet
         onUpdateDueDate(dueDateData)
     }
 
+    const isOverdue = () => {
+        if (!dueDate || !dueDateTime) return false
+        const dueDateTimeString = `${dueDate}T${dueDateTime}`
+        return new Date(dueDateTimeString) < new Date()
+    }
+
     return (
         <>
             <Typography sx={{ fontWeight: '600', color: 'primary.main', mb: 1 }}>Due Date</Typography>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <FormControlLabel
-                sx={{}}
-                control={
-                    <Checkbox
-                        checked={isComplete}
-                        onChange={handleCheckboxChange}
-                    />
-                }
-            />
-            <Button
-                onClick={handleOpenDatePopover}
-                endIcon={<ExpandMoreIcon />}
-                sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    cursor: 'pointer',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    color: theme => theme.palette.mode === 'dark' ? '#90caf9' : '#172b4d',
-                    backgroundColor: theme => theme.palette.mode === 'dark' ? '#2f3542' : '#091e420f',
-                    padding: '10px',
-                    borderRadius: '4px',
-                    '&:hover': {
-                        backgroundColor: theme => theme.palette.mode === 'dark' ? '#33485D' : theme => theme.palette.grey[300],
-                        '&.active': {
-                            color: theme => theme.palette.mode === 'dark' ? '#000000de' : '#0c66e4',
-                            backgroundColor: theme => theme.palette.mode === 'dark' ? '#90caf9' : '#e9f2ff'
-                        }
+                <FormControlLabel
+                    sx={{}}
+                    control={
+                        <Checkbox
+                            checked={isComplete}
+                            onChange={handleCheckboxChange}
+                        />
                     }
-                }}>
-                {startDate
-                    ? <span>{formatDateTime(startDate, startTime)} - {formatDateTime(dueDate, dueDateTime)}</span>
-                    : <span>{formatDateTime(dueDate, dueDateTime)}</span>
-                }
-            </Button>
-        </Box>
+                />
+                <Button
+                    onClick={handleOpenDatePopover}
+                    endIcon={<ExpandMoreIcon />}
+                    sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        color: theme => theme.palette.mode === 'dark' ? '#90caf9' : '#172b4d',
+                        backgroundColor: theme => theme.palette.mode === 'dark' ? '#2f3542' : '#091e420f',
+                        padding: '10px',
+                        borderRadius: '4px',
+                        '&:hover': {
+                            backgroundColor: theme => theme.palette.mode === 'dark' ? '#33485D' : theme => theme.palette.grey[300],
+                            '&.active': {
+                                color: theme => theme.palette.mode === 'dark' ? '#000000de' : '#0c66e4',
+                                backgroundColor: theme => theme.palette.mode === 'dark' ? '#90caf9' : '#e9f2ff'
+                            }
+                        }
+                    }}>
+                    {startDate
+                        ? <Typography variant='span'>{formatDateTime(startDate, startTime)}</Typography>
+                        : <Typography variant='span'>{formatDateTime(dueDate, dueDateTime)}</Typography>
+                    }
+                    {isComplete && <Typography variant='span'
+                        sx={{
+                            height: '25px',
+                            bgcolor: 'green',
+                            display: 'flex',
+                            alignItems: 'center',
+                            padding: '0px 5px',
+                            color: 'white',
+                            borderRadius: '5px'
+                        }}>
+                        Completed
+                    </Typography>
+                    }
+                    {/* Nếu quá hạn */}
+                    {isOverdue() && !isComplete && <Typography variant='span'
+                        sx={{
+                            height: '25px',
+                            bgcolor: 'red',
+                            display: 'flex',
+                            alignItems: 'center',
+                            padding: '0px 5px',
+                            color: 'white',
+                            borderRadius: '5px'
+                        }}>
+                        Overdue
+                    </Typography>
+                    }
+                </Button>
+            </Box>
         </>
 
     )

@@ -20,9 +20,9 @@ function CardActivitySection({ cardMemberIds = [], cardComments = [], onAddCardC
     const FE_CardMembers = cardMemberIds.map(memberId => board?.FE_allUsers.find(user => user._id === memberId)).filter(user => user?._id !== currentUser?._id)
 
     const formattedBoardMembers = FE_CardMembers.map(member => ({
-        id: member._id,
-        display: member.displayName,
-        avatarUrl: member.avatar,
+        id: member?._id,
+        display: member?.displayName,
+        avatarUrl: member?.avatar,
     }));
 
     const [comment, setComment] = useState('')

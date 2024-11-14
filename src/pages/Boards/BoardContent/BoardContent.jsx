@@ -9,6 +9,8 @@ import Column from './ListColumns/Column/Column';
 import Card from './ListColumns/Column/ListCards/Card/Card';
 import ListColumns from './ListColumns/ListColumns';
 
+import { socketIoIntance } from '~/socketClient'
+
 // import { io } from "socket.io-client"
 // import { BACKEND_URL } from "~/utils/constants"
 
@@ -25,6 +27,7 @@ function BoardContent(props) {
 
   const { board, moveColumns,
     moveCardInTheSameColumns, moveCardToDifferentColumn } = props
+
 
   // yêu cầu chuột di chuyển ít nhất 10px mới bắt đầu kéo
   const mouseSensor = useSensor(MouseSensor, { activationConstraint: { distance: 10 } })
@@ -130,6 +133,7 @@ function BoardContent(props) {
     setActiveDragItemId(e?.active?.id)
     setActiveDragItemType(e?.active?.data?.current?.columnId ? ACTIVE_DRAG_ITEM_TYPE.CARD : ACTIVE_DRAG_ITEM_TYPE.COLUMN)
     setActiveDragItemData(e?.active?.data?.current)
+    console.log('activeDragItemId', e?.active)
     // console.log('activeDragItemData', e?.active?.data?.current)
 
     //Nếu kéo card thì phải Lưu lại column cũ trước khi kéo
@@ -248,6 +252,16 @@ function BoardContent(props) {
 
       }
     }
+
+    //Gửi thông báo tới server thông qua socket.io
+    // socketIoIntance.emit('batch')
+    setTimeout(() => {
+      socketIoIntance.emit('batch', { boardId: board._id })
+      console.log('batch')
+    }, 2654)
+    console.log('batch')
+
+
     setActiveDragItemId(null)
     setActiveDragItemType(null)
     setActiveDragItemData(null)
@@ -327,10 +341,12 @@ function BoardContent(props) {
 
           <ListColumns
             columns={orderedColumns}
+            // columns={board?.columns}
           />
           <DragOverlay dropAnimation={dropAnimation}>
             {activeDragItemId && activeDragItemType === ACTIVE_DRAG_ITEM_TYPE.COLUMN && (
               <Column column={activeDragItemData} />
+              // <Box>dakshfjklasjdkl</Box>
             )}
             {activeDragItemId && activeDragItemType === ACTIVE_DRAG_ITEM_TYPE.CARD && (
               <Card card={activeDragItemData} />

@@ -10,13 +10,10 @@ export const createNewBoardAPI = async (newBoard) => {
   return response.data
 }
 
-// đã chuyển vào activeBoardSlice.js
-// export const fetchBoardDetailsAPI = async (boardId) => {
-//   // Không cần sử dụng try catch vì thằng axios nó có sẵn Interceptor để handle lỗi
-//   const response = await axios.get(`${API_ROOT}/v1/board/${boardId}`)
-//   // axios sẽ trả kết quả về qua property của nó là data
-//   return response.data
-// }
+export const fetchBoardDetailsApi = async (boardId) => {
+  const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/board/${boardId}`)
+  return response.data
+}
 
 export const updateBoardDetailsAPI = async (boardId, updateData) => {
   const response = await authorizedAxiosInstance.put(`${API_ROOT}/v1/board/${boardId}`, updateData)
@@ -51,6 +48,11 @@ export const deleteColumnDetailsAPI = async (columnId) => {
 }
 
 // Card API
+export const fetchCardDetailsAPI = async (cardId) => {
+  const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/card/${cardId}`)
+  return response.data
+}
+
 export const createNewCardAPI = async (newCard) => {
   const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/card/`, newCard)
   return response.data
@@ -61,38 +63,18 @@ export const updateCardDetailsAPI = async (cardId, updateData) => {
   return response.data
 }
 
-export const editTitleCardAPI = async (cardId, data) => {
-  const response = await authorizedAxiosInstance.put(`${API_ROOT}/v1/card/editTitle/${cardId}`, data)
+export const copyCardAPI = async (cardId, updateData) => {
+  const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/card/copy_card/${cardId}`, updateData)
   return response.data
 }
 
-export const editDescriptionCardAPI = async (cardId, data) => {
-  const response = await authorizedAxiosInstance.put(`${API_ROOT}/v1/card/updateDescription/${cardId}`, data)
+export const moveCardToDifferentBoardAPI = async (cardId, updateData) => {
+  const response = await authorizedAxiosInstance.put(`${API_ROOT}/v1/card/move_card_to_different_board/${cardId}`, updateData)
   return response.data
 }
 
-export const uploadCoverImageAPI = async (cardId,data) => {
-  const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/card/uploadCoverImg/${cardId}`, data)
-  return response.data
-}
-
-export const uploadCoverImageColor = async (cardId,data) => {
-  const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/card/uploadCoverColor/${cardId}`, data)
-  return response.data
-}
-
-export const removeCoverImageAPI = async (cardId) => {
-  const response = await authorizedAxiosInstance.delete(`${API_ROOT}/v1/card/uploadCoverImg/${cardId}`)
-  return response.data
-}
-
-export const addCommentAPI = async (cardId, data) => {
-  const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/card/comment/${cardId}`, data)
-  return response.data
-}
-
-export const updateCommentAPI = async (cardId, commentId, content) => {
-  const response = await authorizedAxiosInstance.put(`${API_ROOT}/v1/card/comment/${cardId}`, { commentId, content })
+export const deleteCardAPI = async (cardId) => {
+  const response = await authorizedAxiosInstance.delete(`${API_ROOT}/v1/card/${cardId}`)
   return response.data
 }
 

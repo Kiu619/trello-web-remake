@@ -25,7 +25,12 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <PersistGate persistor={persistor}>
       <BrowserRouter basename='/'>
         <CssVarsProvider theme={theme}>
-          <ConfirmProvider>
+          <ConfirmProvider defaultOptions={{
+            dialogProps: { maxWidth: 'xs' },
+            buttonOrder: ['confirm', 'cancel'],
+            cancellationButtonProps: { color: 'error'},
+            confirmationButtonProps: { color: 'inherit', variant: 'outlined'}
+          }}>
             <GlobalStyles styles={{
               a: { textDecoration: 'none' },
             }} />

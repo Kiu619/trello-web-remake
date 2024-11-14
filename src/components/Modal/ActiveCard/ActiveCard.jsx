@@ -5,46 +5,52 @@ import ArrowForwardOutlinedIcon from '@mui/icons-material/ArrowForwardOutlined'
 import AspectRatioOutlinedIcon from '@mui/icons-material/AspectRatioOutlined'
 import AttachFileOutlinedIcon from '@mui/icons-material/AttachFileOutlined'
 import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined'
-import AutoFixHighOutlinedIcon from '@mui/icons-material/AutoFixHighOutlined'
 import CancelIcon from '@mui/icons-material/Cancel'
 import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined'
 import CreditCardIcon from '@mui/icons-material/CreditCard'
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
 import DvrOutlinedIcon from '@mui/icons-material/DvrOutlined'
-import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined'
 import LocalOfferOutlinedIcon from '@mui/icons-material/LocalOfferOutlined'
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined'
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined'
 import SubjectRoundedIcon from '@mui/icons-material/SubjectRounded'
-import TaskAltOutlinedIcon from '@mui/icons-material/TaskAltOutlined'
 import WatchLaterOutlinedIcon from '@mui/icons-material/WatchLaterOutlined'
+import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
+import LocationOnIcon from '@mui/icons-material/LocationOn'
 import Box from '@mui/material/Box'
 import Divider from '@mui/material/Divider'
+import Grid from '@mui/material/Grid'
 import Modal from '@mui/material/Modal'
 import Stack from '@mui/material/Stack'
+import { styled } from '@mui/material/styles'
 import Typography from '@mui/material/Typography'
-import Grid from '@mui/material/Grid'
+import { useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
+import { updateCardDetailsAPI } from '~/apis'
 import ToggleFocusInput from '~/components/Form/ToggleFocusInput'
 import VisuallyHiddenInput from '~/components/Form/VisuallyHiddenInput'
-import { singleFileValidator, singleFileValidatorForAttachment } from '~/utils/validators'
-import CardDescriptionMdEditor from './CardDescriptionMdEditor'
-import CardUserGroup from './CardUserGroup'
-import { styled } from '@mui/material/styles'
-import { useDispatch, useSelector } from 'react-redux'
-import { updateCardDetailsAPI } from '~/apis'
-import { updateCardInBoard } from '~/redux/activeBoard/activeBoardSlice'
-import { clearAndHideCurrentActiveCard, selectActiveCard, selectIsShowModalActiveCard, updateCurrentActiveCard } from '~/redux/activeCard/activeCardSlice'
+import { selectCurrentActiveBoard, updateCardInBoard } from '~/redux/activeBoard/activeBoardSlice'
+import { clearAndHideCurrentActiveCard, fetchCardDetailsAPI, selectActiveCard, selectIsShowModalActiveCard, updateCurrentActiveCard } from '~/redux/activeCard/activeCardSlice'
 import { selectCurrentUser } from '~/redux/user/userSlice'
+import { socketIoIntance } from '~/socketClient'
 import { CARD_MEMBER_ACTIONS } from '~/utils/constants'
-import CardActivitySection from './CardCommentTest'
-import Checklist from './CardFunctions/Checklist'
-import Dates from './CardFunctions/Dates'
-import CardChecklist from './CardChecklist'
+import { singleFileValidatorForAttachment } from '~/utils/validators'
 import CardAttachment from './CardAttachment'
-import { Checkbox, FormControlLabel } from '@mui/material'
+import CardChecklist from './CardChecklist'
+import CardActivitySection from './CardCommentTest'
 import DateTimeDisplay from './CardDateTimeDisplay'
-import { useCallback, useState } from 'react'
-import { useDropzone } from 'react-dropzone'
+import CardDescriptionMdEditor from './CardDescriptionMdEditor'
+import Checklist from './CardFunctions/Checklist'
+import Cover from './CardFunctions/Cover'
+import Dates from './CardFunctions/Dates'
+import CardUserGroup from './CardUserGroup'
+import Location from './CardFunctions/Location'
+import LocationMap from './CardLocationMap'
+import Move from './CardFunctions/Move'
+import Copy from './CardFunctions/Copy'
+import Delete from './CardFunctions/Delete'
+import { useNavigate } from 'react-router-dom'
 
 const SidebarItem = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -67,6 +73,8 @@ const SidebarItem = styled(Box)(({ theme }) => ({
 }))
 
 function ActiveCard() {
+  const navigate = useNavigate()
+  const currentBoard = useSelector(selectCurrentActiveBoard)
 
   const dispatch = useDispatch()
   const activeCard = useSelector(selectActiveCard)
@@ -75,17 +83,40 @@ function ActiveCard() {
 
   const handleCloseModal = () => {
     dispatch(clearAndHideCurrentActiveCard())
+    navigate(`/board/${currentBoard._id}`)
   }
 
-  // Gọi API cập nhật thông tin Card
+  useEffect(() => {
+    const handleUpdateCard = (receivedCardId) => {
+      if (receivedCardId === activeCard?._id) {
+        dispatch(fetchCardDetailsAPI(activeCard?._id))
+      }
+    }
+
+    socketIoIntance.on('activeCardUpdate', handleUpdateCard)
+
+    return () => {
+      socketIoIntance.off('activeCardUpdate', handleUpdateCard)
+    }
+  }, [activeCard?._id, dispatch])
+
+
   const callApiUpdateCard = async (updateData) => {
     // console.log('updateData', updateData)
     const res = await updateCardDetailsAPI(activeCard._id, updateData)
+    console.log('res', res)
 
     // // Cập nhật thông tin Card mới nhất vào Redux
     dispatch(updateCurrentActiveCard(res))
     // // Cập nhật thông tin Card mới nhất vào Redux của Board
     dispatch(updateCardInBoard(res))
+
+    // Gửi thông báo tới server thông qua socket.io
+    // socketIoIntance.emit('FE_UPDATE_CARD', res)
+    setTimeout(() => {
+      socketIoIntance.emit('batch', { boardId: currentBoard._id })
+      socketIoIntance.emit('activeCardUpdate', activeCard._id)
+    }, 1234)
 
     return res
 
@@ -102,24 +133,6 @@ function ActiveCard() {
 
   const onUpdateCardDescription = (newDescription) => {
     callApiUpdateCard({ description: newDescription })
-  }
-
-  const onUploadCardCover = (event) => {
-    const error = singleFileValidator(event.target?.files[0])
-    if (error) {
-      toast.error(error)
-      return
-    }
-    let reqData = new FormData()
-    reqData.append('cardCover', event.target?.files[0])
-
-    // Gọi API...
-    toast.promise(
-      callApiUpdateCard(reqData).finally(() => event.target.value = ''),
-      {
-        pending: 'Uploading...'
-      }
-    )
   }
 
   const onAddCardAttachment = (event) => {
@@ -154,24 +167,21 @@ function ActiveCard() {
   }
 
   const onUpdateChecklist = (incomingChecklistInfo) => {
-    // console.log('incomingChecklistInfo', incomingChecklistInfo)
     callApiUpdateCard({ incomingChecklistInfo })
   }
 
   const onUpdateChecklistItem = (incomingChecklistItemInfo) => {
-    // console.log('incomingChecklistInfo', incomingChecklistItemInfo)
     callApiUpdateCard({ incomingChecklistItemInfo })
   }
 
-  const [dateAnchorEl, setDateAnchorEl] = useState(null)
-
-  const handleOpenDatePopover = (event) => {
-    setDateAnchorEl(event.currentTarget)
-  } 
-
-  const handleCloseDatePopover = () => {
-    setDateAnchorEl(null)
+  const updateLocation = (location) => {
+    callApiUpdateCard({ location })
   }
+
+  // Date Popover
+  const [dateAnchorEl, setDateAnchorEl] = useState(null)
+  const handleOpenDatePopover = (event) => { setDateAnchorEl(event.currentTarget) }
+  const handleCloseDatePopover = () => { setDateAnchorEl(null) }
 
   return (
     <Modal
@@ -179,8 +189,8 @@ function ActiveCard() {
       open={isShowModalActiveCard}
       onClose={handleCloseModal} // Sử dụng onClose trong trường hợp muốn đóng Modal bằng nút ESC hoặc click ra ngoài Modal
       sx={{ overflowY: 'auto' }}
-        // {...getRootProps()}
-        >
+    // {...getRootProps()}
+    >
       <Box sx={{
         position: 'relative',
         width: '86%',
@@ -231,7 +241,8 @@ function ActiveCard() {
           <ToggleFocusInput
             inputFontSize='22px'
             value={activeCard?.title}
-            onChangedValue={onUpdateCardTitle} />
+            onChangedValue={onUpdateCardTitle}
+          />
         </Box>
 
         <Grid container sx={{ m: 0 }} className='nghia'>
@@ -248,24 +259,16 @@ function ActiveCard() {
             </Box>
 
             <Box sx={{ mb: 3 }}>
-              
-
-              {/* Feature 02: Xử lý các thành viên của Card
-              <CardUserGroup
-                cardMemberIds={activeCard?.memberIds}
-                onUpdateCardMembers={onUpdateCardMembers}
-              /> */}
               {activeCard?.dueDate.dueDate && (
-                <DateTimeDisplay 
-                startDate={activeCard.dueDate?.startDate}
-                startTime={activeCard.dueDate?.startTime}
-                dueDate={activeCard.dueDate?.dueDate}
-                dueDateTime={activeCard.dueDate?.dueDateTime}
-                isComplete={activeCard.dueDate?.isComplete}
-                handleOpenDatePopover={handleOpenDatePopover}
-                onUpdateDueDate={onUpdateDueDate}
-              />
-              
+                <DateTimeDisplay
+                  startDate={activeCard.dueDate?.startDate}
+                  startTime={activeCard.dueDate?.startTime}
+                  dueDate={activeCard.dueDate?.dueDate}
+                  dueDateTime={activeCard.dueDate?.dueDateTime}
+                  isComplete={activeCard.dueDate?.isComplete}
+                  handleOpenDatePopover={handleOpenDatePopover}
+                  onUpdateDueDate={onUpdateDueDate}
+                />
               )}
             </Box>
 
@@ -281,6 +284,16 @@ function ActiveCard() {
                 onUpdateCardDescription={onUpdateCardDescription}
               />
             </Box>
+
+            {activeCard?.location?.lat && (
+              <Box sx={{ mb: 3 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <LocationOnOutlinedIcon />
+                  <Typography variant="span" sx={{ fontWeight: '600', fontSize: '20px' }}>Location</Typography>
+                </Box>
+                <LocationMap location={activeCard.location} updateLocation={updateLocation} />
+              </Box>
+            )}
 
             <Box sx={{ mb: 3 }}>
               <CardAttachment
@@ -335,26 +348,23 @@ function ActiveCard() {
                   Join
                 </SidebarItem>
               }
+
               {/* Feature 06: Xử lý hành động cập nhật ảnh Cover của Card */}
-              <SidebarItem className="active" component="label">
-                <ImageOutlinedIcon fontSize="small" />
-                Cover
-                <VisuallyHiddenInput type="file" onChange={onUploadCardCover} />
-              </SidebarItem>
+              <Cover callApiUpdateCard={callApiUpdateCard} card={activeCard} />
 
               <SidebarItem className="active" component="label">
                 <AttachFileOutlinedIcon fontSize="small" />
                 Attachment
                 <VisuallyHiddenInput type="file" onChange={onAddCardAttachment} />
               </SidebarItem>
-              <SidebarItem><LocalOfferOutlinedIcon fontSize="small" />Labels</SidebarItem>
+
+              {/* <SidebarItem><LocalOfferOutlinedIcon fontSize="small" />Labels</SidebarItem> */}
 
               {/* Checklist */}
               <Checklist onUpdateChecklist={onUpdateChecklist} />
 
               {/* Dates */}
-
-              <Dates 
+              <Dates
                 onUpdateDueDate={onUpdateDueDate}
                 handleClosePopover={handleCloseDatePopover}
                 anchorEl={dateAnchorEl}
@@ -363,8 +373,9 @@ function ActiveCard() {
                 <WatchLaterOutlinedIcon fontSize="small" />
                 Dates
               </SidebarItem>
-              {/* <SidebarItem><WatchLaterOutlinedIcon fontSize="small" />Dates</SidebarItem> */}
-              <SidebarItem><AutoFixHighOutlinedIcon fontSize="small" />Custom Fields</SidebarItem>
+              {/* Location */}
+              <Location updateLocation={updateLocation}/>
+              
             </Stack>
 
             <Divider sx={{ my: 2 }} />
@@ -380,11 +391,15 @@ function ActiveCard() {
 
             <Typography sx={{ fontWeight: '600', color: 'primary.main', mb: 1 }}>Actions</Typography>
             <Stack direction="column" spacing={1}>
-              <SidebarItem><ArrowForwardOutlinedIcon fontSize="small" />Move</SidebarItem>
-              <SidebarItem><ContentCopyOutlinedIcon fontSize="small" />Copy</SidebarItem>
+              {/* <SidebarItem><ArrowForwardOutlinedIcon fontSize="small" />Move</SidebarItem> */}
+              <Move activeCard={activeCard} />
+              {/* <SidebarItem><ContentCopyOutlinedIcon fontSize="small" />Copy</SidebarItem> */}
+              <Copy activeCard={activeCard} />
               <SidebarItem><AutoAwesomeOutlinedIcon fontSize="small" />Make Template</SidebarItem>
               <SidebarItem><ArchiveOutlinedIcon fontSize="small" />Archive</SidebarItem>
               <SidebarItem><ShareOutlinedIcon fontSize="small" />Share</SidebarItem>
+              {/* Delete */}
+              <Delete activeCard={activeCard} />
             </Stack>
           </Grid>
         </Grid>
