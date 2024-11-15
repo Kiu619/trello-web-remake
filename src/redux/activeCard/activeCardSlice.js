@@ -35,7 +35,8 @@ const activeCardSlice = createSlice({
         },
         showModalActiveCard: (state) => {
             state.isShowModalActiveCard = true
-        }
+        },
+        hideModalActiveCard: state => { state.isShowModalActiveCard = false }
     },
     extraReducers: (builder) => {
         builder
@@ -50,7 +51,7 @@ const activeCardSlice = createSlice({
     }
 })
 
-export const { clearAndHideCurrentActiveCard, updateCurrentActiveCard, showModalActiveCard } = activeCardSlice.actions
+export const { clearAndHideCurrentActiveCard, updateCurrentActiveCard, showModalActiveCard, hideModalActiveCard  } = activeCardSlice.actions
 
 export const selectActiveCard = (state) => state.activeCard.currentActiveCard
 export const selectIsShowModalActiveCard = (state) => state.activeCard.isShowModalActiveCard

@@ -315,7 +315,7 @@ function Copy({ activeCard }) {
                         fullWidth
                         sx={{ mt: 2 }}
                         onClick={handleCopyCard}
-                        disabled={!selectedBoard || !selectedColumn || selectedPosition === ''}
+                        disabled={!selectedBoard || !selectedColumn || selectedPosition === '' || cardTitle === ''}
                     >
                         Create card
                     </Button>

@@ -1,32 +1,37 @@
-import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { AddCard, Close, DeleteForever, DragHandle, ExpandMore, NoteAdd } from '@mui/icons-material';
-import Cloud from '@mui/icons-material/Cloud';
-import ContentCopy from '@mui/icons-material/ContentCopy';
-import ContentCut from '@mui/icons-material/ContentCut';
-import ContentPaste from '@mui/icons-material/ContentPaste';
-import { Box, Button, TextField, Tooltip, Typography } from '@mui/material';
-import Divider from '@mui/material/Divider';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import { cloneDeep } from 'lodash';
-import { useConfirm } from 'material-ui-confirm';
-import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { toast } from 'react-toastify';
-import { createNewCardAPI, deleteColumnDetailsAPI, updateColumnDetailsAPI } from '~/apis';
-import ToggleFocusInput from '~/components/Form/ToggleFocusInput';
-import { selectCurrentActiveBoard, updateCurrentActiveBoard } from '~/redux/activeBoard/activeBoardSlice';
-import ListCards from './ListCards/ListCards';
-import { socketIoIntance } from '~/socketClient';
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+import { AddCard, Close, DeleteForever, DragHandle, ExpandMore, NoteAdd } from '@mui/icons-material'
+import Cloud from '@mui/icons-material/Cloud'
+import ContentCopy from '@mui/icons-material/ContentCopy'
+import ContentCut from '@mui/icons-material/ContentCut'
+import ContentPaste from '@mui/icons-material/ContentPaste'
+import ArrowForwardOutlinedIcon from '@mui/icons-material/ArrowForwardOutlined'
+import { Box, Button, TextField, Tooltip, Typography } from '@mui/material'
+import Divider from '@mui/material/Divider'
+import ListItemIcon from '@mui/material/ListItemIcon'
+import ListItemText from '@mui/material/ListItemText'
+import Menu from '@mui/material/Menu'
+import MenuItem from '@mui/material/MenuItem'
+import { cloneDeep } from 'lodash'
+import { useConfirm } from 'material-ui-confirm'
+import { useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { toast } from 'react-toastify'
+import { createNewCardAPI, deleteColumnDetailsAPI, updateColumnDetailsAPI } from '~/apis'
+import ToggleFocusInput from '~/components/Form/ToggleFocusInput'
+import { selectCurrentActiveBoard, updateCurrentActiveBoard } from '~/redux/activeBoard/activeBoardSlice'
+import ListCards from './ListCards/ListCards'
+import { socketIoIntance } from '~/socketClient'
+import Move from '../../../../../components/ColumnFunctions/Move'
+import Copy from '../../../../../components/ColumnFunctions/Copy'
+import MoveAllCards from '../../../../../components/ColumnFunctions/MoveAllCards'
 
 function Column(props) {
     const { column } = props
 
     const dispatch = useDispatch()
     const board = useSelector(selectCurrentActiveBoard)
+    const [selectColumn, setSelectColumn] = useState(null)
 
     const { attributes,
         listeners,
@@ -38,7 +43,7 @@ function Column(props) {
         = useSortable({
             id: column._id,
             data: { ...column, type: 'COLUMN' },
-        });
+        })
 
     const dndKitColumnStyle = {
         // touchAction: 'none',
@@ -48,14 +53,16 @@ function Column(props) {
         opacity: isDragging ? 0.5 : 1,
     }
 
-    const [anchorEl, setAnchorEl] = useState(null);
-    const open = Boolean(anchorEl);
+    const [anchorEl, setAnchorEl] = useState(null)
+    const open = Boolean(anchorEl)
     const handleClick = (event) => {
-        setAnchorEl(event.currentTarget);
-    };
+        setSelectColumn(column)
+        setAnchorEl(event.currentTarget)
+    }
     const handleClose = () => {
-        setAnchorEl(null);
-    };
+        setAnchorEl(null)
+        console.log('selectColumn', selectColumn)
+    }
 
     const orderedCards = (column?.cards)
 
@@ -203,7 +210,7 @@ function Column(props) {
                             MenuListProps={{
                                 'aria-labelledby': 'basic-column-dropdown',
                             }}
-                            onClick={handleClose}
+                            // onClick={handleClose}
                         >
                             <MenuItem sx={{
                                 '&:hover': {
@@ -219,26 +226,11 @@ function Column(props) {
                                 <ListItemText>Add new card</ListItemText>
                             </MenuItem>
 
-                            <MenuItem>
-                                <ListItemIcon>
-                                    <ContentCut fontSize="small" />
-                                </ListItemIcon>
-                                <ListItemText>Cut</ListItemText>
-                            </MenuItem>
+                            <Move column={selectColumn} />
 
-                            <MenuItem>
-                                <ListItemIcon>
-                                    <ContentCopy fontSize="small" />
-                                </ListItemIcon>
-                                <ListItemText>Copy</ListItemText>
-                            </MenuItem>
+                            <Copy column={selectColumn} />
 
-                            <MenuItem>
-                                <ListItemIcon>
-                                    <ContentPaste fontSize="small" />
-                                </ListItemIcon>
-                                <ListItemText>Paste</ListItemText>
-                            </MenuItem>
+                            <MoveAllCards column={selectColumn} />
 
                             <Divider />
 
@@ -246,9 +238,9 @@ function Column(props) {
                                 onClick={handleDeleteColumn}
                                 sx={{
                                     '&:hover': {
-                                        color: 'warning.dark',
+                                        color: 'error.dark',
                                         '& .remove-icon': {
-                                            color: 'warning.dark'
+                                            color: 'error.dark'
                                         }
                                     }
                                 }}>
@@ -257,19 +249,12 @@ function Column(props) {
                                 </ListItemIcon>
                                 <ListItemText>Remove this column</ListItemText>
                             </MenuItem>
-
-                            <MenuItem>
-                                <ListItemIcon>
-                                    <Cloud fontSize="small" />
-                                </ListItemIcon>
-                                <ListItemText>Archive this column</ListItemText>
-                            </MenuItem>
                         </Menu>
                     </Box>
                 </Box>
 
                 {/* Column Content */}
-                <ListCards cards={orderedCards} column={column} />
+                <ListCards cards={orderedCards}/>
 
 
                 {/* Column Footer */}

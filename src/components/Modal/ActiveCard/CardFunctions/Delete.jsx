@@ -5,6 +5,8 @@ import { cloneDeep } from 'lodash';
 import { useConfirm } from 'material-ui-confirm';
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { deleteCardAPI } from '~/apis';
 import { selectCurrentActiveBoard, updateCurrentActiveBoard } from '~/redux/activeBoard/activeBoardSlice';
 import { clearAndHideCurrentActiveCard } from '~/redux/activeCard/activeCardSlice';
@@ -34,6 +36,7 @@ function Delete({activeCard}) {
     const currentBoard = useSelector(selectCurrentActiveBoard)
     const dispatch = useDispatch()
     const confirmDeleteCard = useConfirm()
+    const navigate = useNavigate()
 
     const handleDeleteCard = () => {
         confirmDeleteCard({ 
@@ -52,6 +55,7 @@ function Delete({activeCard}) {
 
                 deleteCardAPI(activeCard._id).then((res) => {
                     toast.success(res?.deleteResult)
+                    navigate(`/board/${newBoard._id}`)
                 })
 
                 setTimeout(() => {

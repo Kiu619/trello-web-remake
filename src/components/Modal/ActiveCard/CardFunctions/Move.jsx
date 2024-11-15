@@ -111,7 +111,6 @@ function Move({activeCard}) {
     const handleMoveCard = () => {
         if (!selectedBoard || !selectedColumn || selectedPosition === '') return
         
-        // TODO: Implement your move card logic here
         console.log('Moving card to:', {
             boardId: selectedBoard._id,
             columnId: selectedColumn,

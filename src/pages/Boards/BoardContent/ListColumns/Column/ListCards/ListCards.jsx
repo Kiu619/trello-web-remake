@@ -22,7 +22,7 @@ function ListCards(props) {
                     {/* List card */}
                     {cards?.map((card) => {
                         return (
-                            <Card key={card._id} card={card} column={column} />
+                            <Card key={card._id} card={card} />
                         )
                     })}
                 </Box>

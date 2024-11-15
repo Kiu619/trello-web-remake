@@ -22,7 +22,7 @@ function App() {
     <Routes>
       <Route path="/" element={<Navigate to="/boards" replace={true} />} />
       <Route element={<PrivateRoute user={currentUser} />} >
-        {/* <Route path='/board/:boardId' element={<Board />} /> */}
+        <Route path='/board/:boardId' element={<Board />} />
 
         <Route path='/board/:boardId' element={<Board />}>
           {/* Nested Route for handling modals without affecting URL */}
@@ -34,7 +34,7 @@ function App() {
         <Route path='/settings/security' element={<Settings />}/>
 
 
-        {/* <Route path="/board/:boardId/card/:cardId" element={<ActiveCard />} /> */}
+        <Route path="/board/:boardId/card/:cardId" element={<ActiveCard />} />
 
       </Route>
       <Route path="/login" element={<Auth />} />

@@ -11,6 +11,7 @@ import { fetchBoardDetailsApiRedux, selectCurrentActiveBoard, updateCurrentActiv
 import BoardBar from "./BoardBar/BoardBar"
 import BoardContent from "./BoardContent/BoardContent"
 import { updateRecentBoards, updateUserAPI } from "~/redux/user/userSlice"
+import { hideModalActiveCard, showModalActiveCard } from "~/redux/activeCard/activeCardSlice"
 
 import { socketIoIntance } from '~/socketClient'
 import { selectIsShowModalActiveCard } from "~/redux/activeCard/activeCardSlice"
@@ -23,6 +24,7 @@ function Board() {
   // const [board, setBoard] = useState(null)
   const board = useSelector(selectCurrentActiveBoard)
   const {boardId} = useParams()
+  const { cardId } = useParams()
 
   useEffect(() => {
     dispatch(fetchBoardDetailsApiRedux(boardId))
@@ -40,7 +42,7 @@ function Board() {
     }
 
     socketIoIntance.on('batch', handleBatch)
-    // socketIoIntance.on('copyCardInSameBoard', handleCardCopyInSameBoard)
+    socketIoIntance.on('copyCardInSameBoard', handleCardCopyInSameBoard)
 
     // Cleanup function to remove the event listener when the component unmounts
     return () => {
@@ -49,6 +51,13 @@ function Board() {
     }
   }, [boardId, dispatch])
 
+  useEffect(() => {
+    if (cardId) {
+      dispatch(showModalActiveCard())
+    } else {
+      dispatch(hideModalActiveCard())
+    }
+  }, [cardId, dispatch])
 
   useEffect(() => {
     let timeoutId
@@ -57,7 +66,7 @@ function Board() {
       timeoutId = setTimeout(() => {
         dispatch(updateRecentBoards(board))
         dispatch(updateUserAPI({ boardId: board._id, forRecent: true }))
-      }, 2000) // delay 2 seconds
+      }, 1000) // delay 2 seconds
     }
   
     // Cleanup function để tránh memory leak

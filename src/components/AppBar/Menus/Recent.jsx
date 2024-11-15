@@ -54,7 +54,10 @@ function Recent() {
             >
                 {
                     recentBoards.map((board, index) => (
-                        <MenuItem key={index} onClick={() => navigate(`/board/${board._id}`)}>
+                        <MenuItem key={index} onClick={() => {navigate(`/board/${board._id}`)
+                            handleClose()
+                        }
+                        }>
                             <ListItemText primary={board.title} />
                         </MenuItem>
                     ))

@@ -47,6 +47,21 @@ export const deleteColumnDetailsAPI = async (columnId) => {
   return response.data
 }
 
+export const moveColumnToDifferentBoardAPI = async (columnId, updateData) => {
+  const response = await authorizedAxiosInstance.put(`${API_ROOT}/v1/column/move_column_to_different_board/${columnId}`, updateData)
+  return response.data
+}
+
+export const copyColumnAPI = async (columnId, updateData) => {
+  const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/column/copy_column/${columnId}`, updateData)
+  return response.data
+}
+
+export const moveAllCardsToAnotherColumnAPI = async (columnId, newColumnId) => {
+  const response = await authorizedAxiosInstance.put(`${API_ROOT}/v1/column/move_all_cards_to_another_column/${columnId}`, { newColumnId })
+  return response.data
+}
+
 // Card API
 export const fetchCardDetailsAPI = async (cardId) => {
   const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/card/${cardId}`)

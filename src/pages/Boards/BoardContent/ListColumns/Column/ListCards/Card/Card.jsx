@@ -36,7 +36,7 @@ function Card({ card }) {
     }
 
     const setActiveCard = (cardId) => {
-        dispatch(updateCurrentActiveCard(card))
+        // dispatch(updateCurrentActiveCard(card))
         dispatch(showModalActiveCard())
     }
 

@@ -50,7 +50,7 @@ import LocationMap from './CardLocationMap'
 import Move from './CardFunctions/Move'
 import Copy from './CardFunctions/Copy'
 import Delete from './CardFunctions/Delete'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 
 const SidebarItem = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -73,6 +73,10 @@ const SidebarItem = styled(Box)(({ theme }) => ({
 }))
 
 function ActiveCard() {
+  const { cardId } = useParams()
+  const { boardId } = useParams()
+  console.log('boardId', boardId)
+
   const navigate = useNavigate()
   const currentBoard = useSelector(selectCurrentActiveBoard)
 
@@ -85,6 +89,15 @@ function ActiveCard() {
     dispatch(clearAndHideCurrentActiveCard())
     navigate(`/board/${currentBoard._id}`)
   }
+
+  useEffect(() => {
+    if (cardId) {
+      dispatch(fetchCardDetailsAPI(cardId))
+    }
+    // if (boardId !== activeCard._id) {
+    //   navigate(`/board/${currentBoard._id}`)
+    // }
+  }, [cardId, dispatch])
 
   useEffect(() => {
     const handleUpdateCard = (receivedCardId) => {
@@ -100,6 +113,14 @@ function ActiveCard() {
     }
   }, [activeCard?._id, dispatch])
 
+  useEffect(() => {
+    if (activeCard) {
+      if (activeCard.boardId !== boardId) {
+        toast.error('Card not found')
+        navigate(`/board/${currentBoard._id}`)
+      }
+    }
+  }, [activeCard, boardId, currentBoard._id])
 
   const callApiUpdateCard = async (updateData) => {
     // console.log('updateData', updateData)
@@ -240,7 +261,7 @@ function ActiveCard() {
           {/* Feature 01: Xử lý tiêu đề của Card */}
           <ToggleFocusInput
             inputFontSize='22px'
-            value={activeCard?.title}
+            value={activeCard?.title || ''}
             onChangedValue={onUpdateCardTitle}
           />
         </Box>
@@ -395,7 +416,6 @@ function ActiveCard() {
               <Move activeCard={activeCard} />
               {/* <SidebarItem><ContentCopyOutlinedIcon fontSize="small" />Copy</SidebarItem> */}
               <Copy activeCard={activeCard} />
-              <SidebarItem><AutoAwesomeOutlinedIcon fontSize="small" />Make Template</SidebarItem>
               <SidebarItem><ArchiveOutlinedIcon fontSize="small" />Archive</SidebarItem>
               <SidebarItem><ShareOutlinedIcon fontSize="small" />Share</SidebarItem>
               {/* Delete */}
