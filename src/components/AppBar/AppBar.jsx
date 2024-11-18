@@ -1,10 +1,11 @@
 
-import { Close, HelpCenterOutlined, LibraryAdd, Search } from '@mui/icons-material';
+import { HelpCenterOutlined, LibraryAdd } from '@mui/icons-material';
 import AppsIcon from '@mui/icons-material/Apps';
-import { Box, Button, InputAdornment, TextField, Tooltip, Typography, useTheme } from '@mui/material';
+import { Box, Button, Tooltip, Typography, useTheme } from '@mui/material';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import ModeSelect from '~/components/ModeSelect/ModeSelect';
+import CreateBoardModal from '~/pages/Boards/CreateNewBoardModal/Create';
 import Profiles from './Menus/Profiles';
 import Recent from './Menus/Recent';
 import Starred from './Menus/Starred';
@@ -15,28 +16,19 @@ import AutoCompleteSearchBoard from './SearchBoards/AutoCompleteSearchBoard';
 
 
 function AppBar() {
-  const [searchValue, setSearchValue] = useState('');
-  const [openCreateModal, setOpenCreateModal] = useState(false);
-
-  const handleOpenCreateModal = () => setOpenCreateModal(true);
-  const handleCloseCreateModal = () => setOpenCreateModal(false);
 
   const navigate = useNavigate();
 
-  const [anchorEl, setAnchorEl] = useState(null);
-  // Hàm mở Popover, lưu trữ tham chiếu DOM của thành phần kích hoạt vào anchorEl
-  const handleOpenPopover = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
+  const afterCreateNewBoardFromAppBar = (newBoard) => {
+    console.log('newBoard', newBoard)
+    navigate(`/board/${newBoard._id}`)
+  }
 
-  const handleClosePopover = () => {
-    setAnchorEl(null);
-  };
-
-  const openPopover = Boolean(anchorEl);
-  const id = openPopover ? 'simple-popover' : undefined;
-
-  const theme = useTheme();
+  /** Create Board Modal */
+  const [openCreateBoardModal, setOpenCreateBoardModal] = useState(false)
+  const handleOpenCreateBoardModal = () => setOpenCreateBoardModal(true)
+  const handleCloseCreateBoardModal = () => setOpenCreateBoardModal(false)
+  /** */
 
   return (
     <Box px={2} sx={{
@@ -73,15 +65,15 @@ function AppBar() {
           <Button
             variant='outlined'
             startIcon={<LibraryAdd />}
-            onClick={handleOpenCreateModal}
+            onClick={handleOpenCreateBoardModal}
             sx={{ color: 'white' }}>Create</Button>
         </Box>
       </Box>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-        <AutoCompleteSearchBoard variant="default"/>
+        <AutoCompleteSearchBoard variant="default" />
         {/* Dark mode light mode */}
         <ModeSelect />
-        
+
         {/* Notifications */}
         <Notifications />
 
@@ -90,7 +82,11 @@ function AppBar() {
         </Tooltip>
         <Profiles />
       </Box>
-      {/* <CreateNewBoardModal open={openCreateModal} handleClose={handleCloseCreateModal} /> */}
+      <CreateBoardModal 
+        open={openCreateBoardModal} 
+        handleClose={handleCloseCreateBoardModal} 
+        afterCreateNewBoardFromAppBar={afterCreateNewBoardFromAppBar}
+      />
     </Box>
   )
 }

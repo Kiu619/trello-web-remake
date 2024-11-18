@@ -42,10 +42,10 @@ const BOARD_TYPES = {
 }
 
 /**
- * Bản chất của cái component SidebarCreateBoardModal này chúng ta sẽ trả về một cái SidebarItem để hiển thị ở màn Board List cho phù hợp giao diện bên đó, đồng thời nó cũng chứa thêm một cái Modal để xử lý riêng form create board nhé.
+ * Bản chất của cái component CreateBoardModal này chúng ta sẽ trả về một cái SidebarItem để hiển thị ở màn Board List cho phù hợp giao diện bên đó, đồng thời nó cũng chứa thêm một cái Modal để xử lý riêng form create board nhé.
  * Note: Modal là một low-component mà bọn MUI sử dụng bên trong những thứ như Dialog, Drawer, Menu, Popover. Ở đây dĩ nhiên chúng ta có thể sử dụng Dialog cũng không thành vấn đề gì, nhưng sẽ sử dụng Modal để dễ linh hoạt tùy biến giao diện từ con số 0 cho phù hợp với mọi nhu cầu nhé.
  */
-function SidebarCreateBoardModal({afterCreateNewBoard}) {
+function CreateBoardModal({open, handleClose, afterCreateNewBoard, afterCreateNewBoardFromAppBar}) {
   const { control, register, handleSubmit, reset, formState: { errors } } = useForm()
 
   const [isOpen, setIsOpen] = useState(false)
@@ -56,25 +56,35 @@ function SidebarCreateBoardModal({afterCreateNewBoard}) {
   }
 
 
-  const submitCreateNewBoard = (data) => {
+  const submitCreateNewBoard = async (data) => {
     const { title, description, type } = data
 
-    createNewBoardAPI(data).then(() => {
-      handleCloseModal()
-      afterCreateNewBoard()
-    })
+    const res = await createNewBoardAPI(data)
+    if (res) {
+      handleClose()
+      reset()
+      if (afterCreateNewBoard) {
+        afterCreateNewBoard(res)
+      }
+
+      if (afterCreateNewBoardFromAppBar) {
+        setTimeout(() => {
+          afterCreateNewBoardFromAppBar(res)
+        }, 1500)
+      }
+    }
   }
 
   return (
     <>
-      <SidebarItem onClick={handleOpenModal}>
+      {/* <SidebarItem onClick={handleOpenModal}>
         <LibraryAddIcon fontSize="small" />
         Create a new board
-      </SidebarItem>
+      </SidebarItem> */}
 
       <Modal
-        open={isOpen}
-        onClose={handleCloseModal} // chỉ sử dụng onClose trong trường hợp muốn đóng Modal bằng nút ESC hoặc click ra ngoài Modal
+        open={open}
+        onClose={handleClose} // chỉ sử dụng onClose trong trường hợp muốn đóng Modal bằng nút ESC hoặc click ra ngoài Modal
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
@@ -101,7 +111,7 @@ function SidebarCreateBoardModal({afterCreateNewBoard}) {
             <CancelIcon
               color="error"
               sx={{ '&:hover': { color: 'error.light' } }}
-              onClick={handleCloseModal} />
+              onClick={handleClose} />
           </Box>
           <Box id="modal-modal-title" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <LibraryAddIcon />
@@ -208,4 +218,4 @@ function SidebarCreateBoardModal({afterCreateNewBoard}) {
   )
 }
 
-export default SidebarCreateBoardModal
+export default CreateBoardModal
