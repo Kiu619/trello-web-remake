@@ -24,10 +24,12 @@ import { fetchBoardsAPI } from '~/apis'
 import { DEFAULT_ITEMS_PER_PAGE, DEFAULT_PAGE } from '~/utils/constants'
 import theme from '~/theme'
 import { clearAndHideCurrentActiveCard } from '~/redux/activeCard/activeCardSlice'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { clearAndHideCurrentActiveBoard } from '~/redux/activeBoard/activeBoardSlice'
 import { FormControl, InputLabel, MenuItem, Select } from '@mui/material'
 import CreateBoardModal from './CreateNewBoardModal/Create'
+import { selectCurrentUser, selectIs2FAVerified } from '~/redux/user/userSlice'
+import Require2FA from '~/components/TwoFA/require-2fa'
 
 const SidebarItem = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -47,6 +49,8 @@ const SidebarItem = styled(Box)(({ theme }) => ({
 }))
 
 function BoardList() {
+  const currentUser = useSelector(selectCurrentUser)
+  const is_2fa_verified = useSelector(selectIs2FAVerified)
   // Số lượng bản ghi boards hiển thị tối đa trên 1 page tùy dự án (thường sẽ là 12 cái)
   const [boards, setBoards] = useState(null)
   // Tổng toàn bộ số lượng bản ghi boards có trong Database mà phía BE trả về để FE dùng tính toán phân trang
@@ -62,6 +66,7 @@ function BoardList() {
    * Parse chuỗi string search trong location về đối tượng URLSearchParams trong JavaScript
    * https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/URLSearchParams
    */
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const query = new URLSearchParams(location.search)
   /**
    * Lấy giá trị page từ query, default sẽ là 1 nếu không tồn tại page từ url.
@@ -79,7 +84,7 @@ function BoardList() {
     if (sortFromUrl) {
       setSortBy(sortFromUrl)
     }
-  }, [])
+  }, [query])
 
   const updateStateData = (res) => {
     setBoards(res.boards || [])
@@ -94,7 +99,7 @@ function BoardList() {
 
     // Gọi API lấy danh sách boards ở đây...
     fetchBoardsAPI(location.search).then(updateStateData)
-  }, [location.search], clearAndHideCurrentActiveCard)
+  }, [dispatch, location.search], clearAndHideCurrentActiveCard)
 
   const afterCreateNewBoard = () => {
     // Gọi lại API lấy danh sách boards sau khi tạo mới board
@@ -135,15 +140,13 @@ function BoardList() {
   }
 
 
-
-
   return (
     <Container disableGutters maxWidth={false} sx={{
       bgcolor: theme => theme.palette.mode === 'dark' ? '#34495e' : '#fff',
-      minHeight: '100vh',
+      minHeight: '100vh'
     }}>
       <AppBar />
-      <Box sx={{ paddingX: 2, my: 4 }}>
+      <Box sx={{ paddingX: 2, mt: 4 }}>
         <Grid container>
           <Grid item xs={12} sm={3}>
             <Stack direction="column" spacing={1}>
@@ -274,10 +277,10 @@ function BoardList() {
           </Grid>
         </Grid>
       </Box>
-      <CreateBoardModal 
-        open={openCreateBoardModal} 
-        handleClose={handleCloseCreateBoardModal} 
-        afterCreateNewBoard={afterCreateNewBoard} 
+      <CreateBoardModal
+        open={openCreateBoardModal}
+        handleClose={handleCloseCreateBoardModal}
+        afterCreateNewBoard={afterCreateNewBoard}
       />
     </Container>
   )

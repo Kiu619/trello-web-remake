@@ -1,61 +1,77 @@
+import { Box, Button, Container, Typography } from '@mui/material'
 import { useState } from 'react'
+import { useSelector } from 'react-redux'
 import AppBar from '~/components/AppBar/AppBar'
-import Container from '@mui/material/Container'
-import Box from '@mui/material/Box'
-import Tab from '@mui/material/Tab'
-import TabContext from '@mui/lab/TabContext'
-import TabList from '@mui/lab/TabList'
-import TabPanel from '@mui/lab/TabPanel'
-import SecurityIcon from '@mui/icons-material/Security'
-import PersonIcon from '@mui/icons-material/Person'
-import { Link, useLocation } from 'react-router-dom'
-import AccountTab from './AccountTab'
-import SecurityTab from './SecurityTab'
-
-const TABS = {
-  ACCOUNT: 'account',
-  SECURITY: 'security'
-}
+import Disable2FA from '~/components/TwoFA/disable-2fa'
+import Setup2FA from '~/components/TwoFA/setup-2fa'
+import { selectCurrentUser } from '~/redux/user/userSlice'
 
 function Settings() {
-  const location = useLocation()
-  // Function đơn giản có nhiệm vụ lấy ra cái tab mặc định dựa theo url.
-  const getDefaultTab = () => {
-    if (location.pathname.includes(TABS.SECURITY)) return TABS.SECURITY
-    return TABS.ACCOUNT
-  }
-  // State lưu trữ giá trị tab nào đang active
-  const [activeTab, setActiveTab] = useState(getDefaultTab())
+  const [openSetup2FA, setOpenSetup2FA] = useState(false)
 
-  const handleChangeTab = (event, selectedTab) => { setActiveTab(selectedTab) }
+  const [openDisable2FA, setOpenDisable2FA] = useState(false)
 
+  const currentUser = useSelector(selectCurrentUser)
   return (
-    <Container disableGutters maxWidth={false}>
+    <>
       <AppBar />
-      <TabContext value={activeTab}>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <TabList onChange={handleChangeTab}>
-            <Tab
-              label="Account"
-              value={TABS.ACCOUNT}
-              icon={<PersonIcon />}
-              iconPosition="start"
-              // Sử dụng component={Link} để chuyển hướng trang khi click vào tab
-              component={Link}
-              to="/settings/account" />
-            <Tab
-              label="Security"
-              value={TABS.SECURITY}
-              icon={<SecurityIcon />}
-              iconPosition="start"
-              component={Link}
-              to="/settings/security" />
-          </TabList>
+      <Box
+        sx={{
+          height: (theme) => `calc(100vh - ${theme.trelloCustom.appBarHeight})`,
+          bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#24303d' : '#fff')
+        }}
+      >
+        <Box sx={{
+          maxWidth: '1200px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 3
+        }}>
+          <Box mt={3}>
+            <Typography
+              sx={{
+                borderRadius: 1,
+                padding: 1,
+                bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#2c3e50' : '#cad7e6')
+              }}
+              variant="h5" gutterBottom
+            >
+                Two-step verification
+            </Typography>
+            <Typography variant="body1" gutterBottom>
+                Keep your account extra secure with a second login step.{' '}
+            </Typography>
+            {currentUser?.isRequire2fa ?
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => setOpenDisable2FA(true)}
+              >
+                Disable 2FA
+              </Button>
+              :
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={() => setOpenSetup2FA(true)}
+              >
+                Enable 2FA
+              </Button>
+            }
+          </Box>
         </Box>
-        <TabPanel value={TABS.ACCOUNT}><AccountTab /></TabPanel>
-        <TabPanel value={TABS.SECURITY}><SecurityTab /></TabPanel>
-      </TabContext>
-    </Container>
+        <Setup2FA
+          isOpen={openSetup2FA}
+          toggleOpen={setOpenSetup2FA}
+        />
+        <Disable2FA
+          isOpen={openDisable2FA}
+          toggleOpen={setOpenDisable2FA}
+        />
+      </Box>
+    </>
   )
 }
 

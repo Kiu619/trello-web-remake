@@ -16,25 +16,7 @@ import Radio from '@mui/material/Radio'
 import RadioGroup from '@mui/material/RadioGroup'
 import FormControlLabel from '@mui/material/FormControlLabel'
 
-import { styled } from '@mui/material/styles'
 import { createNewBoardAPI } from '~/apis'
-const SidebarItem = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: '8px',
-  cursor: 'pointer',
-  backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
-  padding: '12px 16px',
-  borderRadius: '8px',
-  '&:hover': {
-    backgroundColor: theme.palette.mode === 'dark' ? '#33485D' : theme.palette.grey[300]
-  },
-  '&.active': {
-    color: theme.palette.mode === 'dark' ? '#90caf9' : '#0c66e4',
-    backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#e9f2ff'
-  }
-}))
-
 // BOARD_TYPES tương tự bên model phía Back-end (nếu cần dùng nhiều nơi thì hãy đưa ra file constants, không thì cứ để ở đây)
 const BOARD_TYPES = {
   PUBLIC: 'public',
@@ -45,16 +27,8 @@ const BOARD_TYPES = {
  * Bản chất của cái component CreateBoardModal này chúng ta sẽ trả về một cái SidebarItem để hiển thị ở màn Board List cho phù hợp giao diện bên đó, đồng thời nó cũng chứa thêm một cái Modal để xử lý riêng form create board nhé.
  * Note: Modal là một low-component mà bọn MUI sử dụng bên trong những thứ như Dialog, Drawer, Menu, Popover. Ở đây dĩ nhiên chúng ta có thể sử dụng Dialog cũng không thành vấn đề gì, nhưng sẽ sử dụng Modal để dễ linh hoạt tùy biến giao diện từ con số 0 cho phù hợp với mọi nhu cầu nhé.
  */
-function CreateBoardModal({open, handleClose, afterCreateNewBoard, afterCreateNewBoardFromAppBar}) {
+function CreateBoardModal({ open, handleClose, afterCreateNewBoard, afterCreateNewBoardFromAppBar }) {
   const { control, register, handleSubmit, reset, formState: { errors } } = useForm()
-
-  const [isOpen, setIsOpen] = useState(false)
-  const handleOpenModal = () => setIsOpen(true)
-  const handleCloseModal = () => {
-    setIsOpen(false)
-    reset()
-  }
-
 
   const submitCreateNewBoard = async (data) => {
     const { title, description, type } = data
@@ -84,7 +58,7 @@ function CreateBoardModal({open, handleClose, afterCreateNewBoard, afterCreateNe
 
       <Modal
         open={open}
-        onClose={handleClose} // chỉ sử dụng onClose trong trường hợp muốn đóng Modal bằng nút ESC hoặc click ra ngoài Modal
+        onClose={handleClose}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >

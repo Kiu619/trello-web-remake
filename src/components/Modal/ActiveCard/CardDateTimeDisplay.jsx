@@ -50,8 +50,16 @@ const DateTimeDisplay = ({ startDate, startTime, dueDate, dueDateTime, isComplet
 
     const isOverdue = () => {
         if (!dueDate || !dueDateTime) return false
-        const dueDateTimeString = `${dueDate}T${dueDateTime}`
-        return new Date(dueDateTimeString) < new Date()
+        
+        // Parse dueDate to remove timezone
+        const dueDateObj = new Date(dueDate)
+        const [hours, minutes] = dueDateTime.split(':')
+        
+        // Set hours and minutes for the due date
+        dueDateObj.setHours(parseInt(hours), parseInt(minutes), 0, 0)
+        
+        // Compare with current date
+        return dueDateObj < new Date()
     }
 
     return (

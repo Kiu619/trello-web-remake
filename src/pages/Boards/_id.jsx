@@ -1,20 +1,20 @@
-import { Container } from "@mui/material"
-import { cloneDeep, isEmpty } from "lodash"
-import { useEffect } from "react"
-import { useDispatch, useSelector } from "react-redux"
-import { useParams } from "react-router-dom"
-import { moveCardToDifferentColumnAPI, updateBoardDetailsAPI, updateColumnDetailsAPI } from "~/apis"
-import AppBar from "~/components/AppBar/AppBar"
-import PageLoadingSpinner from "~/components/Loading/PageLoadingSpinner"
-import ActiveCard from "~/components/Modal/ActiveCard/ActiveCard"
-import { fetchBoardDetailsApiRedux, selectCurrentActiveBoard, updateCurrentActiveBoard } from "~/redux/activeBoard/activeBoardSlice"
-import BoardBar from "./BoardBar/BoardBar"
-import BoardContent from "./BoardContent/BoardContent"
-import { updateRecentBoards, updateUserAPI } from "~/redux/user/userSlice"
-import { hideModalActiveCard, showModalActiveCard } from "~/redux/activeCard/activeCardSlice"
+import { Container } from '@mui/material'
+import { cloneDeep, isEmpty } from 'lodash'
+import { useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { useParams } from 'react-router-dom'
+import { moveCardToDifferentColumnAPI, updateBoardDetailsAPI, updateColumnDetailsAPI } from '~/apis'
+import AppBar from '~/components/AppBar/AppBar'
+import PageLoadingSpinner from '~/components/Loading/PageLoadingSpinner'
+import ActiveCard from '~/components/Modal/ActiveCard/ActiveCard'
+import { fetchBoardDetailsApiRedux, selectCurrentActiveBoard, updateCurrentActiveBoard } from '~/redux/activeBoard/activeBoardSlice'
+import BoardBar from './BoardBar/BoardBar'
+import BoardContent from './BoardContent/BoardContent'
+import { updateRecentBoards, updateUserAPI } from '~/redux/user/userSlice'
+import { hideModalActiveCard, showModalActiveCard } from '~/redux/activeCard/activeCardSlice'
 
 import { socketIoIntance } from '~/socketClient'
-import { selectIsShowModalActiveCard } from "~/redux/activeCard/activeCardSlice"
+import { selectIsShowModalActiveCard } from '~/redux/activeCard/activeCardSlice'
 
 function Board() {
   const isShowModalActiveCard = useSelector(selectIsShowModalActiveCard)
@@ -23,7 +23,7 @@ function Board() {
   // Dùng State của Redux Toolkit thay cho useState
   // const [board, setBoard] = useState(null)
   const board = useSelector(selectCurrentActiveBoard)
-  const {boardId} = useParams()
+  const { boardId } = useParams()
   const { cardId } = useParams()
 
   useEffect(() => {
@@ -61,14 +61,14 @@ function Board() {
 
   useEffect(() => {
     let timeoutId
-    
+
     if (!isEmpty(board)) {
       timeoutId = setTimeout(() => {
         dispatch(updateRecentBoards(board))
         dispatch(updateUserAPI({ boardId: board._id, forRecent: true }))
       }, 1000) // delay 2 seconds
     }
-  
+
     // Cleanup function để tránh memory leak
     return () => {
       if (timeoutId) {
@@ -159,6 +159,6 @@ mång)
       />
     </Container>
   )
-} 
+}
 
 export default Board

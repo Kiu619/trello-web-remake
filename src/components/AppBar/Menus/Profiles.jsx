@@ -1,30 +1,27 @@
-import { Logout, PersonAdd, Settings } from '@mui/icons-material';
-import { Avatar, Box, IconButton, Tooltip } from '@mui/material';
-import Divider from '@mui/material/Divider';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import { useConfirm } from 'material-ui-confirm';
-import { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { Link, useNavigate } from 'react-router-dom';
-import { logoutUserAPI, selectCurrentUser } from '~/redux/user/userSlice';
+import { Logout, PersonAdd, Settings } from '@mui/icons-material'
+import { Avatar, Box, IconButton, Tooltip } from '@mui/material'
+import Divider from '@mui/material/Divider'
+import ListItemIcon from '@mui/material/ListItemIcon'
+import Menu from '@mui/material/Menu'
+import MenuItem from '@mui/material/MenuItem'
+import { useConfirm } from 'material-ui-confirm'
+import { useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { Link, useNavigate } from 'react-router-dom'
+import { logoutUserAPI, selectCurrentUser } from '~/redux/user/userSlice'
 
 function Profiles() {
-  const [anchorEl, setAnchorEl] = useState(null);
-  const open = Boolean(anchorEl);
+  const [anchorEl, setAnchorEl] = useState(null)
+  const open = Boolean(anchorEl)
   const dispatch = useDispatch()
   const currentUser = useSelector(selectCurrentUser)
   const confirmLogout = useConfirm()
-
-  const navigate = useNavigate()
-
   const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
+    setAnchorEl(event.currentTarget)
+  }
   const handleClose = () => {
-    setAnchorEl(null);
-  };
+    setAnchorEl(null)
+  }
 
   const handleLogout = () => {
     confirmLogout({ title: 'Are you sure you want to logout?', confirmationText: 'Logout', confirmationButtonProps: { color: 'error' }, cancellationText: 'Cancel' })
@@ -55,12 +52,12 @@ function Profiles() {
         open={open}
         onClose={handleClose}A
         MenuListProps={{
-          'aria-labelledby': 'basic-button-profiles',
+          'aria-labelledby': 'basic-button-profiles'
         }}
       >
-        <Link to='/settings/account' style={{ color: 'inherit' }}>
+        <Link to='/my-account/account' style={{ color: 'inherit' }}>
           <MenuItem>
-            <Avatar sx={{ width: 28, height: 28, mr: 2 }} alt='kiuu' src={currentUser?.avatar} /> 
+            <Avatar sx={{ width: 28, height: 28, mr: 2 }} alt='kiuu' src={currentUser?.avatar} />
             My account
           </MenuItem>
         </Link>
@@ -71,12 +68,14 @@ function Profiles() {
           </ListItemIcon>
           Add another account
         </MenuItem>
-        <MenuItem onClick={handleClose}>
-          <ListItemIcon>
-            <Settings fontSize="small" />
-          </ListItemIcon>
-          Settings
-        </MenuItem>
+        <Link to='/settings' style={{ color: 'inherit' }}>
+          <MenuItem>
+            <ListItemIcon>
+              <Settings fontSize="small" />
+            </ListItemIcon>
+            Settings
+          </MenuItem>
+        </Link>
         <MenuItem onClick={handleLogout} sx={{
           '&:hover': {
             color: 'warning.dark',

@@ -1,12 +1,16 @@
-import axios from "axios"
-import { API_ROOT } from "~/utils/constants"
-import authorizedAxiosInstance from "~/utils/authorizedAxios"
-import { toast } from "react-toastify"
+import { API_ROOT } from '~/utils/constants'
+import authorizedAxiosInstance from '~/utils/authorizedAxios'
+import { toast } from 'react-toastify'
 
 // Board API
 export const createNewBoardAPI = async (newBoard) => {
   const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/board/`, newBoard)
   toast.success('Create new board successfully!')
+  return response.data
+}
+
+export const fetchBoardsAPI= async (searchPath) => {
+  const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/board/${searchPath}`)
   return response.data
 }
 
@@ -32,7 +36,7 @@ export const inviteUserToBoardAPI = async (data) => {
 }
 
 // Column API
-export const createNewColumnAPI = async (newColumn, ) => {
+export const createNewColumnAPI = async (newColumn ) => {
   const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/column/`, newColumn)
   return response.data
 }
@@ -117,27 +121,33 @@ export const refreshTokenApi = async () => {
   return response.data
 }
 
-export const changePasswordAPI = async (data) => {
-  const response = await authorizedAxiosInstance.put(`${API_ROOT}/v1/user/change_password`, data)
+export const forgotPasswordAPI = async (data) => {
+  const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/user/forgot_password`, data)
+  toast.success('An email has been sent to your email. Please check and reset your password!')
   return response.data
 }
 
-export const updateProfileAPI = async (data) => {
-  const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/user/testUpload`, data)
+export const get2FA_QRCodeAPI = async () => {
+  const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/user/get_2fa_qr_code`)
   return response.data
 }
 
-export const fetchBoardsAPI= async (searchPath) => {
-  const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/board/${searchPath}`)
+export const setup2FA_API = async (otpToken) => {
+  const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/user/setup_2fa`, { otpToken })
   return response.data
 }
 
-// export const fetchBoardByUserAPI = async (id, page, limit) => {
-//   const response = await axios.get(`${API_ROOT}/v1/user/${id}?page=${page}&limit=${limit}`)
-//   return response.data
-// }
+export const verify2FA_API = async (otpToken) => {
+  const response = await authorizedAxiosInstance.put(`${API_ROOT}/v1/user/verify_2fa`, { otpToken })
+  return response.data
+}
+
+export const disable2FA_API = async (otpToken) => {
+  const response = await authorizedAxiosInstance.put(`${API_ROOT}/v1/user/disable_2fa`, { otpToken })
+  return response.data
+}
 
 export const fetchCollaborationBoardByUserAPI = async (id, page, limit) => {
-  const response = await axios.get(`${API_ROOT}/v1/user/collaboration/${id}?page=${page}&limit=${limit}`)
+  const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/user/collaboration/${id}?page=${page}&limit=${limit}`)
   return response.data
 }

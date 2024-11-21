@@ -1,22 +1,26 @@
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Lock } from '@mui/icons-material'
+import { Alert, CardActions, IconButton, InputAdornment, Card as MuiCard, TextField, Zoom } from '@mui/material'
+import Avatar from '@mui/material/Avatar'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
-import Avatar from '@mui/material/Avatar'
 import Typography from '@mui/material/Typography'
-import { Alert, CardActions, Card as MuiCard, TextField, Zoom } from '@mui/material'
-import { Lock } from '@mui/icons-material'
 import { useForm } from 'react-hook-form'
-import FieldErrorAlert from '~/components/Form/FieldErrorAlert'
-import { EMAIL_RULE, EMAIL_RULE_MESSAGE, FIELD_REQUIRED_MESSAGE, PASSWORD_RULE, PASSWORD_RULE_MESSAGE } from '~/utils/validators'
 import { useDispatch } from 'react-redux'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
+import FieldErrorAlert from '~/components/Form/FieldErrorAlert'
 import { loginUserAPI } from '~/redux/user/userSlice'
-
+import { EMAIL_RULE, EMAIL_RULE_MESSAGE, FIELD_REQUIRED_MESSAGE, PASSWORD_RULE, PASSWORD_RULE_MESSAGE } from '~/utils/validators'
+import Visibility from '@mui/icons-material/Visibility'
+import VisibilityOff from '@mui/icons-material/VisibilityOff'
+import { useState } from 'react'
 
 function LoginForm() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
+  const [showPassword, setShowPassword] = useState(false)
+  const toggleShowPassword = () => setShowPassword(!showPassword)
 
   const { register, handleSubmit, formState: { errors } } = useForm()
   let [searchParams] = useSearchParams()
@@ -66,7 +70,6 @@ function LoginForm() {
           <Box sx={{ padding: '0 1em 1em 1em' }}>
             <Box sx={{ marginTop: '1em' }}>
               <TextField
-                // autoComplete="nope"
                 autoFocus
                 fullWidth
                 label="Enter Email..."
@@ -88,15 +91,24 @@ function LoginForm() {
               <TextField
                 fullWidth
                 label="Enter Password..."
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 variant="outlined"
                 error={errors.password ? true : false}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={toggleShowPassword} edge="end">
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  )
+                }}
                 {...register('password', {
                   required: FIELD_REQUIRED_MESSAGE,
-                  // pattern: {
-                  //   value: PASSWORD_RULE,
-                  //   message: PASSWORD_RULE_MESSAGE
-                  // }
+                  pattern: {
+                    value: PASSWORD_RULE,
+                    message: PASSWORD_RULE_MESSAGE
+                  }
                 })}
               />
               <FieldErrorAlert errors={errors} fieldName={'password'} />

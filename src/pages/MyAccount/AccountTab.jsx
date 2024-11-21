@@ -18,10 +18,6 @@ import VisuallyHiddenInput from '~/components/Form/VisuallyHiddenInput'
 import { selectCurrentUser, updateUserAPI } from '~/redux/user/userSlice'
 import { FIELD_REQUIRED_MESSAGE, singleFileValidator } from '~/utils/validators'
 
-// Xử lý custom đẹp cái input file ở đây: https://mui.com/material-ui/react-button/#file-upload
-// Ngoài ra note thêm lib này từ docs của MUI nó recommend nếu cần dùng: https://github.com/viclafouch/mui-file-input
-
-
 function AccountTab() {
   const currentUser = useSelector(selectCurrentUser)
   const dispatch = useDispatch()
@@ -36,7 +32,6 @@ function AccountTab() {
 
   const submitChangeGeneralInformation = (data) => {
     const { displayName } = data
-    console.log('displayName: ', displayName)
 
     // Nếu không có sự thay đổi gì về displayname thì không làm gì cả
     if (displayName === currentUser?.displayName) return
@@ -89,11 +84,7 @@ function AccountTab() {
 
   return (
     <Box sx={{
-      width: '100%',
-      height: '100%',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center'
+      height: (theme) => `calc(100vh - ${theme.trelloCustom.appBarHeight} - 105px)`
     }}>
       <Box sx={{
         maxWidth: '1200px',

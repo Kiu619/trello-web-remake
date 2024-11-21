@@ -1,12 +1,16 @@
+import { useState } from 'react'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import TextField from '@mui/material/TextField'
 import InputAdornment from '@mui/material/InputAdornment'
 import Button from '@mui/material/Button'
+import IconButton from '@mui/material/IconButton'
 import PasswordIcon from '@mui/icons-material/Password'
 import LockResetIcon from '@mui/icons-material/LockReset'
 import LockIcon from '@mui/icons-material/Lock'
 import LogoutIcon from '@mui/icons-material/Logout'
+import Visibility from '@mui/icons-material/Visibility'
+import VisibilityOff from '@mui/icons-material/VisibilityOff'
 
 import { FIELD_REQUIRED_MESSAGE, PASSWORD_RULE, PASSWORD_RULE_MESSAGE } from '~/utils/validators'
 import FieldErrorAlert from '~/components/Form/FieldErrorAlert'
@@ -20,6 +24,15 @@ function SecurityTab() {
   const dispatch = useDispatch()
   const { register, handleSubmit, watch, formState: { errors } } = useForm()
   const confirmChangePassword = useConfirm()
+
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false)
+  const [showNewPassword, setShowNewPassword] = useState(false)
+  const [showNewPasswordConfirmation, setShowNewPasswordConfirmation] = useState(false)
+
+  const toggleShowCurrentPassword = () => setShowCurrentPassword(!showCurrentPassword)
+  const toggleShowNewPassword = () => setShowNewPassword(!showNewPassword)
+  const toggleShowNewPasswordConfirmation = () => setShowNewPasswordConfirmation(!showNewPasswordConfirmation)
+
   const submitChangePassword = (data) => {
     confirmChangePassword({
       title: <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -43,16 +56,12 @@ function SecurityTab() {
           dispatch(logoutUserAPI(false))
         }
       })
-    }).catch(() => {})
+    }).catch(() => { })
   }
 
   return (
     <Box sx={{
-      width: '100%',
-      height: '100%',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center'
+      height: (theme) => `calc(100vh - ${theme.trelloCustom.appBarHeight} - 105px)`
     }}>
       <Box sx={{
         maxWidth: '1200px',
@@ -71,12 +80,19 @@ function SecurityTab() {
               <TextField
                 fullWidth
                 label="Current Password"
-                type="password"
+                type={showCurrentPassword ? 'text' : 'password'}
                 variant="outlined"
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
                       <PasswordIcon fontSize="small" />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={toggleShowCurrentPassword} edge="end">
+                        {showCurrentPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
                     </InputAdornment>
                   )
                 }}
@@ -96,12 +112,19 @@ function SecurityTab() {
               <TextField
                 fullWidth
                 label="New Password"
-                type="password"
+                type={showNewPassword ? 'text' : 'password'}
                 variant="outlined"
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
                       <LockIcon fontSize="small" />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={toggleShowNewPassword} edge="end">
+                        {showNewPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
                     </InputAdornment>
                   )
                 }}
@@ -121,12 +144,19 @@ function SecurityTab() {
               <TextField
                 fullWidth
                 label="New Password Confirmation"
-                type="password"
+                type={showNewPasswordConfirmation ? 'text' : 'password'}
                 variant="outlined"
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
                       <LockResetIcon fontSize="small" />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={toggleShowNewPasswordConfirmation} edge="end">
+                        {showNewPasswordConfirmation ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
                     </InputAdornment>
                   )
                 }}

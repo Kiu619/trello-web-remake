@@ -72,7 +72,7 @@ function Checklist({ onUpdateChecklist }) {
             >
                 <Box sx={{ p: 2 }}>
                     <Typography sx={{ textAlign: 'center', width: '100%', fontSize: '30px', fontWeight: 600 }}>Add Checklist</Typography>
-                    <Typography sx={{fontWeight:450}}>Title</Typography>
+                    <Typography sx={{ fontWeight: 450 }}>Title</Typography>
                     <TextField
                         fullWidth
                         variant='outlined'
@@ -102,8 +102,11 @@ function Checklist({ onUpdateChecklist }) {
                         }}
                     />
                     <Button
-                     onClick={handleAddNewChecklist} 
-                    variant="contained" size='small' sx={{ mt: 1 }}>Add</Button>
+                        disabled={!newChecklist}
+                        onClick={handleAddNewChecklist}
+                        variant="contained" size='small' 
+                        sx={{ mt: 1, width: '100%'}}>Add  
+                    </Button>
                 </Box>
             </Popover>
         </>
