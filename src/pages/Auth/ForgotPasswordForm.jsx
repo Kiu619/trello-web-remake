@@ -20,9 +20,9 @@ function ForgotPasswordForm() {
   const submit = (data) => {
     const { email } = data
     forgotPasswordAPI({ email }).then(res => {
-        if (!res.error) {
-            navigate('/login')
-        }
+      if (!res.error) {
+        navigate('/login')
+      }
     })
   }
 

@@ -10,11 +10,9 @@ import { useSelector } from 'react-redux'
 import { selectCurrentActiveBoard } from '~/redux/activeBoard/activeBoardSlice'
 import { CARD_MEMBER_ACTIONS } from '~/utils/constants'
 
-function CardUserGroup({ cardMemberIds = [], onUpdateCardMembers }) {
-  //Lấy thông tin những thành viên trong board
-  const board = useSelector(selectCurrentActiveBoard)
+function CardUserGroup({ column, activeCard, currentUser, currentBoard, cardMemberIds = [], onUpdateCardMembers }) {
   // const FE_CardMembers = board?.FE_allUsers?.filter(user => cardMemberIds.includes(user._id)) || []  // Lọc ra những user là thành viên của card
-  const FE_CardMembers = cardMemberIds.map(memberId => board?.FE_allUsers.find(user => user._id === memberId))  // Lọc ra những user là thành viên của card
+  const FE_CardMembers = cardMemberIds.map(memberId => currentBoard?.FE_allUsers.find(user => user._id === memberId)) // Lọc ra những user là thành viên của card
 
   const [anchorPopoverElement, setAnchorPopoverElement] = useState(null)
   const isOpenPopover = Boolean(anchorPopoverElement)
@@ -46,31 +44,33 @@ function CardUserGroup({ cardMemberIds = [], onUpdateCardMembers }) {
       )}
 
       {/* Nút này để mở popover thêm member */}
-      <Tooltip title="Add new member">
-        <Box
-          aria-describedby={popoverId}
-          onClick={handleTogglePopover}
-          sx={{
-            width: 36,
-            height: 36,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '14px',
-            fontWeight: '600',
-            borderRadius: '50%',
-            color: (theme) => theme.palette.mode === 'dark' ? '#90caf9' : '#172b4d',
-            bgcolor: (theme) => theme.palette.mode === 'dark' ? '#2f3542' : theme.palette.grey[200],
-            '&:hover': {
-              color: (theme) => theme.palette.mode === 'dark' ? '#000000de' : '#0c66e4',
-              bgcolor: (theme) => theme.palette.mode === 'dark' ? '#90caf9' : '#e9f2ff'
-            }
-          }}
-        >
-          <AddIcon fontSize="small" />
-        </Box>
-      </Tooltip>
+      {(column?.isClosed === false && activeCard?.isClosed === false && currentBoard.ownerIds.includes(currentUser._id)) && (
+        <Tooltip title="Add new member">
+          <Box
+            aria-describedby={popoverId}
+            onClick={handleTogglePopover}
+            sx={{
+              width: 36,
+              height: 36,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '14px',
+              fontWeight: '600',
+              borderRadius: '50%',
+              color: (theme) => theme.palette.mode === 'dark' ? '#90caf9' : '#172b4d',
+              bgcolor: (theme) => theme.palette.mode === 'dark' ? '#2f3542' : theme.palette.grey[200],
+              '&:hover': {
+                color: (theme) => theme.palette.mode === 'dark' ? '#000000de' : '#0c66e4',
+                bgcolor: (theme) => theme.palette.mode === 'dark' ? '#90caf9' : '#e9f2ff'
+              }
+            }}
+          >
+            <AddIcon fontSize="small" />
+          </Box>
+        </Tooltip>
+      )}
 
       {/* Khi Click vào + ở trên thì sẽ mở popover hiện toàn bộ users trong board để người dùng Click chọn thêm vào card  */}
       <Popover
@@ -81,7 +81,7 @@ function CardUserGroup({ cardMemberIds = [], onUpdateCardMembers }) {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
       >
         <Box sx={{ p: 2, maxWidth: '260px', display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
-          {board.FE_allUsers.map((user, index) =>
+          {currentBoard.FE_allUsers.map((user, index) =>
             <Tooltip title={user?.displayName} key={index}>
               <Badge
                 sx={{ cursor: 'pointer' }}
@@ -90,7 +90,7 @@ function CardUserGroup({ cardMemberIds = [], onUpdateCardMembers }) {
                 badgeContent={
                   cardMemberIds.includes(user?._id) &&
                   <CheckCircleIcon fontSize="small" sx={{ color: '#27ae60' }}
-                />}
+                  />}
                 onClick={() => handleUpdateCardMembers(user)}
               >
                 <Avatar

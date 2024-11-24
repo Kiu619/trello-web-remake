@@ -8,14 +8,14 @@ import Typography from '@mui/material/Typography'
 import { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { toast } from 'react-toastify'
+import { useForm } from 'react-hook-form'
 import { get2FA_QRCodeAPI, setup2FA_API } from '~/apis'
-import { updateCurrentUser, updateUserAPI } from '~/redux/user/userSlice'
+import { update2FAVerified, updateCurrentUser } from '~/redux/user/userSlice'
 
 function Setup2FA({ isOpen, toggleOpen }) {
-  const [otpToken, setConfirmOtpToken] = useState('')
-  const [error, setError] = useState(null)
-
   const [QRCodeImgUrl, setQRCodeImgUrl] = useState(null)
+
+  const { register, handleSubmit, setError, formState: { errors }, reset } = useForm()
 
   useEffect(() => {
     if (isOpen) {
@@ -29,31 +29,38 @@ function Setup2FA({ isOpen, toggleOpen }) {
 
   const handleCloseModal = () => {
     toggleOpen(!isOpen)
+    reset()
   }
 
   const dispatch = useDispatch()
 
-  const handleConfirmSetup2FA = () => {
+  const onSubmit = (data) => {
+    const { otpToken } = data
+
     if (!otpToken) {
       const errMsg = 'Please enter your otp token.'
-      setError(errMsg)
+      setError('otpToken', { type: 'manual', message: errMsg })
       toast.error(errMsg)
       return
     }
+
     setup2FA_API(otpToken).then((user) => {
       dispatch(updateCurrentUser(user))
-
+      dispatch(update2FAVerified(true))
       toast.success('Setup 2FA successfully!')
-      setError(null)
-    }
-    )
+      handleCloseModal()
+    }).catch((err) => {
+      const errMsg = err.response?.data?.message || 'Failed to setup 2FA.'
+      setError('otpToken', { type: 'manual', message: errMsg })
+      toast.error(errMsg)
+    })
   }
 
   return (
     <Modal
       disableScrollLock
       open={isOpen}
-      onClose={handleCloseModal} // Sử dụng onClose trong trường hợp muốn đóng Modal bằng nút ESC hoặc click ra ngoài Modal
+      onClose={handleCloseModal}
       sx={{ overflowY: 'auto' }}>
       <Box sx={{
         position: 'relative',
@@ -87,7 +94,7 @@ function Setup2FA({ isOpen, toggleOpen }) {
             : <img
               style={{ width: '100%', maxWidth: '250px', objectFit: 'contain' }}
               src={QRCodeImgUrl}
-              alt="card-cover"
+              alt="QR Code"
             />
           }
 
@@ -95,7 +102,7 @@ function Setup2FA({ isOpen, toggleOpen }) {
             Scan the QR code with your <strong>Google Authenticator</strong> or <strong>Authy</strong> app.<br />Then enter the 6-digit code and click <strong>Confirm</strong> to verify.
           </Box>
 
-          <Box sx={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, my: 1 }}>
+          <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, my: 1 }}>
             <TextField
               autoFocus
               autoComplete='nope'
@@ -103,18 +110,17 @@ function Setup2FA({ isOpen, toggleOpen }) {
               type="text"
               variant="outlined"
               sx={{ minWidth: '280px' }}
-              value={otpToken}
-              onChange={(e) => setConfirmOtpToken(e.target.value)}
-              error={!!error && !otpToken}
+              {...register('otpToken', { required: 'Please enter your otp token.' })}
+              error={!!errors.otpToken}
+              helperText={errors.otpToken?.message}
             />
 
             <Button
-              type="button"
+              type="submit"
               variant="contained"
               color="info"
               size='large'
               sx={{ textTransform: 'none', minWidth: '120px', height: '55px', fontSize: '1em' }}
-              onClick={handleConfirmSetup2FA}
             >
               Confirm
             </Button>

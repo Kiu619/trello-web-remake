@@ -14,7 +14,7 @@ delete L.Icon.Default.prototype._getIconUrl
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
   iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png'
 })
 
 // Component để cập nhật view của map khi location thay đổi
@@ -28,7 +28,7 @@ const MapUpdater = ({ center }) => {
   return null
 }
 
-const LocationMap = ({ location, updateLocation }) => {
+const LocationMap = ({ column, activeCard, location, updateLocation }) => {
   const center = {
     lat: parseFloat(location?.lat || 21.0302065),
     lng: parseFloat(location?.lon || 105.7966608)
@@ -37,7 +37,7 @@ const LocationMap = ({ location, updateLocation }) => {
   //Popover
   const [anchorEl, setAnchorEl] = useState(null)
   // Hàm mở Popover, lưu trữ tham chiếu DOM của thành phần kích hoạt vào anchorEl
-  const handleOpenPopover = (event, commentId) => {
+  const handleOpenPopover = (event) => {
     setAnchorEl(event.currentTarget)
   }
 
@@ -45,8 +45,8 @@ const LocationMap = ({ location, updateLocation }) => {
     setAnchorEl(null)
   }
 
-  const openPopover = Boolean(anchorEl);
-  const id = openPopover ? 'simple-popover' : undefined;
+  const openPopover = Boolean(anchorEl)
+  const id = openPopover ? 'simple-popover' : undefined
 
   const handleRemoveLocation = () => {
     updateLocation(null)
@@ -61,7 +61,7 @@ const LocationMap = ({ location, updateLocation }) => {
         width: '100%',
         borderRadius: 2,
         overflow: 'hidden',
-        bgcolor: theme => theme.palette.mode === 'dark' ? '#2f3542' : '#091e420f',
+        bgcolor: theme => theme.palette.mode === 'dark' ? '#2f3542' : '#091e420f'
       }}
     >
       {/* Header */}
@@ -75,10 +75,10 @@ const LocationMap = ({ location, updateLocation }) => {
       }}>
         <Box>
           <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-            {location?.name || "155 Đ. Cầu Giấy"}
+            {location?.name || '155 Đ. Cầu Giấy'}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            {location?.display_name || "155 Đ. Cầu Giấy, Quan Hoa, Cầu Giấy, Hà Nội, Việt Nam"}
+            {location?.display_name || '155 Đ. Cầu Giấy, Quan Hoa, Cầu Giấy, Hà Nội, Việt Nam'}
           </Typography>
         </Box>
         <IconButton size="small"
@@ -87,24 +87,26 @@ const LocationMap = ({ location, updateLocation }) => {
         >
           <NorthEastOutlinedIcon sx={{
             color: 'text.secondary',
-            width: 18,
+            width: 18
           }} />
         </IconButton>
-        <IconButton
-          size="small"
-          edge="end"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleOpenPopover(e);
-          }}
-        >
-          <DeleteOutlineIcon
-            sx={{
-              color: 'text.secondary',
-              width: 18,
+        {activeCard?.isClosed === false && column?.isClosed === false && (
+          <IconButton
+            size="small"
+            edge="end"
+            onClick={(e) => {
+              e.stopPropagation()
+              handleOpenPopover(e)
             }}
-          />
-        </IconButton>
+          >
+            <DeleteOutlineIcon
+              sx={{
+                color: 'text.secondary',
+                width: 18
+              }}
+            />
+          </IconButton>
+        )}
       </Box>
 
       {/* Map */}
@@ -171,11 +173,11 @@ const LocationMap = ({ location, updateLocation }) => {
         onClose={handleClosePopover}
         anchorOrigin={{
           vertical: 'bottom',
-          horizontal: 'left',
+          horizontal: 'left'
         }}
         transformOrigin={{
           vertical: 'top',
-          horizontal: 'left',
+          horizontal: 'left'
         }}
       >
         <Box sx={{ p: 2 }}>

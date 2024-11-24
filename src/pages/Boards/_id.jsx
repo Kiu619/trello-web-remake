@@ -1,4 +1,4 @@
-import { Container } from '@mui/material'
+import { Box, Container } from '@mui/material'
 import { cloneDeep, isEmpty } from 'lodash'
 import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
@@ -7,24 +7,27 @@ import { moveCardToDifferentColumnAPI, updateBoardDetailsAPI, updateColumnDetail
 import AppBar from '~/components/AppBar/AppBar'
 import PageLoadingSpinner from '~/components/Loading/PageLoadingSpinner'
 import ActiveCard from '~/components/Modal/ActiveCard/ActiveCard'
-import { fetchBoardDetailsApiRedux, selectCurrentActiveBoard, updateCurrentActiveBoard } from '~/redux/activeBoard/activeBoardSlice'
+import { fetchBoardDetailsApiRedux, selectActiveBoardError, selectCurrentActiveBoard, updateCurrentActiveBoard } from '~/redux/activeBoard/activeBoardSlice'
 import BoardBar from './BoardBar/BoardBar'
 import BoardContent from './BoardContent/BoardContent'
 import { updateRecentBoards, updateUserAPI } from '~/redux/user/userSlice'
 import { hideModalActiveCard, showModalActiveCard } from '~/redux/activeCard/activeCardSlice'
 
 import { socketIoIntance } from '~/socketClient'
-import { selectIsShowModalActiveCard } from '~/redux/activeCard/activeCardSlice'
+import PrivateBoard from './PrivateBoard'
+import InvaldUrl from '../ErrorPages/InvalidUrl'
 
 function Board() {
-  const isShowModalActiveCard = useSelector(selectIsShowModalActiveCard)
 
   const dispatch = useDispatch()
   // Dùng State của Redux Toolkit thay cho useState
   // const [board, setBoard] = useState(null)
   const board = useSelector(selectCurrentActiveBoard)
-  const { boardId } = useParams()
-  const { cardId } = useParams()
+  const error = useSelector(selectActiveBoardError)
+  const { boardId: fullBoardId, cardId: fullCardId } = useParams()
+
+  const boardId = fullBoardId.substring(0, 24)
+  const cardId = fullCardId?.substring(0, 24)
 
   useEffect(() => {
     dispatch(fetchBoardDetailsApiRedux(boardId))
@@ -136,17 +139,19 @@ mång)
       nextCardOrderIds: dndOrderedColumns.find(c => c._id === nextColumnId)?.cardOrderIds
     })
   }
-
+  if (error) {
+    return <Container disableGutters maxWidth={false} sx={{ height: '100vh' }}>
+      <AppBar />
+      <InvaldUrl />
+    </Container>
+  }
 
   if (isEmpty(board)) {
     return <PageLoadingSpinner/>
   }
 
-  return (
+  const boardContent = (
     <Container disableGutters maxWidth={false} sx={{ height: '100vh' }}>
-      {/* Modal Active Card check đóng mở bằng redux*/}
-      {/* {isShowModalActiveCard && <ActiveCard />} */}
-
       <ActiveCard />
       <AppBar />
       <BoardBar board={board} />
@@ -158,6 +163,19 @@ mång)
         moveCardToDifferentColumn={moveCardToDifferentColumn}
       />
     </Container>
+  )
+
+  const boardForShareContent = (
+    <Container disableGutters maxWidth={false} sx={{ height: '100vh' }}>
+      <AppBar />
+      <PrivateBoard />
+    </Container>
+  )
+
+  return (
+    <>
+      {board?.forShare ? boardForShareContent : boardContent}
+    </>
   )
 }
 

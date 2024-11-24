@@ -5,19 +5,18 @@ import TaskAltOutlinedIcon from '@mui/icons-material/TaskAltOutlined'
 import { Box, Button, Checkbox, FormControlLabel, IconButton, LinearProgress, Popover, TextField, Tooltip, Typography } from '@mui/material'
 import Avatar from '@mui/material/Avatar'
 import Badge from '@mui/material/Badge'
-import { set } from 'lodash'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useSelector } from 'react-redux'
+import { toast } from 'react-toastify'
 import ToggleFocusInput from '~/components/Form/ToggleFocusInput'
 import { selectCurrentActiveBoard } from '~/redux/activeBoard/activeBoardSlice'
+import { selectCurrentUser } from '~/redux/user/userSlice'
 
-const CardChecklist = ({cardMemberIds=[], cardChecklist, onUpdateChecklist, onUpdateChecklistItem }) => {
+const CardChecklist = ({ column, activeCard, cardMemberIds = [], cardChecklist, onUpdateChecklist, onUpdateChecklistItem }) => {
   const board = useSelector(selectCurrentActiveBoard)
+  const currentUser = useSelector(selectCurrentUser)
   const FE_CardMembers = cardMemberIds.map(memberId => board?.FE_allUsers.find(user => user._id === memberId))
-  // console.log('FE_CardMembers', FE_CardMembers)
-  // console.log('cardChecklist', cardChecklist)
 
-  const [items, setItems] = useState(cardChecklist.items)
   const [newItem, setNewItem] = useState('')
 
   const [isEdit, setIsEdit] = useState(null)
@@ -97,18 +96,22 @@ const CardChecklist = ({cardMemberIds=[], cardChecklist, onUpdateChecklist, onUp
   }
 
   const handleCheckboxChange = (itemId) => {
-    const incomingChecklistItemInfo =
-    {
-      checklistId: cardChecklist._id,
-      itemId: itemId,
-      action: 'UPDATE',
-      items: cardChecklist.items,
-      title: cardChecklist.items.find(item => item._id === itemId).title,
-      isChecked: !cardChecklist.items.find(item => item._id === itemId).isChecked,
-      assignedTo: cardChecklist.items.find(item => item._id === itemId).assignedTo
+    const item = cardChecklist.items.find(item => item._id === itemId)
+    if (item.assignedTo.length === 0 || item.assignedTo.includes(currentUser._id) || board.ownerIds.includes(currentUser._id)) {
+      const incomingChecklistItemInfo =
+      {
+        checklistId: cardChecklist._id,
+        itemId: itemId,
+        action: 'UPDATE',
+        items: cardChecklist.items,
+        title: item.title,
+        isChecked: !item.isChecked,
+        assignedTo: item.assignedTo
+      }
+      onUpdateChecklistItem(incomingChecklistItemInfo)
+    } else {
+      toast.info('You are not assigned to this item.')
     }
-    console.log('incomingChecklistItemInfo', incomingChecklistItemInfo)
-    onUpdateChecklistItem(incomingChecklistItemInfo)
   }
 
   const deleteChecklistItem = (itemId) => {
@@ -124,12 +127,8 @@ const CardChecklist = ({cardMemberIds=[], cardChecklist, onUpdateChecklist, onUp
 
   const calculateProgress = () => {
     const checkedItems = cardChecklist.items.filter(item => item.isChecked).length
-    return (checkedItems / items.length) * 100
+    return (checkedItems / cardChecklist.items.length) * 100
   }
-
-  
-
-  
 
   // Popover assign member
   const [checklistItemIdToAssign, setChecklistItemIdToAssign] = useState(null)
@@ -139,7 +138,7 @@ const CardChecklist = ({cardMemberIds=[], cardChecklist, onUpdateChecklist, onUp
   const popoverId = isOpenPopover ? 'card-all-assign-users-popover' : undefined
 
   const handleUpdateAssignedMembers = (user, itemId) => {
-    const item = cardChecklist.items.find(item => item._id === itemId);
+    const item = cardChecklist.items.find(item => item._id === itemId)
     const incomingChecklistItemInfo = {
       checklistId: cardChecklist._id,
       itemId: itemId,
@@ -147,27 +146,28 @@ const CardChecklist = ({cardMemberIds=[], cardChecklist, onUpdateChecklist, onUp
       items: cardChecklist.items,
       title: item.title,
       isChecked: item.isChecked,
-      assignedTo: [...item.assignedTo] // Tạo một bản sao của mảng assignedTo
-    };
-  
+      assignedTo: [...item.assignedTo]
+    }
+
     // Kiểm tra xem user đã được assign hay chưa
-    const userIndex = incomingChecklistItemInfo.assignedTo.indexOf(user._id);
-  
+    const userIndex = incomingChecklistItemInfo.assignedTo.indexOf(user._id)
+
     if (userIndex !== -1) {
       // Nếu user đã được assign thì xoá user đó khỏi danh sách assignedTo
-      incomingChecklistItemInfo.assignedTo.splice(userIndex, 1);
+      incomingChecklistItemInfo.assignedTo.splice(userIndex, 1)
     } else {
       // Ngược lại thì thêm user vào danh sách assignedTo
-      incomingChecklistItemInfo.assignedTo.push(user._id);
-      incomingChecklistItemInfo.assignMember = true
+      incomingChecklistItemInfo.assignedTo.push(user._id)
+      incomingChecklistItemInfo.assignMember = user
+      incomingChecklistItemInfo.board = board
+      incomingChecklistItemInfo.cardChecklist = cardChecklist
     }
     // console.log('incomingChecklistItemInfo', incomingChecklistItemInfo)
-    onUpdateChecklistItem(incomingChecklistItemInfo);
-    handleTogglePopover();
-  };
+    onUpdateChecklistItem(incomingChecklistItemInfo)
+    handleTogglePopover()
+  }
 
   const handleOpenAssignMemberPopover = (itemId) => {
-    console.log('itemId', itemId)
     setChecklistItemIdToAssign(itemId)
     setAssignedMemberIds(cardChecklist.items.find(item => item._id === itemId).assignedTo)
   }
@@ -178,32 +178,37 @@ const CardChecklist = ({cardMemberIds=[], cardChecklist, onUpdateChecklist, onUp
   }
 
   return (
-    <Box sx={{mt: 3}}>
+    <Box sx={{ mt: 3 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
         <TaskAltOutlinedIcon />
-        {/* <Typography variant="span" sx={{ fontWeight: '600', fontSize: '20px' }}>{cardChecklist?.title}</Typography> */}
-        <ToggleFocusInput
-          inputFontSize='22px'
-          value={cardChecklist.title}
-          onChangedValue={onUpdateCheckListTitle}
-        />
-        <IconButton
-          sx={{
-            ml: 'auto',
-            mr: 1,
-            '&:hover': {
-              bgcolor: 'rgba(0, 0, 0, 0.27)',
-            },
-            padding: 0.3,
-            bgcolor: 'rgba(0, 0, 0, 0.2)',
-          }}
-          onClick={(e) => {
-            e.stopPropagation(),
-            handleOpenPopover(e, cardChecklist._id)
-          }}
-        >
-          <DeleteOutlineIcon />
-        </IconButton>
+        {column?.isClosed === false && activeCard?.isClosed === false ? (
+          <ToggleFocusInput
+            inputFontSize='22px'
+            value={cardChecklist.title}
+            onChangedValue={onUpdateCheckListTitle}
+          />)
+          : (
+            <Typography variant="h5" sx={{ fontWeight: '600', fontSize: '22px' }}>{activeCard?.title}</Typography>
+          )}
+        {column?.isClosed === false && activeCard?.isClosed === false && board.ownerIds.includes(currentUser._id) && (
+          <IconButton
+            sx={{
+              ml: 'auto',
+              mr: 1,
+              '&:hover': {
+                bgcolor: 'rgba(0, 0, 0, 0.27)'
+              },
+              padding: 0.3,
+              bgcolor: 'rgba(0, 0, 0, 0.2)'
+            }}
+            onClick={(e) => {
+              e.stopPropagation(),
+              handleOpenPopover(e, cardChecklist._id)
+            }}
+          >
+            <DeleteOutlineIcon />
+          </IconButton>
+        )}
       </Box>
       <LinearProgress variant="determinate" value={calculateProgress()} />
 
@@ -211,27 +216,28 @@ const CardChecklist = ({cardMemberIds=[], cardChecklist, onUpdateChecklist, onUp
         <Box sx={{
           display: 'flex',
           width: '100%',
-          mt: 1,
+          mt: 1
         }} key={index}>
           <FormControlLabel
             sx={{}}
             control={
               <Checkbox
+                disabled={activeCard?.isClosed === true || column?.isClosed === true}
                 checked={item.isChecked}
                 onChange={() => handleCheckboxChange(item._id)}
               />
             }
           />
-          {isEdit === index ? (
+          {(column?.isClosed === false && activeCard?.isClosed === false && isEdit === index) ? (
             <Box
               onBlur={() => setIsEdit(null)}
-              sx={{ width: '100%'}}
+              sx={{ width: '100%' }}
             >
               <ToggleFocusInput
-              value={item.title}
-              onChangedValue={(value) => onUpdatChecklistItemTitle(item._id, value)}
-              autoFocus
-            />
+                value={item.title}
+                onChangedValue={(value) => onUpdatChecklistItemTitle(item._id, value)}
+                autoFocus
+              />
             </Box>
           ) : (
             <Box sx={{
@@ -240,66 +246,63 @@ const CardChecklist = ({cardMemberIds=[], cardChecklist, onUpdateChecklist, onUp
               '&:hover': {
                 backgroundColor: 'rgba(0, 0, 0, 0.1)',
                 '.icon-buttons': {
-                  display: 'flex',
+                  display: 'flex'
                 }
               },
               width: '100%',
               cursor: 'pointer',
               borderRadius: 2,
-              justifyContent: 'space-between',
+              justifyContent: 'space-between'
             }} onClick={() => setIsEdit(index)}>
               <Typography sx={{ ml: 1, fontWeight: 'bold' }}>{item?.title}</Typography>
-              <Box className="icon-buttons" sx={{
-                display: 'none',
-                alignItems: 'center',
-              }}>
-                <IconButton
-                  sx={{
-                    ml: 'auto',
-                    mr: 1,
-                    '&:hover': {
-                      bgcolor: 'rgba(0, 0, 0, 0.27)',
-                    },
-                    padding: 0.3,
-                    bgcolor: 'rgba(0, 0, 0, 0.2)',
-                  }}
-                  // onClick={(e) => {
-                  //   e.stopPropagation()
-                  //   handleOpenAssignMemberPopover(item._id)
-                  //   handleTogglePopover(e)
-                  // }}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleOpenAssignMemberPopover(item._id)
-                    handleTogglePopover(e)
-                  }}
-                >
-                  <PersonAddAltIcon />
-                </IconButton>
-                <IconButton
-                  sx={{
-                    ml: 'auto',
-                    mr: 1,
-                    '&:hover': {
-                      bgcolor: 'rgba(0, 0, 0, 0.27)',
-                    },
-                    padding: 0.3,
-                    bgcolor: 'rgba(0, 0, 0, 0.2)',
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    deleteChecklistItem(item._id)
-                  }}
-                >
-                  <DeleteOutlineIcon />
-                </IconButton>
-              </Box>
+              {(column?.isClosed === false && activeCard?.isClosed === false && board.ownerIds.includes(currentUser._id)) && (
+                <Box className="icon-buttons" sx={{
+                  display: 'none',
+                  alignItems: 'center'
+                }}>
+                  <IconButton
+                    sx={{
+                      ml: 'auto',
+                      mr: 1,
+                      '&:hover': {
+                        bgcolor: 'rgba(0, 0, 0, 0.27)'
+                      },
+                      padding: 0.3,
+                      bgcolor: 'rgba(0, 0, 0, 0.2)'
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleOpenAssignMemberPopover(item._id)
+                      handleTogglePopover(e)
+                    }}
+                  >
+                    <PersonAddAltIcon />
+                  </IconButton>
+                  <IconButton
+                    sx={{
+                      ml: 'auto',
+                      mr: 1,
+                      '&:hover': {
+                        bgcolor: 'rgba(0, 0, 0, 0.27)'
+                      },
+                      padding: 0.3,
+                      bgcolor: 'rgba(0, 0, 0, 0.2)'
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      deleteChecklistItem(item._id)
+                    }}
+                  >
+                    <DeleteOutlineIcon />
+                  </IconButton>
+                </Box>)
+              }
             </Box>
           )}
         </Box>
       ))}
 
-      {isAddItem ? (
+      {isAddItem && (
         <Box>
           <TextField
             fullWidth
@@ -329,30 +332,31 @@ const CardChecklist = ({cardMemberIds=[], cardChecklist, onUpdateChecklist, onUp
                 textOverflow: 'ellipsis'
               },
               mt: 1,
-              borderRadius: 2,
+              borderRadius: 2
             }}
           />
           <Box
             sx={{
               display: 'flex',
               justifyContent: 'flex-end',
-              gap: 1,
+              gap: 1
             }}
           >
-            <Button onClick={handleAddItem} variant="contained" color="info" sx={{ mt: 1, height: '30px' }}>
-              Add
-            </Button>
             <Button onClick={() => setIsAddItem(false)} variant="contained"
               sx={{
                 mt: 1, height: '30px', bgcolor: 'transparent',
-                color: (theme) => theme.palette.mode === 'dark' ? 'white' : 'black',
+                color: (theme) => theme.palette.mode === 'dark' ? 'white' : 'black'
               }}
             >
               Cancel
             </Button>
+            <Button onClick={handleAddItem} variant="contained" color="info" sx={{ mt: 1, height: '30px' }}>
+                  Add
+            </Button>
           </Box>
         </Box>
-      ) : (
+      ) }
+      {column?.isClosed === false && (activeCard?.isClosed === false && !isAddItem) && (
         <Button onClick={() => setIsAddItem(true)} variant="contained" color="info" sx={{ mt: 1, height: '30px' }}>
           Add an item
         </Button>
@@ -365,11 +369,11 @@ const CardChecklist = ({cardMemberIds=[], cardChecklist, onUpdateChecklist, onUp
         onClose={handleClosePopover}
         anchorOrigin={{
           vertical: 'bottom',
-          horizontal: 'left',
+          horizontal: 'left'
         }}
         transformOrigin={{
           vertical: 'top',
-          horizontal: 'left',
+          horizontal: 'left'
         }}
       >
         <Box sx={{ p: 2 }}>
@@ -404,9 +408,8 @@ const CardChecklist = ({cardMemberIds=[], cardChecklist, onUpdateChecklist, onUp
                 badgeContent={
                   assignedMemberIds.includes(user?._id) &&
                   <CheckCircleIcon fontSize="small" sx={{ color: '#27ae60' }}
-                />}
-                // onClick={() => console.log('user', user)}
-              onClick={() => handleUpdateAssignedMembers(user, checklistItemIdToAssign)}
+                  />}
+                onClick={() => handleUpdateAssignedMembers(user, checklistItemIdToAssign)}
               >
                 <Avatar
                   sx={{ width: 34, height: 34 }}

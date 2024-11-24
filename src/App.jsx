@@ -9,6 +9,8 @@ import { selectCurrentUser, selectIs2FAVerified } from './redux/user/userSlice'
 import MyAccount from './pages/MyAccount/MyAccount'
 import Settings from './pages/Settings/Settings'
 import Require2FA from './components/TwoFA/require-2fa'
+import InvaldUrl from './pages/ErrorPages/InvalidUrl'
+import NotFoundPage from './pages/NotFoundPage/NotFoundPage'
 
 const PrivateRoute = ({ user, is_2fa_verified }) => {
   if (!user) {
@@ -40,16 +42,12 @@ function App() {
         <Route path='/my-account/security' element={<MyAccount />}/>
 
         <Route path='/settings' element={<Settings />} />
-
-
-        {/* <Route path="/board/:boardId/card/:cardId" element={<ActiveCard />} /> */}
-
       </Route>
       <Route path="/login" element={<Auth />} />
       <Route path="/register" element={<Auth />} />
       <Route path="/forgot-password" element={<Auth />} />
       <Route path="/account/verification" element={<AccountVerification />} />
-      <Route path="*" element={<h1>Not Found</h1>} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   )
 }

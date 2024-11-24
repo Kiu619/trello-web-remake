@@ -1,22 +1,16 @@
 import AddOutlinedIcon from '@mui/icons-material/AddOutlined'
 import AddToDriveOutlinedIcon from '@mui/icons-material/AddToDriveOutlined'
 import ArchiveOutlinedIcon from '@mui/icons-material/ArchiveOutlined'
-import ArrowForwardOutlinedIcon from '@mui/icons-material/ArrowForwardOutlined'
 import AspectRatioOutlinedIcon from '@mui/icons-material/AspectRatioOutlined'
 import AttachFileOutlinedIcon from '@mui/icons-material/AttachFileOutlined'
-import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined'
 import CancelIcon from '@mui/icons-material/Cancel'
-import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined'
 import CreditCardIcon from '@mui/icons-material/CreditCard'
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
 import DvrOutlinedIcon from '@mui/icons-material/DvrOutlined'
-import LocalOfferOutlinedIcon from '@mui/icons-material/LocalOfferOutlined'
+import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined'
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined'
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined'
 import SubjectRoundedIcon from '@mui/icons-material/SubjectRounded'
 import WatchLaterOutlinedIcon from '@mui/icons-material/WatchLaterOutlined'
-import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
-import LocationOnIcon from '@mui/icons-material/LocationOn'
 import Box from '@mui/material/Box'
 import Divider from '@mui/material/Divider'
 import Grid from '@mui/material/Grid'
@@ -26,12 +20,13 @@ import { styled } from '@mui/material/styles'
 import Typography from '@mui/material/Typography'
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { updateCardDetailsAPI } from '~/apis'
 import ToggleFocusInput from '~/components/Form/ToggleFocusInput'
 import VisuallyHiddenInput from '~/components/Form/VisuallyHiddenInput'
 import { selectCurrentActiveBoard, updateCardInBoard } from '~/redux/activeBoard/activeBoardSlice'
-import { clearAndHideCurrentActiveCard, fetchCardDetailsAPI, selectActiveCard, selectIsShowModalActiveCard, updateCurrentActiveCard } from '~/redux/activeCard/activeCardSlice'
+import { clearAndHideCurrentActiveCard, fetchCardDetailsAPI, selectActiveCard, selectActiveCardError, selectIsShowModalActiveCard, setCardError, updateCurrentActiveCard } from '~/redux/activeCard/activeCardSlice'
 import { selectCurrentUser } from '~/redux/user/userSlice'
 import { socketIoIntance } from '~/socketClient'
 import { CARD_MEMBER_ACTIONS } from '~/utils/constants'
@@ -42,15 +37,15 @@ import CardActivitySection from './CardCommentTest'
 import DateTimeDisplay from './CardDateTimeDisplay'
 import CardDescriptionMdEditor from './CardDescriptionMdEditor'
 import Checklist from './CardFunctions/Checklist'
+import Copy from './CardFunctions/Copy'
 import Cover from './CardFunctions/Cover'
 import Dates from './CardFunctions/Dates'
-import CardUserGroup from './CardUserGroup'
-import Location from './CardFunctions/Location'
-import LocationMap from './CardLocationMap'
-import Move from './CardFunctions/Move'
-import Copy from './CardFunctions/Copy'
 import Delete from './CardFunctions/Delete'
-import { useNavigate, useParams } from 'react-router-dom'
+import Location from './CardFunctions/Location'
+import Move from './CardFunctions/Move'
+import OpenClose from './CardFunctions/OpenClose'
+import LocationMap from './CardLocationMap'
+import CardUserGroup from './CardUserGroup'
 
 const SidebarItem = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -73,20 +68,37 @@ const SidebarItem = styled(Box)(({ theme }) => ({
 }))
 
 function ActiveCard() {
-  const { cardId } = useParams()
-  const { boardId } = useParams()
-  console.log('boardId', boardId)
+  const { boardId: fullBoardId, cardId: fullCardId } = useParams()
+
+  const boardId = fullBoardId.substring(0, 24)
+  const cardId = fullCardId?.substring(0, 24)
 
   const navigate = useNavigate()
   const currentBoard = useSelector(selectCurrentActiveBoard)
+  const error = useSelector(selectActiveCardError)
+
 
   const dispatch = useDispatch()
   const activeCard = useSelector(selectActiveCard)
   const isShowModalActiveCard = useSelector(selectIsShowModalActiveCard)
+
+  const column = currentBoard.columns.find(c => c._id === activeCard?.columnId)
+  console.log('column', column)
+
   const currentUser = useSelector(selectCurrentUser)
+
+  // Date Popover
+  const [dateAnchorEl, setDateAnchorEl] = useState(null)
+  const handleOpenDatePopover = (event) => { setDateAnchorEl(event.currentTarget) }
+  const handleCloseDatePopover = () => { setDateAnchorEl(null) }
 
   const handleCloseModal = () => {
     dispatch(clearAndHideCurrentActiveCard())
+    navigate(`/board/${currentBoard._id}`)
+  }
+
+  if (error) {
+    dispatch(setCardError(null))
     navigate(`/board/${currentBoard._id}`)
   }
 
@@ -120,12 +132,11 @@ function ActiveCard() {
         navigate(`/board/${currentBoard._id}`)
       }
     }
-  }, [activeCard, boardId, currentBoard._id])
+  }, [activeCard, boardId, currentBoard._id, navigate])
 
   const callApiUpdateCard = async (updateData) => {
     // console.log('updateData', updateData)
     const res = await updateCardDetailsAPI(activeCard._id, updateData)
-    console.log('res', res)
 
     // // Cập nhật thông tin Card mới nhất vào Redux
     dispatch(updateCurrentActiveCard(res))
@@ -157,10 +168,10 @@ function ActiveCard() {
   }
 
   const onAddCardAttachment = (event) => {
-    const error = singleFileValidatorForAttachment(event.target?.files[0]);
+    const error = singleFileValidatorForAttachment(event.target?.files[0])
     if (error) {
-      toast.error(error);
-      return;
+      toast.error(error)
+      return
     }
 
     let reqData = new FormData()
@@ -183,6 +194,10 @@ function ActiveCard() {
     await callApiUpdateCard({ commentToAdd })
   }
 
+  const onUpdateCardComment = (commentToUpdate) => {
+    callApiUpdateCard({ commentToUpdate })
+  }
+
   const onUpdateCardMembers = (incomingMemberInfo) => {
     callApiUpdateCard({ incomingMemberInfo })
   }
@@ -199,10 +214,9 @@ function ActiveCard() {
     callApiUpdateCard({ location })
   }
 
-  // Date Popover
-  const [dateAnchorEl, setDateAnchorEl] = useState(null)
-  const handleOpenDatePopover = (event) => { setDateAnchorEl(event.currentTarget) }
-  const handleCloseDatePopover = () => { setDateAnchorEl(null) }
+  const onUpdateOpenCloseCard = (isClosed) => {
+    callApiUpdateCard({ isClosed })
+  }
 
   return (
     <Modal
@@ -259,11 +273,15 @@ function ActiveCard() {
           <CreditCardIcon />
 
           {/* Feature 01: Xử lý tiêu đề của Card */}
-          <ToggleFocusInput
-            inputFontSize='22px'
-            value={activeCard?.title || ''}
-            onChangedValue={onUpdateCardTitle}
-          />
+          {activeCard?.isClosed === false && column?.isClosed === false ? (
+            <ToggleFocusInput
+              inputFontSize='22px'
+              value={activeCard?.title || ''}
+              onChangedValue={onUpdateCardTitle}
+            />)
+            : (
+              <Typography variant="h5" sx={{ fontWeight: '600', fontSize: '22px' }}>{activeCard?.title}</Typography>
+            )}
         </Box>
 
         <Grid container sx={{ m: 0 }} className='nghia'>
@@ -274,6 +292,10 @@ function ActiveCard() {
 
               {/* Feature 02: Xử lý các thành viên của Card */}
               <CardUserGroup
+                column={column}
+                activeCard={activeCard}
+                currentUser={currentUser}
+                currentBoard={currentBoard}
                 cardMemberIds={activeCard?.memberIds}
                 onUpdateCardMembers={onUpdateCardMembers}
               />
@@ -282,6 +304,8 @@ function ActiveCard() {
             <Box sx={{ mb: 3 }}>
               {activeCard?.dueDate.dueDate && (
                 <DateTimeDisplay
+                  column={column}
+                  activeCard={activeCard}
                   startDate={activeCard.dueDate?.startDate}
                   startTime={activeCard.dueDate?.startTime}
                   dueDate={activeCard.dueDate?.dueDate}
@@ -294,13 +318,10 @@ function ActiveCard() {
             </Box>
 
             <Box sx={{ mb: 3 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                <SubjectRoundedIcon />
-                <Typography variant="span" sx={{ fontWeight: '600', fontSize: '20px' }}>Description</Typography>
-              </Box>
-
               {/* Feature 03: Xử lý mô tả của Card */}
               <CardDescriptionMdEditor
+                column={column}
+                activeCard={activeCard}
                 cardDescriptionProp={activeCard?.description}
                 onUpdateCardDescription={onUpdateCardDescription}
               />
@@ -312,12 +333,14 @@ function ActiveCard() {
                   <LocationOnOutlinedIcon />
                   <Typography variant="span" sx={{ fontWeight: '600', fontSize: '20px' }}>Location</Typography>
                 </Box>
-                <LocationMap location={activeCard.location} updateLocation={updateLocation} />
+                <LocationMap column={column} activeCard={activeCard} location={activeCard.location} updateLocation={updateLocation} />
               </Box>
             )}
 
             <Box sx={{ mb: 3 }}>
               <CardAttachment
+                column={column}
+                activeCard={activeCard}
                 onAddCardAttachment={onAddCardAttachment}
                 attachments={activeCard?.attachments}
                 onEditCardAttachment={onEditCardAttachment}
@@ -332,6 +355,8 @@ function ActiveCard() {
               /> */}
               {activeCard?.checklists.map((checklist, index) => (
                 <CardChecklist
+                  column={column}
+                  activeCard={activeCard}
                   key={index}
                   cardMemberIds={activeCard?.memberIds}
                   cardChecklist={checklist}
@@ -349,78 +374,98 @@ function ActiveCard() {
 
               {/* Feature 05: Xử lý các hành động, ví dụ comment vào Card */}
               <CardActivitySection
+                column={column}
+                activeCard={activeCard}
                 cardMemberIds={activeCard?.memberIds}
                 cardComments={activeCard?.comments}
                 onAddCardComment={onAddCardComment}
+                onUpdateCardComment={onUpdateCardComment}
               />
             </Box>
           </Grid>
 
           {/* Right side */}
           <Grid item xs={12} sm={3}>
-            <Typography sx={{ fontWeight: '600', color: 'primary.main', mb: 1 }}>Add To Card</Typography>
-            <Stack direction="column" spacing={1}>
-              {/* Feature 05: Xử lý hành động bản thân user tự join vào card */}
-              {!activeCard?.memberIds.includes(currentUser?._id) &&
-                <SidebarItem className="active"
-                  onClick={() => onUpdateCardMembers({ userId: currentUser?._id, action: CARD_MEMBER_ACTIONS.ADD })}
-                >
-                  <PersonOutlineOutlinedIcon fontSize="small" />
-                  Join
+            {column?.isClosed === false && activeCard?.isClosed === false && (
+              <Stack direction="column" spacing={1}>
+                <Typography sx={{ fontWeight: '600', color: 'primary.main', mb: 1 }}>Add To Card</Typography>
+                {/* Feature 05: Xử lý hành động bản thân user tự join vào card */}
+                {!activeCard?.memberIds.includes(currentUser?._id) &&
+                  <SidebarItem className="active"
+                    onClick={() => onUpdateCardMembers({ userId: currentUser?._id, action: CARD_MEMBER_ACTIONS.ADD })}
+                  >
+                    <PersonOutlineOutlinedIcon fontSize="small" />
+                    Join
+                  </SidebarItem>
+                }
+
+                {activeCard?.memberIds.includes(currentUser?._id) &&
+                  <SidebarItem className="active"
+                    onClick={() => onUpdateCardMembers({ userId: currentUser?._id, action: CARD_MEMBER_ACTIONS.REMOVE })}
+                  >
+                    <PersonOutlineOutlinedIcon fontSize="small" />
+                    Leave
+                  </SidebarItem>
+                }
+
+                {/* Feature 06: Xử lý hành động cập nhật ảnh Cover của Card */}
+                <Cover callApiUpdateCard={callApiUpdateCard} card={activeCard} />
+
+                <SidebarItem className="active" component="label">
+                  <AttachFileOutlinedIcon fontSize="small" />
+                  Attachment
+                  <VisuallyHiddenInput type="file" onChange={onAddCardAttachment} />
                 </SidebarItem>
-              }
 
-              {/* Feature 06: Xử lý hành động cập nhật ảnh Cover của Card */}
-              <Cover callApiUpdateCard={callApiUpdateCard} card={activeCard} />
+                {/* <SidebarItem><LocalOfferOutlinedIcon fontSize="small" />Labels</SidebarItem> */}
 
-              <SidebarItem className="active" component="label">
-                <AttachFileOutlinedIcon fontSize="small" />
-                Attachment
-                <VisuallyHiddenInput type="file" onChange={onAddCardAttachment} />
-              </SidebarItem>
+                {/* Checklist */}
+                <Checklist onUpdateChecklist={onUpdateChecklist} />
 
-              {/* <SidebarItem><LocalOfferOutlinedIcon fontSize="small" />Labels</SidebarItem> */}
+                {/* Dates */}
+                <Dates
+                  onUpdateDueDate={onUpdateDueDate}
+                  handleClosePopover={handleCloseDatePopover}
+                  anchorEl={dateAnchorEl}
+                />
+                <SidebarItem onClick={handleOpenDatePopover} >
+                  <WatchLaterOutlinedIcon fontSize="small" />
+                  Dates
+                </SidebarItem>
+                {/* Location */}
+                <Location updateLocation={updateLocation} />
+              </Stack>
+            )}
+            {column?.isClosed === false && activeCard?.isClosed === false && (<Divider sx={{ my: 2 }} />)}
 
-              {/* Checklist */}
-              <Checklist onUpdateChecklist={onUpdateChecklist} />
+            {column?.isClosed === false && activeCard?.isClosed === false && (
+              <Stack direction="column" spacing={1}>
+                <Typography sx={{ fontWeight: '600', color: 'primary.main', mb: 1 }}>Power-Ups</Typography>
+                <SidebarItem><AspectRatioOutlinedIcon fontSize="small" />Card Size</SidebarItem>
+                <SidebarItem><AddToDriveOutlinedIcon fontSize="small" />Google Drive</SidebarItem>
+                <SidebarItem><AddOutlinedIcon fontSize="small" />Add Power-Ups</SidebarItem>
+              </Stack>
+            )}
 
-              {/* Dates */}
-              <Dates
-                onUpdateDueDate={onUpdateDueDate}
-                handleClosePopover={handleCloseDatePopover}
-                anchorEl={dateAnchorEl}
-              />
-              <SidebarItem onClick={handleOpenDatePopover} >
-                <WatchLaterOutlinedIcon fontSize="small" />
-                Dates
-              </SidebarItem>
-              {/* Location */}
-              <Location updateLocation={updateLocation}/>
-              
-            </Stack>
-
-            <Divider sx={{ my: 2 }} />
-
-            <Typography sx={{ fontWeight: '600', color: 'primary.main', mb: 1 }}>Power-Ups</Typography>
-            <Stack direction="column" spacing={1}>
-              <SidebarItem><AspectRatioOutlinedIcon fontSize="small" />Card Size</SidebarItem>
-              <SidebarItem><AddToDriveOutlinedIcon fontSize="small" />Google Drive</SidebarItem>
-              <SidebarItem><AddOutlinedIcon fontSize="small" />Add Power-Ups</SidebarItem>
-            </Stack>
-
-            <Divider sx={{ my: 2 }} />
+            {column?.isClosed === false && activeCard?.isClosed === false && (<Divider sx={{ my: 2 }} />)}
 
             <Typography sx={{ fontWeight: '600', color: 'primary.main', mb: 1 }}>Actions</Typography>
-            <Stack direction="column" spacing={1}>
-              {/* <SidebarItem><ArrowForwardOutlinedIcon fontSize="small" />Move</SidebarItem> */}
-              <Move activeCard={activeCard} />
-              {/* <SidebarItem><ContentCopyOutlinedIcon fontSize="small" />Copy</SidebarItem> */}
-              <Copy activeCard={activeCard} />
-              <SidebarItem><ArchiveOutlinedIcon fontSize="small" />Archive</SidebarItem>
-              <SidebarItem><ShareOutlinedIcon fontSize="small" />Share</SidebarItem>
-              {/* Delete */}
-              <Delete activeCard={activeCard} />
-            </Stack>
+
+            {column?.isClosed === false && activeCard?.isClosed === false && (
+              <Stack direction="column" spacing={1} sx={{ mb: 1 }}>
+                {/* <SidebarItem><ArrowForwardOutlinedIcon fontSize="small" />Move</SidebarItem> */}
+                {currentBoard.ownerIds.includes(currentUser?._id) && (<Move activeCard={activeCard} />)}
+                {/* <SidebarItem><ContentCopyOutlinedIcon fontSize="small" />Copy</SidebarItem> */}
+                <Copy activeCard={activeCard} />
+                <SidebarItem><ArchiveOutlinedIcon fontSize="small" />Archive</SidebarItem>
+                <SidebarItem><ShareOutlinedIcon fontSize="small" />Share</SidebarItem>
+
+                {/* Open / Close */}
+                {/* Delete */}
+                {currentBoard.ownerIds.includes(currentUser?._id) && (<Delete activeCard={activeCard} />)}
+              </Stack>
+            )}
+            {currentBoard.ownerIds.includes(currentUser?._id) && (<OpenClose column={column} activeCard={activeCard} onUpdateOpenCloseCard={onUpdateOpenCloseCard} />)}
           </Grid>
         </Grid>
       </Box>

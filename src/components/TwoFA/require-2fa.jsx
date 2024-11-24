@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react'
 import { toast } from 'react-toastify'
 import Box from '@mui/material/Box'
 import Modal from '@mui/material/Modal'
@@ -6,30 +5,32 @@ import Typography from '@mui/material/Typography'
 import SecurityIcon from '@mui/icons-material/Security'
 import TextField from '@mui/material/TextField'
 import Button from '@mui/material/Button'
-import { update2FAVerified, updateCurrentUser } from '~/redux/user/userSlice'
+import { update2FAVerified } from '~/redux/user/userSlice'
 import { verify2FA_API } from '~/apis'
 import { useDispatch } from 'react-redux'
+import { useForm } from 'react-hook-form'
 
-// Tài liệu về Material Modal rất dễ ở đây: https://mui.com/material-ui/react-modal/
 function Require2FA() {
-  const [otpToken, setConfirmOtpToken] = useState('')
-  const [error, setError] = useState(null)
-
+  const { register, handleSubmit, setError, formState: { errors } } = useForm()
   const dispatch = useDispatch()
 
+  const onSubmit = (data) => {
+    const { otpToken } = data
 
-  const handleRequire2FA = () => {
     if (!otpToken) {
       const errMsg = 'Please enter your code.'
-      setError(errMsg)
+      setError('otpToken', { type: 'manual', message: errMsg })
       toast.error(errMsg)
       return
     }
+
     verify2FA_API(otpToken).then(() => {
       dispatch(update2FAVerified(true))
-
       toast.success('Verify 2FA successfully!')
-      setError(null)
+    }).catch((err) => {
+      const errMsg = err.response?.data?.message || 'Failed to verify 2FA.'
+      setError('otpToken', { type: 'manual', message: errMsg })
+      toast.error(errMsg)
     })
   }
 
@@ -58,10 +59,10 @@ function Require2FA() {
 
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, p: 1 }}>
           <Box sx={{ textAlign: 'center' }}>
-            Nhập mã gồm 6 chữ số từ ứng dụng bảo mật của bạn và click vào <strong>Confirm</strong> để xác nhận.
+            Enter the 6-digit code and click <strong>Confirm</strong> to verify.
           </Box>
 
-          <Box sx={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, my: 1 }}>
+          <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, my: 1 }}>
             <TextField
               autoFocus
               autoComplete='nope'
@@ -69,18 +70,17 @@ function Require2FA() {
               type="text"
               variant="outlined"
               sx={{ minWidth: '280px' }}
-              value={otpToken}
-              onChange={(e) => setConfirmOtpToken(e.target.value)}
-              error={!!error && !otpToken}
+              {...register('otpToken', { required: 'Please enter your code.' })}
+              error={!!errors.otpToken}
+              helperText={errors.otpToken?.message}
             />
 
             <Button
-              type="button"
+              type="submit"
               variant="contained"
               color="primary"
               size='large'
               sx={{ textTransform: 'none', minWidth: '120px', height: '55px', fontSize: '1em' }}
-              onClick={handleRequire2FA}
             >
               Confirm
             </Button>

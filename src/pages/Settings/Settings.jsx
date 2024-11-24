@@ -46,7 +46,7 @@ function Settings() {
             {currentUser?.isRequire2fa ?
               <Button
                 variant="contained"
-                color="primary"
+                color="info"
                 onClick={() => setOpenDisable2FA(true)}
               >
                 Disable 2FA
@@ -54,7 +54,7 @@ function Settings() {
               :
               <Button
                 variant="contained"
-                color="secondary"
+                color="info"
                 onClick={() => setOpenSetup2FA(true)}
               >
                 Enable 2FA

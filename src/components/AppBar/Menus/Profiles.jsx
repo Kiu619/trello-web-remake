@@ -42,7 +42,7 @@ function Profiles() {
           aria-haspopup='true'
           aria-expanded={open ? 'true' : undefined}
         >
-          <Avatar sx={{ width: 30, height: 32 }} alt='kiuu' src={currentUser?.avatar} >Kiu</Avatar>
+          <Avatar sx={{ width: 35, height: 35 }} alt='kiuu' src={currentUser?.avatar} ></Avatar>
         </IconButton>
       </Tooltip>
 

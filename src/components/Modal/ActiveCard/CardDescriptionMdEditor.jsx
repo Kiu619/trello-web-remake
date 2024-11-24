@@ -1,13 +1,15 @@
 import EditNoteIcon from '@mui/icons-material/EditNote'
+import SubjectRoundedIcon from '@mui/icons-material/SubjectRounded'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import { useColorScheme } from '@mui/material/styles'
+import Typography from '@mui/material/Typography'
 import MDEditor from '@uiw/react-md-editor'
 import { useEffect, useState } from 'react'
 import rehypeSanitize from 'rehype-sanitize'
 
 function CardDescriptionMdEditor(props) {
-  const { cardDescriptionProp, onUpdateCardDescription } = props
+  const { column, activeCard, cardDescriptionProp, onUpdateCardDescription } = props
 
   const { mode } = useColorScheme()
 
@@ -52,8 +54,8 @@ function CardDescriptionMdEditor(props) {
                 bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#A1BDD914' : '#3f444814'),
                 color: '#7e8b9a',
                 '&:hover': {
-                  bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#45505A' : '#0c93ff1a'),
-                },
+                  bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#45505A' : '#0c93ff1a')
+                }
               }}>
               Cancel
             </Button>
@@ -68,17 +70,27 @@ function CardDescriptionMdEditor(props) {
             </Button>
           </Box>
         </Box>
-        : <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Button
-            sx={{ alignSelf: 'flex-end' }}
-            onClick={() => setMarkdownEditMode(true)}
-            type="button"
-            variant="contained"
-            color="info"
-            size="small"
-            startIcon={<EditNoteIcon />}>
+        :
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, justifyContent:'space-between', mt: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <SubjectRoundedIcon />
+              <Typography variant="span" sx={{ fontWeight: '600', fontSize: '20px' }}>Description</Typography>
+            </Box>
+            {activeCard?.isClosed === false && column?.isClosed === false && (
+              <Button
+                sx={{ alignSelf: 'flex-end' }}
+                onClick={() => setMarkdownEditMode(true)}
+                type="button"
+                variant="contained"
+                color="info"
+                size="small"
+                startIcon={<EditNoteIcon />}>
             Edit
-          </Button>
+              </Button>
+            )}
+          </Box>
+
           <Box data-color-mode={mode}>
             <MDEditor.Markdown
               source={cardDescription}
