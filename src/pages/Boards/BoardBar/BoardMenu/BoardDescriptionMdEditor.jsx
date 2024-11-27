@@ -5,45 +5,55 @@ import Button from '@mui/material/Button'
 import { useColorScheme } from '@mui/material/styles'
 import Typography from '@mui/material/Typography'
 import MDEditor from '@uiw/react-md-editor'
+import { cloneDeep } from 'lodash'
 import { useEffect, useState } from 'react'
-import { toast } from 'react-toastify'
+import { useDispatch } from 'react-redux'
 import rehypeSanitize from 'rehype-sanitize'
+import { updateBoardDetailsAPI } from '~/apis'
+import { updateCurrentActiveBoard } from '~/redux/activeBoard/activeBoardSlice'
+import { socketIoIntance } from '~/socketClient'
 
-function CardDescriptionMdEditor(props) {
-  const { column, activeCard, cardDescriptionProp, onUpdateCardDescription } = props
+function BoardDescriptionMdEditor(props) {
+  const { board } = props
 
   const { mode } = useColorScheme()
+  const dispatch = useDispatch()
 
   const [markdownEditMode, setMarkdownEditMode] = useState(false)
-  const [cardDescription, setCardDescription] = useState(cardDescriptionProp)
+  const [boardDescription, setBoardDescription] = useState(board.description)
 
   useEffect(() => {
-    setCardDescription(cardDescriptionProp)
-  }, [cardDescriptionProp])
+    setBoardDescription(board.description)
+  }, [board.description])
 
-  const updateCardDescription = () => {
-    if (activeCard?.isClosed === true || column?.isClosed === true) {
-      toast.error('This card is close, please click cancel')
-      return
-    }
+  const updateBoardDescription = () => {
     setMarkdownEditMode(false)
-    onUpdateCardDescription(cardDescription)
+    const updateData = { description: boardDescription }
+    updateBoardDetailsAPI(board._id, updateData).then((res) => {
+
+      const newBoard = cloneDeep(board)
+      newBoard.description = boardDescription
+      dispatch(updateCurrentActiveBoard(newBoard))
+
+      setTimeout(() => {
+        socketIoIntance.emit('batch', { boardId: board._id })
+      }, 1234)
+    })
   }
 
-  const cancelCardDescriptionEdit = () => {
+  const cancelBoardDescriptionEdit = () => {
     setMarkdownEditMode(false)
-    setCardDescription(cardDescriptionProp)
+    setBoardDescription(board.description)
   }
 
   return (
-    <Box sx={{ mt: -4 }}>
+    <Box sx={{ width: '100%', justifyContent: 'center' }}>
       {markdownEditMode
-        ?
-        <Box sx={{ mt: 5, display: 'flex', flexDirection: 'column', gap: 1 }}>
+        ? <Box sx={{ mt: 5, display: 'flex', flexDirection: 'column', gap: 1 }}>
           <Box data-color-mode={mode}>
             <MDEditor
-              value={cardDescription}
-              onChange={setCardDescription}
+              value={boardDescription}
+              onChange={setBoardDescription}
               previewOptions={{ rehypePlugins: [[rehypeSanitize]] }}
               height={400}
               preview="edit"
@@ -51,7 +61,7 @@ function CardDescriptionMdEditor(props) {
           </Box>
           <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
             <Button
-              onClick={cancelCardDescriptionEdit}
+              onClick={cancelBoardDescriptionEdit}
               type="button"
               variant="contained"
               size="small"
@@ -66,7 +76,7 @@ function CardDescriptionMdEditor(props) {
               Cancel
             </Button>
             <Button
-              onClick={updateCardDescription}
+              onClick={updateBoardDescription}
               className="interceptor-loading"
               type="button"
               variant="contained"
@@ -83,7 +93,9 @@ function CardDescriptionMdEditor(props) {
               <SubjectRoundedIcon />
               <Typography variant="span" sx={{ fontWeight: '600', fontSize: '20px' }}>Description</Typography>
             </Box>
-            {activeCard?.isClosed === false && column?.isClosed === false && (
+            {/* {board?.isClosed === false && (
+            )} */}
+            {board?.isClosed === false && (
               <Button
                 sx={{ alignSelf: 'flex-end' }}
                 onClick={() => setMarkdownEditMode(true)}
@@ -99,11 +111,11 @@ function CardDescriptionMdEditor(props) {
 
           <Box data-color-mode={mode}>
             <MDEditor.Markdown
-              source={cardDescription}
+              source={boardDescription}
               style={{
                 whiteSpace: 'pre-wrap',
-                padding: cardDescription ? '10px' : '0px',
-                border: cardDescription ? '0.5px solid rgba(0, 0, 0, 0.2)' : 'none',
+                padding: boardDescription ? '10px' : '0px',
+                border: boardDescription ? '0.5px solid rgba(0, 0, 0, 0.2)' : 'none',
                 borderRadius: '8px'
               }}
             />
@@ -114,4 +126,4 @@ function CardDescriptionMdEditor(props) {
   )
 }
 
-export default CardDescriptionMdEditor
+export default BoardDescriptionMdEditor

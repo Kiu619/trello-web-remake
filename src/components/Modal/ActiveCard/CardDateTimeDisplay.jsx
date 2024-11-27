@@ -3,7 +3,7 @@ import {
 } from '@mui/icons-material'
 import { Box, Button, Checkbox, FormControlLabel, Typography } from '@mui/material'
 
-const DateTimeDisplay = ({ column, activeCard, startDate, startTime, dueDate, dueDateTime, isComplete, handleOpenDatePopover, onUpdateDueDate }) => {
+const DateTimeDisplay = ({ column, activeCard, title, startDate, startTime, dueDate, dueDateTime, isComplete, handleOpenDatePopover, onUpdateDueDate }) => {
   const formatDateTime = (startDate, startTime) => {
     if (!startDate || !startTime) return ''
 
@@ -64,7 +64,7 @@ const DateTimeDisplay = ({ column, activeCard, startDate, startTime, dueDate, du
 
   return (
     <>
-      <Typography sx={{ fontWeight: '600', color: 'primary.main', mb: 1 }}>Due Date</Typography>
+      <Typography sx={{ fontWeight: '600', color: 'primary.main', mb: 1 }}>Due Date: {title}</Typography>
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
         {column?.isClosed === false && activeCard?.isClosed === false && (
           <FormControlLabel

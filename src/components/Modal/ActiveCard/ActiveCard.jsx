@@ -9,7 +9,6 @@ import DvrOutlinedIcon from '@mui/icons-material/DvrOutlined'
 import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined'
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined'
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined'
-import SubjectRoundedIcon from '@mui/icons-material/SubjectRounded'
 import WatchLaterOutlinedIcon from '@mui/icons-material/WatchLaterOutlined'
 import Box from '@mui/material/Box'
 import Divider from '@mui/material/Divider'
@@ -22,7 +21,7 @@ import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import { updateCardDetailsAPI } from '~/apis'
+import { createNewNotificationAPI, updateCardDetailsAPI } from '~/apis'
 import ToggleFocusInput from '~/components/Form/ToggleFocusInput'
 import VisuallyHiddenInput from '~/components/Form/VisuallyHiddenInput'
 import { selectCurrentActiveBoard, updateCardInBoard } from '~/redux/activeBoard/activeBoardSlice'
@@ -83,7 +82,6 @@ function ActiveCard() {
   const isShowModalActiveCard = useSelector(selectIsShowModalActiveCard)
 
   const column = currentBoard.columns.find(c => c._id === activeCard?.columnId)
-  console.log('column', column)
 
   const currentUser = useSelector(selectCurrentUser)
 
@@ -128,7 +126,7 @@ function ActiveCard() {
   useEffect(() => {
     if (activeCard) {
       if (activeCard.boardId !== boardId) {
-        toast.error('Card not found')
+        // toast.error('Card not found')
         navigate(`/board/${currentBoard._id}`)
       }
     }
@@ -159,8 +157,33 @@ function ActiveCard() {
   }
 
   const onUpdateDueDate = (dueDateData) => {
-    // console.log('dueDateData', dueDateData)
+    console.log('dueDateData', dueDateData)
+    // callApiUpdateCard({ dueDate: dueDateData })
     callApiUpdateCard({ dueDate: dueDateData })
+      .then(response => {
+        // Xử lý notification - lọc bỏ currentUser._id
+        if (activeCard?.memberIds?.length > 0) {
+          const otherMembers = activeCard.memberIds.filter(memberId => memberId !== currentUser._id)
+
+          otherMembers.forEach(memberId => {
+            createNewNotificationAPI({
+              type: 'dueDateInCard',
+              userId: memberId,
+              details: {
+                boardId: currentBoard._id,
+                boardTitle: currentBoard.title,
+                cardId: activeCard._id,
+                cardTitle: activeCard.title,
+                senderId: currentUser._id,
+                senderName: currentUser.username
+              }
+            }).then(() => {
+              socketIoIntance.emit('FE_FETCH_NOTI', { userId: memberId })
+            })
+          })
+        }
+        return response
+      })
   }
 
   const onUpdateCardDescription = (newDescription) => {
@@ -177,9 +200,36 @@ function ActiveCard() {
     let reqData = new FormData()
     reqData.append('attachmentFile', event.target?.files[0])
 
-    // Gọi API...
     toast.promise(
-      callApiUpdateCard(reqData),
+      callApiUpdateCard(reqData)
+        .then(response => {
+          // Sau khi upload thành công
+          toast.success('Upload attachment successfully')
+
+          // Xử lý notification - lọc bỏ currentUser._id
+          if (activeCard?.memberIds?.length > 0) {
+            const otherMembers = activeCard.memberIds.filter(memberId => memberId !== currentUser._id)
+
+            otherMembers.forEach(memberId => {
+              createNewNotificationAPI({
+                type: 'attachmentInCard',
+                userId: memberId,
+                details: {
+                  boardId: currentBoard._id,
+                  boardTitle: currentBoard.title,
+                  cardId: activeCard._id,
+                  cardTitle: activeCard.title,
+                  attachmentName: event.target?.files[0].name,
+                  senderId: currentUser._id,
+                  senderName: currentUser.username
+                }
+              }).then(() => {
+                socketIoIntance.emit('FE_FETCH_NOTI', { userId: memberId })
+              })
+            })
+          }
+          return response
+        }),
       {
         pending: 'Uploading...'
       }
@@ -207,7 +257,31 @@ function ActiveCard() {
   }
 
   const onUpdateChecklistItem = (incomingChecklistItemInfo) => {
-    callApiUpdateCard({ incomingChecklistItemInfo })
+    if (incomingChecklistItemInfo.assignMember) {
+      const otherMembers = activeCard.memberIds.filter(memberId => memberId !== currentUser._id)
+
+      otherMembers.forEach(memberId => {
+        createNewNotificationAPI({
+          type: 'assignment',
+          userId: memberId,
+          details: {
+            boardId: currentBoard._id,
+            boardTitle: currentBoard.title,
+            cardId: activeCard._id,
+            cardTitle: activeCard.title,
+            checklistTitle: incomingChecklistItemInfo.cardChecklist.title,
+            senderId: currentUser._id,
+            senderName: currentUser.username
+          }
+        }).then(() => {
+          socketIoIntance.emit('FE_FETCH_NOTI', { userId: memberId })
+        })
+      })
+
+      callApiUpdateCard({ incomingChecklistItemInfo })
+    } else {
+      callApiUpdateCard({ incomingChecklistItemInfo })
+    }
   }
 
   const updateLocation = (location) => {
@@ -239,18 +313,6 @@ function ActiveCard() {
         margin: '50px auto',
         backgroundColor: (theme) => theme.palette.mode === 'dark' ? '#1A2027' : '#fff'
       }}>
-
-        {/* Rest of your existing modal content */}
-        <Box sx={{
-          position: 'absolute',
-          top: '12px',
-          right: '10px',
-          cursor: 'pointer'
-        }}>
-          <CancelIcon color="error" sx={{ '&:hover': { color: 'error.light' } }} onClick={handleCloseModal} />
-        </Box>
-
-
         <Box sx={{
           position: 'absolute',
           top: '12px',
@@ -306,6 +368,7 @@ function ActiveCard() {
                 <DateTimeDisplay
                   column={column}
                   activeCard={activeCard}
+                  title={activeCard.dueDate?.title}
                   startDate={activeCard.dueDate?.startDate}
                   startTime={activeCard.dueDate?.startTime}
                   dueDate={activeCard.dueDate?.dueDate}
@@ -373,7 +436,7 @@ function ActiveCard() {
               </Box>
 
               {/* Feature 05: Xử lý các hành động, ví dụ comment vào Card */}
-              <CardActivitySection
+              <CardActivitySection id
                 column={column}
                 activeCard={activeCard}
                 cardMemberIds={activeCard?.memberIds}
@@ -441,7 +504,7 @@ function ActiveCard() {
             {column?.isClosed === false && activeCard?.isClosed === false && (
               <Stack direction="column" spacing={1}>
                 <Typography sx={{ fontWeight: '600', color: 'primary.main', mb: 1 }}>Power-Ups</Typography>
-                <SidebarItem><AspectRatioOutlinedIcon fontSize="small" />Card Size</SidebarItem>
+                {/* <SidebarItem><AspectRatioOutlinedIcon fontSize="small" />Card Size</SidebarItem> */}
                 <SidebarItem><AddToDriveOutlinedIcon fontSize="small" />Google Drive</SidebarItem>
                 <SidebarItem><AddOutlinedIcon fontSize="small" />Add Power-Ups</SidebarItem>
               </Stack>
@@ -454,7 +517,7 @@ function ActiveCard() {
             {column?.isClosed === false && activeCard?.isClosed === false && (
               <Stack direction="column" spacing={1} sx={{ mb: 1 }}>
                 {/* <SidebarItem><ArrowForwardOutlinedIcon fontSize="small" />Move</SidebarItem> */}
-                {currentBoard.ownerIds.includes(currentUser?._id) && (<Move activeCard={activeCard} />)}
+                {currentBoard.ownerIds.includes(currentUser?._id) && (<Move activeCard={activeCard} currentBoard={currentBoard} />)}
                 {/* <SidebarItem><ContentCopyOutlinedIcon fontSize="small" />Copy</SidebarItem> */}
                 <Copy activeCard={activeCard} />
                 <SidebarItem><ArchiveOutlinedIcon fontSize="small" />Archive</SidebarItem>
@@ -462,7 +525,7 @@ function ActiveCard() {
 
                 {/* Open / Close */}
                 {/* Delete */}
-                {currentBoard.ownerIds.includes(currentUser?._id) && (<Delete activeCard={activeCard} />)}
+                {currentBoard.ownerIds.includes(currentUser?._id) && (<Delete activeCard={activeCard} currentBoard={currentBoard}/>)}
               </Stack>
             )}
             {currentBoard.ownerIds.includes(currentUser?._id) && (<OpenClose column={column} activeCard={activeCard} onUpdateOpenCloseCard={onUpdateOpenCloseCard} />)}

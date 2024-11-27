@@ -1,6 +1,6 @@
 import { DndContext, DragOverlay, closestCenter, defaultDropAnimationSideEffects, getFirstCollision, pointerWithin, useSensor, useSensors } from '@dnd-kit/core'
 import { arrayMove } from '@dnd-kit/sortable'
-import { Box } from '@mui/material'
+import { Box, useMediaQuery } from '@mui/material'
 import { cloneDeep, isEmpty } from 'lodash'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { MouseSensor, TouchSensor } from '~/customLibraries/DndKitSensors'
@@ -10,6 +10,7 @@ import Card from './ListColumns/Column/ListCards/Card/Card'
 import ListColumns from './ListColumns/ListColumns'
 
 import { socketIoIntance } from '~/socketClient'
+import { useTheme } from '@emotion/react'
 
 const ACTIVE_DRAG_ITEM_TYPE = {
   COLUMN: 'COLUMN',
@@ -31,6 +32,12 @@ function BoardContent(props) {
   const [oldColumnBeforeDrop, setOldColumnBeforeDrop] = useState(null)
 
   const lastOverId = useRef(null)
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const BOARD_BAR_HEIGHT = isMobile ? '100px' : '62px';
+  // const BOARD_CONTENT_HEIGHT = `calc(100vh - ${theme.trelloCustom.appBarHeight} - ${BOARD_BAR_HEIGHT})`;
 
   useEffect(() => {
     if (board?.columns) {
@@ -249,7 +256,7 @@ function BoardContent(props) {
         <Box sx={{
           bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#34495e' : '#1976d2'),
           width: '100%',
-          height: (theme) => `calc(100vh - ${theme.trelloCustom.appBarHeight} - ${theme.trelloCustom.boardBarHeight})`,
+          height: (theme) => `calc(100vh - ${theme.trelloCustom.appBarHeight} - ${BOARD_BAR_HEIGHT})`,
           display: 'flex',
           p: '10px 0'
         }}>

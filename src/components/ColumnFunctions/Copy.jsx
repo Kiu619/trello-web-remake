@@ -5,7 +5,7 @@ import { useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { copyColumnAPI, fetchBoardDetailsApi, moveColumnToDifferentBoardAPI } from '~/apis'
-import AutoCompleteSearchBoard from '~/components/AppBar/SearchBoards/AutoCompleteSearchBoard'
+import AutoCompleteSearchBoard from '~/components/SearchInput/AutoCompleteSearchBoard'
 import { clearAndHideCurrentActiveBoard, fetchBoardDetailsApiRedux } from '~/redux/activeBoard/activeBoardSlice'
 import { socketIoIntance } from '~/socketClient'
 
@@ -162,7 +162,7 @@ function Copy({ column }) {
           />
 
           <Typography sx={{ textAlign: 'center', width: '100%', fontSize: '30px', fontWeight: 600 }}>
-                        Select destination to copy column
+            Select destination to copy column
           </Typography>
 
           <Typography sx={{ fontWeight: 450, mb: 2 }}>Board</Typography>
@@ -195,7 +195,7 @@ function Copy({ column }) {
             disabled={!selectedBoard || selectedPosition === ''}
             onClick={hanleMoveColumn}
           >
-                        Copy
+            Copy
           </Button>
         </Box>
       </Popover>

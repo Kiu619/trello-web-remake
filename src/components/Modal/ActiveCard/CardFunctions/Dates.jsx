@@ -92,6 +92,7 @@ function Dates({ onUpdateDueDate,
   // const [anchorEl, setAnchorEl] = useState(null)
   const activeCard = useSelector(selectActiveCard)
 
+  const [dueDateTitle, setDueDateTitle] = useState('') // title of due date
   const [selectedDate, setSelectedDate] = useState(null) // due date
   const [startDate, setStartDate] = useState(new Date()) // start date mặc định là ngày hiện tại
   const [currentMonth, setCurrentMonth] = useState(new Date())
@@ -107,6 +108,7 @@ function Dates({ onUpdateDueDate,
   useEffect(() => {
     if (activeCard?.dueDate) {
       const {
+        title: cardDueDateTitle,
         startDate: cardStartDate,
         startTime: cardStartTime,
         dueDate: cardDueDate,
@@ -132,6 +134,7 @@ function Dates({ onUpdateDueDate,
 
       // Set due date related states
       if (cardDueDate) {
+        setDueDateTitle(cardDueDateTitle)
         setDueDateChecked(true)
         setSelectedTime(cardDueTime || '10:10')
       } else {
@@ -275,7 +278,7 @@ function Dates({ onUpdateDueDate,
 
     // Kiểm tra nếu ngày bắt đầu bằng ngày kết thúc
     if (startDate && selectedDate &&
-            startDate.toDateString() === selectedDate.toDateString()) {
+      startDate.toDateString() === selectedDate.toDateString()) {
 
       // So sánh thời gian
       if (compareTime(newStartTime, selectedTime) >= 0) {
@@ -293,7 +296,7 @@ function Dates({ onUpdateDueDate,
 
     // Kiểm tra nếu ngày bắt đầu bằng ngày kết thúc
     if (startDate && selectedDate &&
-            startDate.toDateString() === selectedDate.toDateString()) {
+      startDate.toDateString() === selectedDate.toDateString()) {
 
       // So sánh thời gian
       if (compareTime(selectedStartTime, newDueTime) >= 0) {
@@ -332,7 +335,7 @@ function Dates({ onUpdateDueDate,
 
         // Nếu chọn cùng ngày, kiểm tra thời gian
         if (date.toDateString() === startDate.toDateString() &&
-                    compareTime(selectedStartTime, selectedTime) >= 0) {
+          compareTime(selectedStartTime, selectedTime) >= 0) {
           setStartTimeError('Start time must be before due time on the same day')
           return
         }
@@ -368,6 +371,7 @@ function Dates({ onUpdateDueDate,
     let dueDateData = null
     if (startDateChecked) {
       dueDateData = {
+        title: dueDateTitle,
         startDate: startDate,
         startTime: selectedStartTime,
         dueDate: selectedDate,
@@ -376,6 +380,7 @@ function Dates({ onUpdateDueDate,
       }
     } else {
       dueDateData = {
+        title: dueDateTitle,
         startDate: null,
         startTime: null,
         dueDate: selectedDate,
@@ -424,6 +429,36 @@ function Dates({ onUpdateDueDate,
               <CancelIcon color="error" sx={{ '&:hover': { color: 'error.light' } }} />
             </IconButton>
           </Box>
+
+          <TextField
+            fullWidth
+            variant='outlined'
+            size="small"
+            placeholder='Title'
+            value={dueDateTitle}
+            onChange={(e) => setDueDateTitle(e.target.value)}
+            sx={{
+              '& label': {},
+              '& .MuiOutlinedInput-root': {
+                backgroundColor: (theme) => theme.palette.mode === 'dark' ? '#33485D' : 'white',
+                '& fieldset': { borderColor: 'primary.main' }
+              },
+              '& .MuiOutlinedInput-root:hover': {
+                backgroundColor: (theme) => theme.palette.mode === 'dark' ? '#33485D' : 'white',
+                '& fieldset': { borderColor: 'primary.main' }
+              },
+              '& .MuiOutlinedInput-root.Mui-focused': {
+                backgroundColor: (theme) => theme.palette.mode === 'dark' ? '#33485D' : 'white',
+                '& fieldset': { borderColor: 'primary.main' }
+              },
+              '& .MuiOutlinedInput-input': {
+                px: '6px',
+                overflow: 'hidden',
+                whiteSpace: 'nowrap',
+                textOverflow: 'ellipsis'
+              }
+            }}
+          />
 
           <CalendarHeader>
             <IconButton size="small" onClick={handlePrevMonth}>
@@ -537,7 +572,7 @@ function Dates({ onUpdateDueDate,
             </Box>
 
             <Typography sx={{ mt: 2, color: 'text.secondary', fontSize: '0.875rem' }}>
-                            Reminders will be sent to all members and watchers of this card.
+              Reminders will be sent to all members and watchers of this card.
             </Typography>
 
             <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -545,13 +580,13 @@ function Dates({ onUpdateDueDate,
                 variant="contained"
                 color="info"
                 fullWidth
-                disabled={!selectedDate}
+                disabled={!selectedDate || !dueDateTitle}
                 onClick={handleSaveDueDate}
               >
-                                Save
+                Save
               </Button>
               <Button onClick={handleRemoveDueDate} variant="text" color="error" fullWidth>
-                                Remove
+                Remove
               </Button>
             </Box>
           </Box>

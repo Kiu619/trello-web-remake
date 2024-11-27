@@ -1,62 +1,78 @@
 import { useState } from 'react'
-import Box from '@mui/material/Box'
-import Avatar from '@mui/material/Avatar'
-import Tooltip from '@mui/material/Tooltip'
-import Popover from '@mui/material/Popover'
+import {
+  Box,
+  Avatar,
+  Tooltip,
+  Popover,
+  useTheme,
+  useMediaQuery
+} from '@mui/material'
 
 function BoardUserGroup({ boardUsers = [], limit = 5 }) {
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+
+  // Adjust limit for mobile view
+  const effectiveLimit = isMobile ? 5 : limit
+
   const [anchorPopoverElement, setAnchorPopoverElement] = useState(null)
   const isOpenPopover = Boolean(anchorPopoverElement)
   const popoverId = isOpenPopover ? 'board-all-users-popover' : undefined
+
   const handleTogglePopover = (event) => {
     if (!anchorPopoverElement) setAnchorPopoverElement(event.currentTarget)
     else setAnchorPopoverElement(null)
   }
 
-  // Lưu ý ở đây chúng ta không dùng Component AvatarGroup của MUI bởi nó không hỗ trợ tốt trong việc chúng ta cần custom & trigger xử lý phần tử tính toán cuối, đơn giản là cứ dùng Box và CSS - Style đám Avatar cho chuẩn kết hợp tính toán một chút thôi.
   return (
-    <Box sx={{ display: 'flex', gap: '4px' }}>
-      {/* Hiển thị giới hạn số lượng user theo số limit */}
+    <Box sx={{
+      display: 'flex',
+      gap: '4px',
+      alignItems: 'center'
+    }}>
       {boardUsers.map((user, index) => {
-        if (index < limit) {
+        if (index < effectiveLimit) {
           return (
             <Tooltip title={user?.displayName} key={index}>
               <Avatar
-                sx={{ width: 34, height: 34, cursor: 'pointer' }}
-                alt="kiundev"
+                sx={{
+                  width: { xs: 28, sm: 34 },
+                  height: { xs: 28, sm: 34 },
+                  cursor: 'pointer'
+                }}
+                alt={user?.displayName}
                 src={user?.avatar}
               />
             </Tooltip>
           )
         }
+        return null
       })}
 
-      {/* Nếu số lượng users nhiều hơn limit thì hiện thêm +number */}
-      {boardUsers.length > limit &&
+      {boardUsers.length > effectiveLimit && (
         <Tooltip title="Show more">
           <Box
             aria-describedby={popoverId}
             onClick={handleTogglePopover}
             sx={{
-              width: 36,
-              height: 36,
+              width: { xs: 28, sm: 36 },
+              height: { xs: 28, sm: 36 },
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '14px',
+              fontSize: { xs: '12px', sm: '14px' },
               fontWeight: '500',
               borderRadius: '50%',
               color: 'white',
               backgroundColor: '#a4b0be'
             }}
           >
-            +{boardUsers.length - limit}
+            +{boardUsers.length - effectiveLimit}
           </Box>
         </Tooltip>
-      }
+      )}
 
-      {/* Khi Click vào +number ở trên thì sẽ mở popover hiện toàn bộ users, sẽ không limit nữa */}
       <Popover
         id={popoverId}
         open={isOpenPopover}
@@ -64,16 +80,27 @@ function BoardUserGroup({ boardUsers = [], limit = 5 }) {
         onClose={handleTogglePopover}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
       >
-        <Box sx={{ p: 2, maxWidth: '235px', display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-          {boardUsers.map((user, index) =>
+        <Box sx={{
+          p: { xs: 1, sm: 2 },
+          maxWidth: '235px',
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: { xs: 0.5, sm: 1 }
+        }}>
+          {boardUsers.map((user, index) => (
             <Tooltip title={user?.displayName} key={index}>
               <Avatar
-                sx={{ width: 34, height: 34, cursor: 'pointer' }}
-                alt="kiudev"
+                sx={{
+                  width: { xs: 28, sm: 34 },
+                  height: { xs: 28, sm: 34 },
+                  margin: { xs: 0.5, sm: 0 },
+                  cursor: 'pointer'
+                }}
+                alt={user?.displayName}
                 src={user?.avatar}
               />
             </Tooltip>
-          )}
+          ))}
         </Box>
       </Popover>
     </Box>

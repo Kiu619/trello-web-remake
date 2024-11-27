@@ -3,9 +3,42 @@ import { Avatar, Box, Button, Card, Typography } from '@mui/material'
 import { Lock } from '@mui/icons-material'
 import { useSelector } from 'react-redux'
 import { selectCurrentUser } from '~/redux/user/userSlice'
+import { createNewNotificationAPI, fetchRequestToJoinBoardStatusAPI } from '~/apis'
+import { socketIoIntance } from '~/socketClient'
+import { useEffect, useState } from 'react'
 
-const PrivateBoard = () => {
+const PrivateBoard = ({ board }) => {
   const currentUser = useSelector(selectCurrentUser)
+  const [isSendRequest, setIsSendRequest] = useState(false)
+
+  // useEffect(() => {
+  //   fetchRequestToJoinBoardStatusAPI(board._id).then(res => {
+  //     if (res?.details?.status === 'PENDING') {
+  //       setIsSendRequest(true)
+  //     }
+  //   })
+  // }, [board._id])
+
+
+  const handleSendRequest = () => {
+    board?.ownerIds.forEach(ownerId => {
+      createNewNotificationAPI({
+        type: 'requestToJoinBoard',
+        userId: ownerId,
+        details: {
+          boardId: board._id,
+          boardTitle: board.title,
+          senderId: currentUser._id,
+          senderName: currentUser.username,
+          status: 'PENDING'
+        }
+      }).then(() => {
+        setIsSendRequest(true)
+        socketIoIntance.emit('FE_FETCH_NOTI', { userId: ownerId })
+      })
+    })
+  }
+
   return (
     <Box
       sx={{
@@ -61,7 +94,7 @@ const PrivateBoard = () => {
         >
           <Avatar
             src={currentUser?.avatar}
-            sx={{mr: 2}}
+            sx={{ mr: 2 }}
           >
           </Avatar>
           <Box>
@@ -77,6 +110,9 @@ const PrivateBoard = () => {
         {/* Buttons */}
         <Box>
           <Button
+            className='interceptor-loading'
+            disabled={isSendRequest}
+            onClick={handleSendRequest}
             variant="contained"
             sx={{
               backgroundColor: '#1565c0',
@@ -87,7 +123,7 @@ const PrivateBoard = () => {
               color: 'white'
             }}
           >
-            Send request
+            {isSendRequest ? 'Request sent' : 'Send request'}
           </Button>
         </Box>
         <Box marginTop={2}>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import AppBar from '~/components/AppBar/AppBar'
 import PageLoadingSpinner from '~/components/Loading/PageLoadingSpinner'
 import Container from '@mui/material/Container'
@@ -13,7 +13,6 @@ import HomeIcon from '@mui/icons-material/Home'
 import ArrowRightIcon from '@mui/icons-material/ArrowRight'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
-import CardMedia from '@mui/material/CardMedia'
 import Pagination from '@mui/material/Pagination'
 import PaginationItem from '@mui/material/PaginationItem'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
@@ -26,10 +25,9 @@ import theme from '~/theme'
 import { clearAndHideCurrentActiveCard } from '~/redux/activeCard/activeCardSlice'
 import { useDispatch, useSelector } from 'react-redux'
 import { clearAndHideCurrentActiveBoard } from '~/redux/activeBoard/activeBoardSlice'
-import { FormControl, InputLabel, MenuItem, Select } from '@mui/material'
+import { FormControl, InputLabel, MenuItem, Select, useTheme, useMediaQuery } from '@mui/material'
 import CreateBoardModal from './CreateNewBoardModal/Create'
 import { selectCurrentUser, selectIs2FAVerified } from '~/redux/user/userSlice'
-import Require2FA from '~/components/TwoFA/require-2fa'
 
 const SidebarItem = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -40,7 +38,7 @@ const SidebarItem = styled(Box)(({ theme }) => ({
   padding: '12px 16px',
   borderRadius: '8px',
   '&:hover': {
-    backgroundColor: theme.palette.mode === 'dark' ? '#33485D' : theme.palette.grey[300]
+    backgroundColor: theme.palette.mode === 'dark' ? '#212e3d' : theme.palette.grey[300]
   },
   '&.active': {
     color: theme.palette.mode === 'dark' ? '#90caf9' : '#0c66e4',
@@ -48,36 +46,74 @@ const SidebarItem = styled(Box)(({ theme }) => ({
   }
 }))
 
+// Custom styled components for responsive design
+const BoardCard = styled(Card)(({ theme }) => ({
+  // width: '100%',
+  margin: theme.spacing(1),
+  transition: 'transform 0.2s ease-in-out',
+  '&:hover': {
+    transform: 'translateY(-4px)',
+    boxShadow: theme.shadows[4]
+  }
+}))
+
+const MainContainer = styled(Container)(({ theme }) => ({
+  backgroundColor: theme.palette.mode === 'dark' ? '#34495e' : '#fff',
+  minHeight: '100vh',
+  // padding: theme.spacing(2),
+  // [theme.breakpoints.down('sm')]: {
+  //   padding: theme.spacing(1)
+  // }
+}))
+
+const SidebarContainer = styled(Grid)(({ theme }) => ({
+  [theme.breakpoints.down('md')]: {
+    marginBottom: theme.spacing(2)
+  }
+}))
+
+const BoardsContainer = styled(Grid)(({ theme }) => ({
+  [theme.breakpoints.up('md')]: {
+    paddingLeft: theme.spacing(3)
+  },
+  [theme.breakpoints.up('lg')]: {
+    paddingRight: theme.spacing(4)
+  },
+  [theme.breakpoints.up('xl')]: {
+    paddingRight: theme.spacing(8)
+  }
+}))
+
+const HeaderSection = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  marginBottom: theme.spacing(3),
+  [theme.breakpoints.down('sm')]: {
+    flexDirection: 'column',
+    gap: theme.spacing(2),
+    alignItems: 'flex-start'
+  }
+}))
+
 function BoardList() {
-  const currentUser = useSelector(selectCurrentUser)
-  const is_2fa_verified = useSelector(selectIs2FAVerified)
-  // Số lượng bản ghi boards hiển thị tối đa trên 1 page tùy dự án (thường sẽ là 12 cái)
-  const [boards, setBoards] = useState(null)
-  // Tổng toàn bộ số lượng bản ghi boards có trong Database mà phía BE trả về để FE dùng tính toán phân trang
-  const [totalBoards, setTotalBoards] = useState(null)
-
-  const [sortBy, setSortBy] = useState('title-asc')
-
-  const navigate = useNavigate()
-
-  // Xử lý phân trang từ url với MUI: https://mui.com/material-ui/react-pagination/#router-integration
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
   const location = useLocation()
-  /**
-   * Parse chuỗi string search trong location về đối tượng URLSearchParams trong JavaScript
-   * https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/URLSearchParams
-   */
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const query = new URLSearchParams(location.search)
-  /**
-   * Lấy giá trị page từ query, default sẽ là 1 nếu không tồn tại page từ url.
-   */
-  const page = parseInt(query.get('page') || '1', 10)
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
 
-  /** Create Board Modal */
+  // Sử dụng useMemo để tối ưu việc khởi tạo query object
+  const query = useMemo(() => new URLSearchParams(location.search), [location.search])
+  const page = useMemo(() => parseInt(query.get('page') || '1', 10), [query])
+
+  const [boards, setBoards] = useState(null)
+  const [totalBoards, setTotalBoards] = useState(null)
+  const [sortBy, setSortBy] = useState('title-asc')
   const [openCreateBoardModal, setOpenCreateBoardModal] = useState(false)
+
   const handleOpenCreateBoardModal = () => setOpenCreateBoardModal(true)
   const handleCloseCreateBoardModal = () => setOpenCreateBoardModal(false)
-  /** */
 
   useEffect(() => {
     const sortFromUrl = query.get('sort')
@@ -91,40 +127,33 @@ function BoardList() {
     setTotalBoards(res.totalBoards || 0)
   }
 
-  const dispatch = useDispatch()
-
   useEffect(() => {
     dispatch(clearAndHideCurrentActiveCard())
     dispatch(clearAndHideCurrentActiveBoard())
-
-    // Gọi API lấy danh sách boards ở đây...
     fetchBoardsAPI(location.search).then(updateStateData)
-  }, [dispatch, location.search], clearAndHideCurrentActiveCard)
-
-  const afterCreateNewBoard = () => {
-    // Gọi lại API lấy danh sách boards sau khi tạo mới board
-    fetchBoardsAPI(location.search).then(updateStateData)
-  }
+  }, [dispatch, location.search])
 
   const handleSortChange = (event) => {
     const newSortValue = event.target.value
     setSortBy(newSortValue)
-
-    // Update URL with sort parameter
     const currentQuery = new URLSearchParams(location.search)
     currentQuery.set('sort', newSortValue)
     if (page !== 1) currentQuery.set('page', page.toString())
-
     navigate(`/boards?${currentQuery.toString()}`)
   }
 
+  const afterCreateNewBoard = () => {
+    fetchBoardsAPI(location.search).then(updateStateData)
+  }
+
   const SortingControls = () => (
-    <FormControl sx={{ minWidth: 200, mb: 1 }}>
+    <FormControl sx={{ minWidth: isMobile ? '100%' : 200 }}>
       <InputLabel>Sort By</InputLabel>
       <Select
         value={sortBy}
         label="Sort By"
         onChange={handleSortChange}
+        fullWidth={isMobile}
       >
         <MenuItem value="title-asc">Title (A-Z)</MenuItem>
         <MenuItem value="title-desc">Title (Z-A)</MenuItem>
@@ -134,135 +163,160 @@ function BoardList() {
     </FormControl>
   )
 
-  // Lúc chưa tồn tại boards > đang chờ gọi api thì hiện loading
   if (!boards) {
     return <PageLoadingSpinner caption="Loading Boards..." />
   }
 
-
   return (
-    <Container disableGutters maxWidth={false} sx={{
-      bgcolor: theme => theme.palette.mode === 'dark' ? '#34495e' : '#fff',
-      minHeight: '100vh'
-    }}>
+    <MainContainer disableGutters maxWidth={false}>
       <AppBar />
-      <Box sx={{ paddingX: 2, mt: 4 }}>
-        <Grid container>
-          <Grid item xs={12} sm={3}>
-            <Stack direction="column" spacing={1}>
+      <Box sx={{ mt: 4 }}>
+        <Grid container spacing={2}>
+          <SidebarContainer item xs={12} md={3}>
+            <Stack
+              direction={isMobile ? 'row' : 'column'}
+              spacing={1}
+              sx={{
+                overflowX: isMobile ? 'auto' : 'visible',
+                pb: isMobile ? 1 : 0,
+                ml: 1,
+                mr: isMobile ? 0 : 1
+              }}
+            >
               <SidebarItem className="active">
                 <SpaceDashboardIcon fontSize="small" />
-                Boards
+                {!isMobile && 'Boards'}
               </SidebarItem>
               <SidebarItem>
                 <ListAltIcon fontSize="small" />
-                Templates
+                {!isMobile && 'Templates'}
               </SidebarItem>
               <SidebarItem>
                 <HomeIcon fontSize="small" />
-                Home
+                {!isMobile && 'Home'}
               </SidebarItem>
-            </Stack>
-            <Divider sx={{ my: 1 }} />
-            <Stack direction="column" spacing={1}>
-              {/* <SidebarCreateBoardModal afterCreateNewBoard={afterCreateNewBoard} /> */}
+              {!isMobile && <Divider sx={{ my: 1 }} />}
               <SidebarItem onClick={handleOpenCreateBoardModal}>
                 <LibraryAddIcon fontSize="small" />
-                Create a new board
+                {!isMobile && 'Create new board'}
               </SidebarItem>
-
             </Stack>
-          </Grid>
+          </SidebarContainer>
 
-          <Grid xs={12} sm={8.8} sx={{ ml: 1 }} >
-            {/* <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 3 }}>Your boards:</Typography> */}
-
-
-            <Box sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              mb: 3
-            }}>
-              <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-                Your boards:
+          <BoardsContainer item xs={12} md={9}>
+            <HeaderSection sx={{mx: 1}}>
+              <Typography
+                variant={isMobile ? 'h5' : 'h4'}
+                sx={{
+                  fontWeight: 'bold',
+                  mb: isMobile ? 1 : 0
+                }}
+              >
+                Your boards
               </Typography>
               <SortingControls />
-            </Box>
+            </HeaderSection>
 
-            {/* Trường hợp gọi API nhưng không tồn tại cái board nào trong Database trả về */}
-            {boards?.length === 0 &&
-              <Typography variant="span" sx={{ fontWeight: 'bold', mb: 3 }}>No result found!</Typography>
-            }
+            {boards?.length === 0 && (
+              <Typography variant="body1" sx={{ fontWeight: 'bold', mb: 3 }}>
+                No result found!
+              </Typography>
+            )}
 
-            {/* Trường hợp gọi API và có boards trong Database trả về thì render danh sách boards */}
-            {boards?.length > 0 &&
-              <Grid container>
-                {boards.map(b =>
-                  <Grid item xl={3} lg={3.8} md={5} sm={5.5} xs={10} key={b._id}>
-                    <Card sx={{ width: '280px', m: 1 }}>
-                      {/* Ý tưởng mở rộng về sau làm ảnh Cover cho board nhé */}
-                      {/* <CardMedia component="img" height="100" image="https://picsum.photos/100" /> */}
-                      <Box sx={{ height: '50px', backgroundColor: randomColor() }}></Box>
-
-                      <CardContent sx={{ p: 1.5, '&:last-child': { p: 1.5 } }}>
-                        <Typography gutterBottom variant="h6" component="div">
-                          {b?.title}
+            {boards?.length > 0 && (
+              <Grid container spacing={2}>
+                {boards.map(board => (
+                  <Grid
+                    item
+                    xs={12}
+                    sm={6}
+                    md={4}
+                    lg={3}
+                    key={board._id}
+                  >
+                    <BoardCard>
+                      <Box sx={{
+                        height: '120px',
+                        backgroundColor: randomColor(),
+                        borderRadius: '4px 4px 0 0'
+                      }} />
+                      <CardContent>
+                        <Typography
+                          variant="h6"
+                          component="div"
+                          sx={{
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            mb: 1
+                          }}
+                        >
+                          {board.title}
                         </Typography>
                         <Typography
                           variant="body2"
                           color="text.secondary"
-                          sx={{ overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-                          {b?.description}
+                          sx={{
+                            overflow: 'hidden',
+                            display: '-webkit-box',
+                            WebkitBoxOrient: 'vertical',
+                            WebkitLineClamp: 2,
+                            minHeight: '40px'
+                          }}
+                        >
+                          {board.description}
                         </Typography>
                         <Box
                           component={Link}
-                          to={`/board/${b._id}`}
+                          to={`/board/${board._id}`}
                           sx={{
-                            mt: 1,
+                            mt: 2,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'flex-end',
                             color: 'primary.main',
-                            '&:hover': { color: 'primary.light' }
-                          }}>
+                            textDecoration: 'none',
+                            '&:hover': {
+                              color: 'primary.dark',
+                              textDecoration: 'underline'
+                            }
+                          }}
+                        >
                           Go to board <ArrowRightIcon fontSize="small" />
                         </Box>
                       </CardContent>
-                    </Card>
+                    </BoardCard>
                   </Grid>
-                )}
+                ))}
               </Grid>
-            }
+            )}
 
-            {/* Trường hợp gọi API và có totalBoards trong Database trả về thì render khu vực phân trang  */}
-            {(totalBoards > 0) &&
-              <Box sx={{ my: 3, pr: 5, display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+            {totalBoards > 0 && (
+              <Box sx={{
+                my: 3,
+                display: 'flex',
+                justifyContent: 'center',
+                [theme.breakpoints.up('sm')]: {
+                  justifyContent: 'flex-end'
+                }
+              }}>
                 <Pagination
-                  size="large"
+                  size={isMobile ? 'medium' : 'large'}
                   color="secondary"
                   showFirstButton
                   showLastButton
                   count={Math.ceil(totalBoards / DEFAULT_ITEMS_PER_PAGE)}
                   page={page}
                   renderItem={(item) => {
-                    // Tạo một URLSearchParams mới cho mỗi page item
                     const searchParams = new URLSearchParams()
-
-                    // Luôn giữ lại tham số sort nếu có
                     if (sortBy) {
                       searchParams.set('sort', sortBy)
                     }
-
-                    // Thêm tham số page nếu không phải page mặc định
                     if (item.page !== DEFAULT_PAGE) {
                       searchParams.set('page', item.page.toString())
                     }
-
-                    // Tạo URL với các tham số
                     const queryString = searchParams.toString()
                     const to = queryString ? `?${queryString}` : ''
-
                     return (
                       <PaginationItem
                         component={Link}
@@ -273,16 +327,17 @@ function BoardList() {
                   }}
                 />
               </Box>
-            }
-          </Grid>
+            )}
+          </BoardsContainer>
         </Grid>
       </Box>
+
       <CreateBoardModal
         open={openCreateBoardModal}
         handleClose={handleCloseCreateBoardModal}
         afterCreateNewBoard={afterCreateNewBoard}
       />
-    </Container>
+    </MainContainer>
   )
 }
 

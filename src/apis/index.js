@@ -35,6 +35,46 @@ export const inviteUserToBoardAPI = async (data) => {
   return response.data
 }
 
+export const sendRequestToJoinBoardAPI = async (data) => {
+  const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/board/requestToJoin`, data)
+  toast.success('Send request successfully!')
+  return response.data
+}
+
+export const addBoardAdminAPI = async (boardId, userId) => {
+  const response = await authorizedAxiosInstance.put(`${API_ROOT}/v1/board/${boardId}/addBoardAdmin`, userId)
+  toast.success('Add admin successfully!')
+  return response.data
+}
+
+export const closeBoardAPI = async (boardId) => {
+  const response = await authorizedAxiosInstance.put(`${API_ROOT}/v1/board/${boardId}/close`)
+  toast.success('Close board successfully!')
+  return response.data
+}
+
+export const deleteBoardAPI = async (boardId) => {
+  const response = await authorizedAxiosInstance.delete(`${API_ROOT}/v1/board/${boardId}`)
+  toast.success('Delete board successfully!')
+  return response.data
+}
+
+export const openClosedBoardAPI = async (boardId, data) => {
+  const response = await authorizedAxiosInstance.put(`${API_ROOT}/v1/board/${boardId}/openClosed`, data)
+  return response.data
+}
+
+export const copyBoardAPI = async (boardId, data) => {
+  const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/board/copy/${boardId}`, data)
+  return response.data
+}
+
+export const leaveBoardAPI = async (boardId) => {
+  const response = await authorizedAxiosInstance.put(`${API_ROOT}/v1/board/${boardId}/leaveBoard`)
+  toast.success('Leave board successfully!')
+  return response.data
+}
+
 // Column API
 export const createNewColumnAPI = async (newColumn ) => {
   const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/column/`, newColumn)
@@ -149,5 +189,26 @@ export const disable2FA_API = async (otpToken) => {
 
 export const fetchCollaborationBoardByUserAPI = async (id, page, limit) => {
   const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/user/collaboration/${id}?page=${page}&limit=${limit}`)
+  return response.data
+}
+
+export const fetchUsersAPI = async (searchPath) => {
+  const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/user/${searchPath}`)
+  return response.data
+}
+
+// Notification API
+export const createNewNotificationAPI = async (data) => {
+  const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/notification`, data)
+  return response.data
+}
+
+export const markAsReadAllNotificationAPI = async () => {
+  const response = await authorizedAxiosInstance.put(`${API_ROOT}/v1/notification/markAsReadAll`)
+  return response.data
+}
+
+export const fetchRequestToJoinBoardStatusAPI = async (boardId) => {
+  const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/notification/requestToJoinBoardStatus/${boardId}`)
   return response.data
 }

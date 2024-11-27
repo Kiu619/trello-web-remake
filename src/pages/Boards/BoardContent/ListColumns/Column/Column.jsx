@@ -213,14 +213,15 @@ function Column(props) {
             >
               {column?.isClosed === false ? (
                 <Box>
-                  <MenuItem sx={{
-                    '&:hover': {
-                      color: 'primary.main',
-                      '& .add-card-icon': {
-                        color: 'primary.main'
+                  <MenuItem
+                    sx={{
+                      '&:hover': {
+                        color: 'primary.main',
+                        '& .add-card-icon': {
+                          color: 'primary.main'
+                        }
                       }
-                    }
-                  }} onClick={toggleOpenNewCardForm}>
+                    }} onClick={toggleOpenNewCardForm}>
                     <ListItemIcon>
                       <AddCard className='add-card-icon' fontSize="small" />
                     </ListItemIcon>

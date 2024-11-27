@@ -1,11 +1,11 @@
 import styled from '@emotion/styled'
 import CancelIcon from '@mui/icons-material/Cancel'
-import TaskAltOutlinedIcon from '@mui/icons-material/TaskAltOutlined'
 import { Box, Button, Grid, IconButton, Popover, Typography } from '@mui/material'
 import { useState } from 'react'
 import { toast } from 'react-toastify'
 import VisuallyHiddenInput from '~/components/Form/VisuallyHiddenInput'
 import { singleFileValidator } from '~/utils/validators'
+import PhotoOutlinedIcon from '@mui/icons-material/PhotoOutlined'
 
 const SidebarItem = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -86,13 +86,12 @@ function Cover({ callApiUpdateCard, card }) {
 
   const isImageFile = (fileName) => {
     const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'jfif']
-    const fileExtension = fileName.split('.').pop().toLowerCase()
     return imageExtensions.includes(fileName)
   }
 
   return (
     <>
-      <SidebarItem onClick={(e) => handleOpenPopover(e)}><TaskAltOutlinedIcon fontSize="small" />Cover</SidebarItem>
+      <SidebarItem onClick={(e) => handleOpenPopover(e)}><PhotoOutlinedIcon fontSize="small" />Cover</SidebarItem>
 
       <Popover
         id={id}

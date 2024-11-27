@@ -12,16 +12,16 @@ const OpenClose = ({ column, board, handleClose }) => {
   const dispatch = useDispatch()
 
   const handleReOpenColumn = () => {
-    onUpdateColumnTitle(false)
+    onUpdateOpenCloseColumn(false)
     handleClose()
   }
 
   const handleCloseColumn = () => {
-    onUpdateColumnTitle(true)
+    onUpdateOpenCloseColumn(true)
     handleClose()
   }
 
-  const onUpdateColumnTitle = (value) => {
+  const onUpdateOpenCloseColumn = (value) => {
     // Call API to update column title
     const updateData = { isClosed: value }
     updateColumnDetailsAPI(column._id, updateData).then((res) => {

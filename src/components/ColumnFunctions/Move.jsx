@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Popover, Select, MenuItem, FormControl, Button, Typography, Box, ListItemIcon, ListItemText } from '@mui/material'
 import ArrowForwardOutlinedIcon from '@mui/icons-material/ArrowForwardOutlined'
-import AutoCompleteSearchBoard from '~/components/AppBar/SearchBoards/AutoCompleteSearchBoard'
+import AutoCompleteSearchBoard from '~/components/SearchInput/AutoCompleteSearchBoard'
 import { fetchBoardDetailsApi, moveColumnToDifferentBoardAPI } from '~/apis'
 import { toast } from 'react-toastify'
 import { clearAndHideCurrentActiveBoard } from '~/redux/activeBoard/activeBoardSlice'

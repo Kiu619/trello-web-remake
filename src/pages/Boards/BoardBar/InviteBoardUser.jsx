@@ -1,38 +1,106 @@
-import { useState } from 'react'
-import Box from '@mui/material/Box'
-import Typography from '@mui/material/Typography'
-import Tooltip from '@mui/material/Tooltip'
-import Popover from '@mui/material/Popover'
-import Button from '@mui/material/Button'
+import { useState, forwardRef } from 'react'
+import {
+  Box,
+  Typography,
+  Tooltip,
+  Popover,
+  Button,
+  Avatar,
+  CircularProgress,
+  useTheme,
+  useMediaQuery
+} from '@mui/material'
 import PersonAddIcon from '@mui/icons-material/PersonAdd'
-import TextField from '@mui/material/TextField'
 import { useForm } from 'react-hook-form'
-import { EMAIL_RULE, FIELD_REQUIRED_MESSAGE, EMAIL_RULE_MESSAGE } from '~/utils/validators'
-import FieldErrorAlert from '~/components/Form/FieldErrorAlert'
-import { inviteUserToBoardAPI } from '~/apis'
-
+import { createNewNotificationAPI } from '~/apis'
 import { socketIoIntance } from '~/socketClient'
+import AutoCompleteSearchUser from '~/components/SearchInput/AutoCompleteSearchUser'
+import { useSelector } from 'react-redux'
+import { selectCurrentUser } from '~/redux/user/userSlice'
+import { toast } from 'react-toastify'
+import { selectCurrentActiveBoard } from '~/redux/activeBoard/activeBoardSlice'
 
-function InviteBoardUser({boardId}) {
+// Wrap AutoCompleteSearchUser with forwardRef
+const ForwardedAutoComplete = forwardRef((props, ref) => (
+  <AutoCompleteSearchUser {...props} />
+))
+
+ForwardedAutoComplete.displayName = 'ForwardedAutoComplete'
+
+function InviteBoardUser() {
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+
+  const currentUser = useSelector(selectCurrentUser)
+  const currentBoard = useSelector(selectCurrentActiveBoard)
+
   const [anchorPopoverElement, setAnchorPopoverElement] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [selectedUser, setSelectedUser] = useState(null)
+
   const isOpenPopover = Boolean(anchorPopoverElement)
   const popoverId = isOpenPopover ? 'invite-board-user-popover' : undefined
+
+  const { handleSubmit, reset } = useForm()
+
   const handleTogglePopover = (event) => {
-    if (!anchorPopoverElement) setAnchorPopoverElement(event.currentTarget)
-    else setAnchorPopoverElement(null)
+    if (!anchorPopoverElement) {
+      setAnchorPopoverElement(event.currentTarget)
+    } else {
+      handleClosePopover()
+    }
   }
 
-  const { register, handleSubmit, setValue, formState: { errors } } = useForm()
-  const submitInviteUserToBoard = (data) => {
-    const { inviteeEmail } = data
+  const handleClosePopover = () => {
+    setAnchorPopoverElement(null)
+    setSelectedUser(null)
+    reset()
+  }
 
-    inviteUserToBoardAPI({ inviteeEmail, boardId }).then(invitation => {
-      setValue('inviteeEmail', null)
-      setAnchorPopoverElement(null)
+  const handleUserSelect = (user) => {
+    setSelectedUser(user)
+  }
 
-      // Gửi thông báo tới server thông qua socket.io
-      socketIoIntance.emit('FE_USER_INVITED_TO_BOARD', invitation)
-    })
+  const submitInviteUserToBoard = async () => {
+    if (!selectedUser) {
+      toast.error('Please select a user to invite')
+      return
+    }
+
+    try {
+      if (selectedUser.email === currentUser.email) {
+        toast.error('You cannot invite yourself to the board')
+        return
+      }
+
+      if (currentBoard.ownerIds.includes(selectedUser._id) || currentBoard.memberIds.includes(selectedUser._id)) {
+        toast.error('This user is already in the board')
+        return
+      }
+
+      setLoading(true)
+      // Create notification
+      createNewNotificationAPI({
+        type: 'inviteUserToBoard',
+        userId: selectedUser._id,
+        details: {
+          boardId: currentBoard._id,
+          boardTitle: currentBoard.title,
+          senderId: currentUser._id,
+          senderName: currentUser.username,
+          status: 'PENDING'
+        }
+      }).then(() => {
+        toast.success('Invitation sent successfully!')
+        socketIoIntance.emit('FE_FETCH_NOTI', { userId: selectedUser._id })
+      })
+
+      handleClosePopover()
+    } catch (error) {
+      // toast.error(error.message || 'Failed to send invitation')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -43,63 +111,119 @@ function InviteBoardUser({boardId}) {
           onClick={handleTogglePopover}
           variant="outlined"
           startIcon={<PersonAddIcon />}
-          sx={{ color: 'white', borderColor: 'white', '&:hover': { borderColor: 'white' } }}
+          sx={{
+            color: 'white',
+            borderColor: 'white',
+            fontSize: { xs: '0.75rem', sm: '0.875rem' },
+            padding: { xs: '4px 8px', sm: '6px 16px' },
+            '&:hover': {
+              borderColor: 'white',
+              opacity: 0.8
+            }
+          }}
         >
-          Invite
+          {!isMobile && 'Invite'}
         </Button>
       </Tooltip>
 
-      {/* Khi Click vào butotn Invite ở trên thì sẽ mở popover */}
       <Popover
         id={popoverId}
         open={isOpenPopover}
         anchorEl={anchorPopoverElement}
-        onClose={handleTogglePopover}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        onClose={handleClosePopover}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: isMobile ? 'center' : 'right'
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: isMobile ? 'center' : 'right'
+        }}
       >
-        <form onSubmit={handleSubmit(submitInviteUserToBoard)} style={{ width: '320px' }}>
-          <Box sx={{ p: '15px 20px 20px 20px', display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Typography variant="span" sx={{ fontWeight: 'bold', fontSize: '16px' }}>Invite User To This Board!</Typography>
-            <Box>
-              <TextField
-                autoFocus
-                fullWidth
-                label="Enter email to invite..."
-                type="text"
-                variant="outlined"
-                {...register('inviteeEmail', {
-                  required: FIELD_REQUIRED_MESSAGE,
-                  pattern: { value: EMAIL_RULE, message: EMAIL_RULE_MESSAGE }
-                })}
-                error={!!errors['inviteeEmail']}
-                sx={{
-                  mt: 2,
-                  '& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline': {
-                      borderColor:theme => theme.palette.mode === 'dark' ? 'white' : 'black',
-                  },
-                  '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                      borderColor: 'primary.main',
-                  },
-                  '& label.Mui-focused': {
-                      color: 'primary.main'
-                  },
-                  '& .MuiInputLabel-outlined': {
-                      color:theme => theme.palette.mode === 'dark' ? 'white' : 'black',
-                  },
+        <form onSubmit={handleSubmit(submitInviteUserToBoard)}>
+          <Box sx={{
+            p: { xs: '10px 15px 15px 15px', sm: '15px 20px 20px 20px' },
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2,
+            width: { xs: '280px', sm: '320px' }
+          }}>
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 'bold',
+                fontSize: { xs: '14px', sm: '16px' }
               }}
-              />
-              <FieldErrorAlert errors={errors} fieldName={'inviteeEmail'} />
-            </Box>
+            >
+              Invite User To This Board
+            </Typography>
 
-            <Box sx={{ alignSelf: 'flex-end' }}>
+            <ForwardedAutoComplete
+              width="100%"
+              variant='popover'
+              value={selectedUser}
+              onUserSelect={handleUserSelect}
+            />
+
+            {selectedUser && (
+              <Box sx={{
+                p: 1,
+                borderRadius: 1,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                flexDirection: { xs: 'column', sm: 'row' },
+                textAlign: { xs: 'center', sm: 'left' }
+              }}>
+                <Avatar
+                  src={selectedUser.avatar}
+                  alt={selectedUser.displayName}
+                  sx={{
+                    width: { xs: 40, sm: 50 },
+                    height: { xs: 40, sm: 50 },
+                    borderRadius: '50%'
+                  }}
+                />
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                    textAlign: { xs: 'center', sm: 'left' }
+                  }}
+                >
+                  {selectedUser.displayName} ({selectedUser.email})
+                </Typography>
+              </Box>
+            )}
+
+            <Box sx={{
+              alignSelf: 'flex-end',
+              width: '100%',
+              display: 'flex',
+              justifyContent: { xs: 'center', sm: 'flex-end' }
+            }}>
               <Button
-                className="interceptor-loading"
                 type="submit"
                 variant="contained"
-                color="info"
+                color="primary"
+                disabled={loading || !selectedUser}
+                sx={{
+                  position: 'relative',
+                  width: { xs: '100%', sm: 'auto' }
+                }}
               >
-                Invite
+                {loading ? (
+                  <CircularProgress
+                    size={24}
+                    sx={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      marginTop: '-12px',
+                      marginLeft: '-12px'
+                    }}
+                  />
+                ) : 'Invite'}
               </Button>
             </Box>
           </Box>

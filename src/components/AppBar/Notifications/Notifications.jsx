@@ -14,11 +14,14 @@ import GroupAddIcon from '@mui/icons-material/GroupAdd'
 import DoneIcon from '@mui/icons-material/Done'
 import NotInterestedIcon from '@mui/icons-material/NotInterested'
 import { useDispatch, useSelector } from 'react-redux'
-import { fetchInvitationsAPI, selectCurrentNotifications, updateBoardInvitationAPI, addNotification } from '~/redux/notifications/notificationsSlice'
+import { createNewNotificationAPI, markAsReadAllNotificationAPI } from '~/apis'
+import { selectCurrentNotifications, updateBoardInvitationAPI, fetchNotificationsAPI, markAsReadAll, updateBoardRequestAPI } from '~/redux/notifications/notificationsSlice'
+import _ from 'lodash'
 
 import { socketIoIntance } from '~/socketClient'
 import { selectCurrentUser } from '~/redux/user/userSlice'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { Attachment, Comment, TaskAltOutlined } from '@mui/icons-material'
 
 const BOARD_INVITATION_STATUS = {
   PENDING: 'PENDING',
@@ -29,44 +32,71 @@ const BOARD_INVITATION_STATUS = {
 function Notifications() {
   const [anchorEl, setAnchorEl] = useState(null)
   const open = Boolean(anchorEl)
+  const [newNotification, setNewNotification] = useState(false)
+  const navigate = useNavigate()
+  const notifications = useSelector(selectCurrentNotifications)
+  const dispatch = useDispatch()
+  const currentUser = useSelector(selectCurrentUser)
+
+  // Kiểm tra có thông báo mới chưa đọc
+  useEffect(() => {
+    const hasUnread = notifications?.some(notification => !notification.isRead)
+    setNewNotification(hasUnread)
+  }, [notifications])
+
+  // Handle opening notifications dropdown and marking as read
   const handleClickNotificationIcon = (event) => {
     setAnchorEl(event.currentTarget)
-    setNewNotification(false)
+    if (newNotification) {
+      dispatch(markAsReadAll())
+      markAsReadAllNotificationAPI()
+      setNewNotification(false)
+    }
   }
+
   const handleClose = () => {
     setAnchorEl(null)
   }
-  //Kiểm tra có thông báo moi hay không
-  const [newNotification, setNewNotification] = useState(false)
-  const navigate = useNavigate()
 
-  const notifications = useSelector(selectCurrentNotifications)
-
-  const dispatch = useDispatch()
-  const currentUser = useSelector(selectCurrentUser)
   useEffect(() => {
-    dispatch(fetchInvitationsAPI())
+    dispatch(fetchNotificationsAPI())
 
-    // Tạo một socket.io để lắng nghe sự kiện BE_USER_INVITED_TO_BOARD
-    const onReceiveNewInvitation = (incomingInvitation) => {
-      if (incomingInvitation.inviteeId === currentUser._id) {
-        // Thêm bản ghi thông báo mới vào Redux
-        dispatch(addNotification(incomingInvitation))
-        setNewNotification(true)
+    const handleFetchNotifications = (userId) => {
+      if (userId?.userId === currentUser._id) {
+        dispatch(fetchNotificationsAPI())
       }
     }
 
-    socketIoIntance.on('BE_USER_INVITED_TO_BOARD', onReceiveNewInvitation)
+    socketIoIntance.on('BE_FETCH_NOTI', handleFetchNotifications)
 
     return () => {
-      socketIoIntance.off('BE_USER_INVITED_TO_BOARD', onReceiveNewInvitation)
+      socketIoIntance.off('BE_FETCH_NOTI', handleFetchNotifications)
     }
   }, [dispatch, currentUser._id])
 
-  const updateBoardInvitation = (status, invitationId) => {
-    dispatch(updateBoardInvitationAPI({ status, invitationId })).then((res) => {
-      if (res.payload.boardInvitation.status === BOARD_INVITATION_STATUS.ACCEPTED) {
-        navigate(`/board/${res.payload.boardInvitation.boardId}`)
+  const updateBoardRequest = (status, notificationId, senderId, boardId, boardTitle) => {
+    dispatch(updateBoardRequestAPI({ status, notificationId })).then((res) => {
+      if (res.payload.details.status === BOARD_INVITATION_STATUS.ACCEPTED) {
+        createNewNotificationAPI({
+          type: 'acceptedRequestToJoinBoard',
+          userId: senderId,
+          details: {
+            boardId: boardId,
+            boardTitle: boardTitle
+          }
+        }).then(() => {
+          socketIoIntance.emit('FE_FETCH_NOTI', { userId: senderId })
+        })
+      }
+    })
+  }
+
+  const updateBoardInvitation = (status, notificationId) => {
+    dispatch(updateBoardInvitationAPI({ status, notificationId })).then((res) => {
+      if (res.payload.details.status === BOARD_INVITATION_STATUS.ACCEPTED) {
+        setTimeout(() => {
+          navigate(`/board/${res.payload.details.boardId}`)
+        }, 1234)
       }
     })
   }
@@ -76,8 +106,6 @@ function Notifications() {
       <Tooltip title="Notifications">
         <Badge
           color="warning"
-          // variant="none"
-          // variant="dot"
           variant={newNotification ? 'dot' : 'none'}
           sx={{ cursor: 'pointer' }}
           id="basic-button-open-notification"
@@ -87,8 +115,6 @@ function Notifications() {
           onClick={handleClickNotificationIcon}
         >
           <NotificationsNoneIcon sx={{
-            // color: 'white'
-            // color: 'yellow'
             color: newNotification ? 'yellow' : 'white'
           }} />
         </Badge>
@@ -104,69 +130,195 @@ function Notifications() {
       >
         {(!notifications || notifications.length === 0) && <MenuItem sx={{ minWidth: 200 }}>No notifications.</MenuItem>}
 
-        {notifications?.map((notification, index) =>
-          <Box key={index}>
-            <MenuItem sx={{
-              minWidth: 200,
-              maxWidth: 360,
-              overflowY: 'auto'
-            }}>
+        {_.orderBy(notifications, ['createdAt'], ['desc']).map((notification, index) => {
+          let notificationContent
+          switch (notification.type) {
+          case 'inviteUserToBoard':
+            notificationContent = (
               <Box sx={{ maxWidth: '100%', wordBreak: 'break-word', whiteSpace: 'pre-wrap', display: 'flex', flexDirection: 'column', gap: 1 }}>
-                {/* Nội dung của thông báo */}
+
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Box><GroupAddIcon fontSize="small" /></Box>
-                  <Box><strong>{notification.inviter?.displayName}</strong> had invited you to join the board <strong>{notification?.board?.title}</strong></Box>
+                  <Box><strong>{notification?.details?.senderName}</strong> had invited you to join the board <strong>{notification.details.boardTitle}</strong></Box>
                 </Box>
 
-                {/* Khi Status của thông báo này là PENDING thì sẽ hiện 2 Button */}
-                {notification.boardInvitation?.status === BOARD_INVITATION_STATUS.PENDING &&
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, justifyContent: 'flex-end' }}>
-                    <Button
-                      className="interceptor-loading"
-                      type="submit"
-                      variant="contained"
-                      color="success"
-                      size="small"
-                      onClick={() => updateBoardInvitation(BOARD_INVITATION_STATUS.ACCEPTED, notification._id)}
-                    >
-                      Accept
-                    </Button>
-                    <Button
-                      className="interceptor-loading"
-                      type="submit"
-                      variant="contained"
-                      color="secondary"
-                      size="small"
-                      onClick={() => updateBoardInvitation(BOARD_INVITATION_STATUS.REJECTED, notification._id)}
-                    >
-                      Reject
-                    </Button>
-                  </Box>
+                {notification?.details?.status === BOARD_INVITATION_STATUS.PENDING &&
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, justifyContent: 'flex-end' }}>
+                      <Button
+                        className="interceptor-loading"
+                        type="submit"
+                        variant="contained"
+                        color="success"
+                        size="small"
+                        onClick={() => updateBoardInvitation(BOARD_INVITATION_STATUS.ACCEPTED, notification._id)}
+                      >
+                        Accept
+                      </Button>
+                      <Button
+                        className="interceptor-loading"
+                        type="submit"
+                        variant="contained"
+                        color="secondary"
+                        size="small"
+                        onClick={() => updateBoardInvitation(BOARD_INVITATION_STATUS.REJECTED, notification._id)}
+                      >
+                        Reject
+                      </Button>
+                    </Box>
                 }
 
-
-                {/* Khi Status của thông báo này là ACCEPTED hoặc REJECTED thì sẽ hiện thông tin đó lên */}
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, justifyContent: 'flex-end' }}>
-                  {notification.boardInvitation?.status === BOARD_INVITATION_STATUS.ACCEPTED &&
-                    <Chip icon={<DoneIcon />} label="Accepted" color="success" size="small" />}
-                  {notification.boardInvitation?.status === BOARD_INVITATION_STATUS.REJECTED &&
-                    <Chip icon={<NotInterestedIcon />} label="Rejected" color="error" size="small" />}
-                </Box>
-                {/* Thời gian của thông báo */}
-                <Box sx={{ textAlign: 'right' }}>
-                  <Typography variant="span" sx={{ fontSize: '13px' }}>
-                    {moment(notification.createdAt).format('llll')}
-                  </Typography>
+                  {notification?.details?.status === BOARD_INVITATION_STATUS.ACCEPTED &&
+                      <Chip icon={<DoneIcon />} label="Accepted" color="success" size="small" />}
+                  {notification?.details?.status === BOARD_INVITATION_STATUS.REJECTED &&
+                      <Chip icon={<NotInterestedIcon />} label="Rejected" color="error" size="small" />}
                 </Box>
               </Box>
-            </MenuItem>
-            {/* Cái đường kẻ Divider sẽ không cho hiện nếu là phần tử cuối */}
-            {index !== (notifications?.length - 1) && <Divider />}
-          </Box>
-        )
-        }
-      </Menu >
-    </Box >
+            )
+            break
+
+          case 'mention':
+            notificationContent = (
+              <Box onClick={handleClose} sx={{ maxWidth: '100%', wordBreak: 'break-word', whiteSpace: 'pre-wrap', display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Link to={`/board/${notification?.details?.boardId}/card/${notification?.details?.cardId}`} style={{ textDecoration: 'none' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: theme => theme.palette.mode === 'dark' ? '#fff' : '#000' }}>
+                    <Comment />
+                    <Box>
+                      <strong>{notification?.details?.senderName}</strong> had mentioned you in the card <strong>{notification?.details?.cardTitle}</strong> in the board <strong>{notification?.details?.boardTitle}</strong>
+                    </Box>
+                  </Box>
+                </Link>
+              </Box>
+            )
+            break
+
+            case 'duedateInCard':
+            notificationContent = (
+              <Box onClick={handleClose} sx={{ maxWidth: '100%', wordBreak: 'break-word', whiteSpace: 'pre-wrap', display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Link to={`/board/${notification?.details?.boardId}/card/${notification?.details?.cardId}`} style={{ textDecoration: 'none' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: theme => theme.palette.mode === 'dark' ? '#fff' : '#000' }}>
+                    <Comment />
+                    <Box>
+                      <strong>{notification?.details?.senderName}</strong> had set a due date in the card <strong>{notification?.details?.cardTitle}</strong> in the board <strong>{notification?.details?.boardTitle}</strong>
+                    </Box>
+                  </Box>
+                </Link>
+              </Box>
+            )
+            break
+
+          case 'assignment':
+            notificationContent = (
+              <Box onClick={handleClose} sx={{ maxWidth: '100%', wordBreak: 'break-word', whiteSpace: 'pre-wrap', display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Link to={`/board/${notification?.details?.boardId}/card/${notification?.details?.cardId}`} style={{ textDecoration: 'none' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: theme => theme.palette.mode === 'dark' ? '#fff' : '#000' }}>
+                    <TaskAltOutlined />
+                    <Box>
+                      You have been assigned to the card <strong>{notification?.details?.cardTitle}</strong> in the board <strong>{notification?.details?.boardTitle}</strong> by <strong>{notification?.details?.senderName}</strong>
+                    </Box>
+                  </Box>
+                </Link>
+              </Box>
+            )
+            break
+
+          case 'attachmentInCard':
+            notificationContent = (
+              <Box onClick={handleClose} sx={{ maxWidth: '100%', wordBreak: 'break-word', whiteSpace: 'pre-wrap', display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Link to={`/board/${notification?.details?.boardId}/card/${notification?.details?.cardId}`}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: theme => theme.palette.mode === 'dark' ? '#fff' : '#000' }}>
+                    <Attachment />
+                    <Box>
+                      <strong>{notification?.details?.senderName}</strong> had upload an attachment <strong>{notification?.details?.attachmentName}</strong> in the card <strong>{notification?.details?.cardTitle}</strong> in the board <strong>{notification?.details?.boardTitle}</strong>
+                    </Box>
+                  </Box>
+                </Link>
+              </Box>
+            )
+            break
+
+          case 'acceptedRequestToJoinBoard':
+            notificationContent = (
+              <Box onClick={handleClose} sx={{ maxWidth: '100%', wordBreak: 'break-word', whiteSpace: 'pre-wrap', display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Link to={`/board/${notification?.details?.boardId}`}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: theme => theme.palette.mode === 'dark' ? '#fff' : '#000' }}>
+                    <GroupAddIcon />
+                    <Box>
+                      Your request to join the board <strong>{notification?.details?.boardTitle}</strong> has been accepted
+                    </Box>
+                  </Box>
+                </Link>
+              </Box>
+            )
+            break
+
+          case 'requestToJoinBoard':
+            notificationContent = (
+              <Box sx={{ maxWidth: '100%', wordBreak: 'break-word', whiteSpace: 'pre-wrap', display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box><GroupAddIcon fontSize="small" /></Box>
+                  <Box><strong>{notification?.details?.senderName}</strong> had requested to join the board <strong>{notification.details.boardTitle}</strong></Box>
+                </Box>
+
+                {notification?.details?.status === BOARD_INVITATION_STATUS.PENDING &&
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, justifyContent: 'flex-end' }}>
+                      <Button
+                        className="interceptor-loading"
+                        type="submit"
+                        variant="contained"
+                        color="success"
+                        size="small"
+                        onClick={() => updateBoardRequest(BOARD_INVITATION_STATUS.ACCEPTED, notification._id, notification.details.senderId, notification.details.boardId, notification.details.boardTitle)}
+                      >
+                        Accept
+                      </Button>
+                      <Button
+                        className="interceptor-loading"
+                        type="submit"
+                        variant="contained"
+                        color="secondary"
+                        size="small"
+                        onClick={() => updateBoardRequest(BOARD_INVITATION_STATUS.REJECTED, notification._id)}
+                      >
+                        Reject
+                      </Button>
+                    </Box>
+                }
+
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, justifyContent: 'flex-end' }}>
+                  {notification?.details?.status === BOARD_INVITATION_STATUS.ACCEPTED &&
+                      <Chip icon={<DoneIcon />} label="Accepted" color="success" size="small" />}
+                  {notification?.details?.status === BOARD_INVITATION_STATUS.REJECTED &&
+                      <Chip icon={<NotInterestedIcon />} label="Rejected" color="error" size="small" />}
+                </Box>
+              </Box>
+            )
+            break
+
+          default:
+          }
+
+          return (
+            <Box key={index}>
+              <MenuItem sx={{
+                minWidth: 200,
+                maxWidth: 360,
+                overflowY: 'auto'
+              }}>
+                {notificationContent}
+              </MenuItem>
+              <Box sx={{ mr: 2, textAlign: 'right' }}>
+                <Typography variant="span" sx={{ fontSize: '13px' }}>
+                  {moment(notification.createdAt).format('llll')}
+                </Typography>
+              </Box>
+              {index !== (notifications?.length - 1) && <Divider />}
+            </Box>
+          )
+        })}
+
+      </Menu>
+    </Box>
   )
 }
 

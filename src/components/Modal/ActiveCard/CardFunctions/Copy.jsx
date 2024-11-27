@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Box, Button, FormControl, FormHelperText, MenuItem, Popover, Select, TextField, Typography } from '@mui/material'
 import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined'
-import AutoCompleteSearchBoard from '~/components/AppBar/SearchBoards/AutoCompleteSearchBoard'
+import AutoCompleteSearchBoard from '~/components/SearchInput/AutoCompleteSearchBoard'
 import { copyCardAPI, fetchBoardDetailsApi } from '~/apis'
 import styled from '@emotion/styled'
 import FormGroup from '@mui/material/FormGroup'

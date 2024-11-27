@@ -1,11 +1,17 @@
-import { AddToDrive, Bolt, Dashboard, FilterList, Star, StarBorder, VpnLock } from '@mui/icons-material'
-import { Box, Chip, Tooltip, useTheme } from '@mui/material'
-import { useState } from 'react'
+import { Star, StarBorder, VpnLock } from '@mui/icons-material'
+import { Box, Chip, IconButton, Tooltip, useMediaQuery } from '@mui/material'
+import { useDispatch, useSelector } from 'react-redux'
+import { updateBoardDetailsAPI } from '~/apis'
+import ToggleFocusInput from '~/components/Form/ToggleFocusInput'
+import { selectCurrentUser, selectStarredBoards, updateStarredBoard, updateUserAPI } from '~/redux/user/userSlice'
+import { socketIoIntance } from '~/socketClient'
 import { capitalizeFirstLetter } from '~/utils/formmatters'
 import BoardUserGroup from './BoardUserGroup'
 import InviteBoardUser from './InviteBoardUser'
-import { useSelector, useDispatch } from 'react-redux'
-import { selectCurrentUser, selectStarredBoards, updateStarredBoard, updateUserAPI } from '~/redux/user/userSlice'
+import BoardMenu from './BoardMenu/BoardMenu'
+import { useTheme } from '@emotion/react'
+import PublicOutlinedIcon from '@mui/icons-material/PublicOutlined'
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
 
 const MENU_STYLE = {
   color: 'white',
@@ -21,25 +27,35 @@ const MENU_STYLE = {
   }
 }
 
+const ICON_STYLE = {
+  color: 'white',
+  '&:hover': {
+    color: 'primary.main'
+  }
+}
+
 function BoardBar(props) {
   const { board } = props
   const currentUser = useSelector(selectCurrentUser)
+
+  const isMobile = useMediaQuery('(max-width:775px)')
+
+  const BOARD_BAR_HEIGHT = isMobile ? '100px' : '62px'
+
   const starredBoardsFromRedux = useSelector(selectStarredBoards) || []
   const dispatch = useDispatch()
   const isStarred = starredBoardsFromRedux.some(starredBoard => starredBoard._id === board._id)
 
-  const [anchorEl, setAnchorEl] = useState(null);
-  // Hàm mở Popover, lưu trữ tham chiếu DOM của thành phần kích hoạt vào anchorEl
-  const handleOpenPopover = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
+  const onUpdateBoardTitle = (newTitle) => {
+    if (newTitle !== board.title) {
+      const updateData = { title: newTitle }
+      updateBoardDetailsAPI(board._id, updateData)
 
-  const handleClosePopover = () => {
-    setAnchorEl(null);
-  };
-
-  const openPopover = Boolean(anchorEl);
-  const id = openPopover ? 'simple-popover' : undefined;
+      setTimeout(() => {
+        socketIoIntance.emit('batch', { boardId: board._id })
+      }, 1234)
+    }
+  }
 
   const handleStarBoard = () => {
     // nếu có trong danh sách thì remove, không có thì add
@@ -58,9 +74,11 @@ function BoardBar(props) {
   return (
     <Box sx={{
       width: '100%',
-      height: (theme) => theme.trelloCustom.boardBarHeight,
+      height: BOARD_BAR_HEIGHT,
       display: 'flex',
-      alignItems: 'center',
+      flexDirection: isMobile ? 'column' : 'row',
+      // flexDirection: 'row',
+      // alignItems: 'center',
       justifyContent: 'space-between',
       gap: 2,
       paddingX: 2,
@@ -69,75 +87,32 @@ function BoardBar(props) {
       borderBottom: '1px solid #00bfa5'
     }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Tooltip title={board?.description}>
-            <Chip
-              sx={MENU_STYLE}
-              icon={<Dashboard />}
-              label={board?.title}
-              clickable
-            >
-            </Chip>
-          </Tooltip>
-        </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Tooltip title={board?.type}>
-            <Chip
-              sx={MENU_STYLE}
-              icon={<VpnLock />}
-              label={capitalizeFirstLetter(board?.type)}
-              clickable
-            >
-            </Chip>
-          </Tooltip>
-        </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+        <ToggleFocusInput
+          value={board.title}
+          onChangedValue={onUpdateBoardTitle}
+        />
+        <Tooltip title={capitalizeFirstLetter(board?.type)}>
           <Chip
             sx={MENU_STYLE}
-            icon={<AddToDrive />}
-            label='Add to GG Drive'
+            icon={board?.type === 'public' ? <PublicOutlinedIcon /> : <LockOutlinedIcon />}
+            label={capitalizeFirstLetter(board?.type)}
             clickable
           >
           </Chip>
-        </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Chip
-            sx={MENU_STYLE}
-            icon={<Bolt />}
-            label='Automation'
-            clickable
-          >
-          </Chip>
-        </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Chip
-            sx={MENU_STYLE}
-            icon={<FilterList />}
-            label='Filters'
-            clickable
-          >
-          </Chip>
-        </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Chip
-            sx={{
-              ...MENU_STYLE,
-              '.MuiSvgIcon-root': {
-                color: isStarred ? 'yellow' : 'white'
-              }
-            }}
-            icon={isStarred ? <Star /> : <StarBorder />}
-            // icon={<Star /> }
-            clickable
-            onClick={handleStarBoard}
-          />
-        </Box>
+        </Tooltip>
+        <Tooltip title='Click to star or unstar this board. Starred boards show up at the top of your boards list.'>
+          <IconButton onClick={handleStarBoard} sx={ICON_STYLE}>
+            {isStarred ? <Star sx={{ color: 'yellow' }} /> : <StarBorder />}
+          </IconButton>
+        </Tooltip>
       </Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-        {/* <InviteOtherUser board={board} /> */}
-        <InviteBoardUser boardId={board._id}/>
-
-        <BoardUserGroup boardUsers={board?.FE_allUsers} />
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          {/* <InviteOtherUser board={board} /> */}
+          <InviteBoardUser boardId={board._id} />
+          <BoardUserGroup boardUsers={board?.FE_allUsers} />
+          <BoardMenu board={board} currentUser={currentUser} />
+        </Box>
       </Box>
     </Box>
   )

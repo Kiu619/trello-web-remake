@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Box, Button, FormControl, FormHelperText, MenuItem, Popover, Select, Typography } from '@mui/material'
 import ArrowForwardOutlinedIcon from '@mui/icons-material/ArrowForwardOutlined'
-import AutoCompleteSearchBoard from '~/components/AppBar/SearchBoards/AutoCompleteSearchBoard'
+import AutoCompleteSearchBoard from '~/components/SearchInput/AutoCompleteSearchBoard'
 import { fetchBoardDetailsApi, moveCardToDifferentBoardAPI } from '~/apis'
 import styled from '@emotion/styled'
 import { useDispatch, useSelector } from 'react-redux'
@@ -9,6 +9,7 @@ import { clearAndHideCurrentActiveBoard, selectCurrentActiveBoard, updateCardInB
 import { useNavigate } from 'react-router-dom'
 import { clearAndHideCurrentActiveCard } from '~/redux/activeCard/activeCardSlice'
 import { toast } from 'react-toastify'
+import { socketIoIntance } from '~/socketClient'
 
 // Styled component remains the same
 const SidebarItem = styled(Box)(({ theme }) => ({
@@ -31,7 +32,7 @@ const SidebarItem = styled(Box)(({ theme }) => ({
   }
 }))
 
-function Move({ activeCard }) {
+function Move({ activeCard, currentBoard }) {
   const [anchorEl, setAnchorEl] = useState(null)
   const [columns, setColumns] = useState([])
   const [selectedColumn, setSelectedColumn] = useState('')
@@ -136,6 +137,10 @@ function Move({ activeCard }) {
     moveCardToDifferentBoardAPI(cardId, updateData).then((res) => {
       dispatch(clearAndHideCurrentActiveBoard())
       dispatch(clearAndHideCurrentActiveCard())
+      setTimeout(() => {
+        socketIoIntance.emit('batch', { boardId: currentBoard._id })
+        socketIoIntance.emit('activeCardUpdate', activeCard._id)
+      }, 1234)
       setTimeout(() => {
         navigate(`/board/${selectedBoard._id}`)
       }, 1500)

@@ -50,6 +50,7 @@ function Board() {
     // Cleanup function to remove the event listener when the component unmounts
     return () => {
       socketIoIntance.off('batch', handleBatch)
+      socketIoIntance.off('copyCardInSameBoard', handleCardCopyInSameBoard)
       // socketIoIntance.off('copyCardInSameBoard', handleCardCopyInSameBoard)
     }
   }, [boardId, dispatch])
@@ -157,7 +158,6 @@ mång)
       <BoardBar board={board} />
       <BoardContent
         board={board}
-
         moveColumns={moveColumns}
         moveCardInTheSameColumns={moveCardInTheSameColumns}
         moveCardToDifferentColumn={moveCardToDifferentColumn}
@@ -168,7 +168,7 @@ mång)
   const boardForShareContent = (
     <Container disableGutters maxWidth={false} sx={{ height: '100vh' }}>
       <AppBar />
-      <PrivateBoard />
+      <PrivateBoard board={board} />
     </Container>
   )
 

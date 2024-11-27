@@ -41,7 +41,7 @@ const OpenClose = ({ column, activeCard, onUpdateOpenCloseCard }) => {
           Re-open
         </SidebarItem>
       )}
-      {column?.isClosed === false && activeCard?.isClosed === true && (
+      {column?.isClosed === false && activeCard?.isClosed === false && (
         <SidebarItem onClick={handleCloseCard}>
           <DoDisturbOutlinedIcon/>
           Close

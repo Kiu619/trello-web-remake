@@ -50,7 +50,7 @@ function Profiles() {
         id="basic-menu-profiles"
         anchorEl={anchorEl}
         open={open}
-        onClose={handleClose}A
+        onClose={handleClose}
         MenuListProps={{
           'aria-labelledby': 'basic-button-profiles'
         }}

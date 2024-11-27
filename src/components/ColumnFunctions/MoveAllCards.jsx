@@ -1,12 +1,10 @@
-import { useCallback, useEffect, useState } from 'react'
-import { Popover, Select, MenuItem, FormControl, Button, Typography, Box, ListItemIcon, ListItemText, FormHelperText } from '@mui/material'
 import ArrowForwardOutlinedIcon from '@mui/icons-material/ArrowForwardOutlined'
-import AutoCompleteSearchBoard from '~/components/AppBar/SearchBoards/AutoCompleteSearchBoard'
-import { fetchBoardDetailsApi, moveAllCardsToAnotherColumnAPI, moveColumnToDifferentBoardAPI } from '~/apis'
-import { toast } from 'react-toastify'
-import { clearAndHideCurrentActiveBoard, fetchBoardDetailsApiRedux } from '~/redux/activeBoard/activeBoardSlice'
+import { Box, Button, FormControl, FormHelperText, ListItemIcon, ListItemText, MenuItem, Popover, Select, Typography } from '@mui/material'
+import { useCallback, useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
+import { fetchBoardDetailsApi, moveAllCardsToAnotherColumnAPI } from '~/apis'
+import { fetchBoardDetailsApiRedux } from '~/redux/activeBoard/activeBoardSlice'
 import { socketIoIntance } from '~/socketClient'
 
 function MoveAllCards({ column }) {
@@ -20,7 +18,6 @@ function MoveAllCards({ column }) {
   const [selectedColumn, setSelectedColumn] = useState('')
 
   const dispatch = useDispatch()
-  const navigate = useNavigate()
 
   const handleOpenPopover = useCallback((event) => {
     setAnchorEl(event.currentTarget)
@@ -50,7 +47,6 @@ function MoveAllCards({ column }) {
           }
         }
       } catch (error) {
-        console.error('Failed to fetch board details:', error)
         setErrorMessage('Failed to fetch board details')
       }
     }
@@ -59,7 +55,7 @@ function MoveAllCards({ column }) {
   }, [column._id, column.boardId])
 
 
-  const hanleMoveAllCards = async () => {
+  const handleMoveAllCards = async () => {
     try {
       const newColumnId = selectedColumn
       const res = await moveAllCardsToAnotherColumnAPI(column._id, newColumnId)
@@ -111,7 +107,7 @@ function MoveAllCards({ column }) {
       >
         <Box sx={{ p: 2, width: 300 }}>
           <Typography sx={{ textAlign: 'center', width: '100%', fontSize: '30px', fontWeight: 600 }}>
-                        Select destination to move column
+            Select destination to move column
           </Typography>
 
           <FormControl fullWidth error={!!errorMessage}>
@@ -143,9 +139,9 @@ function MoveAllCards({ column }) {
             fullWidth
             sx={{ mt: 2 }}
             disabled={selectedColumn === ''}
-            onClick={hanleMoveAllCards}
+            onClick={handleMoveAllCards}
           >
-                        Move
+            Move
           </Button>
         </Box>
       </Popover>

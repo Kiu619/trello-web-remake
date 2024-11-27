@@ -32,8 +32,7 @@ const SidebarItem = styled(Box)(({ theme }) => ({
   }
 }))
 
-function Delete({ activeCard }) {
-  const currentBoard = useSelector(selectCurrentActiveBoard)
+function Delete({ activeCard, currentBoard }) {
   const dispatch = useDispatch()
   const confirmDeleteCard = useConfirm()
   const navigate = useNavigate()
@@ -60,6 +59,7 @@ function Delete({ activeCard }) {
 
         setTimeout(() => {
           socketIoIntance.emit('batch', { boardId: activeCard.boardId })
+          socketIoIntance.emit('activeCardUpdate', activeCard._id)
         }, 2000)
       })
       .catch(() => {

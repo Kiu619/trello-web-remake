@@ -1,26 +1,22 @@
-
-import { HelpCenterOutlined, LibraryAdd } from '@mui/icons-material';
-import AppsIcon from '@mui/icons-material/Apps';
-import { Box, Button, Tooltip, Typography, useTheme } from '@mui/material';
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import ModeSelect from '~/components/ModeSelect/ModeSelect';
-import CreateBoardModal from '~/pages/Boards/CreateNewBoardModal/Create';
-import Profiles from './Menus/Profiles';
-import Recent from './Menus/Recent';
-import Starred from './Menus/Starred';
-import Templates from './Menus/Templates';
-import Workspaces from './Menus/Workspaces';
-import Notifications from './Notifications/Notifications';
-import AutoCompleteSearchBoard from './SearchBoards/AutoCompleteSearchBoard';
-
+import { ExpandMore, HelpCenterOutlined, LibraryAdd, MoreVert } from '@mui/icons-material'
+import AppsIcon from '@mui/icons-material/Apps'
+import { Box, Button, IconButton, Menu, MenuItem, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material'
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import ModeSelect from '~/components/ModeSelect/ModeSelect'
+import CreateBoardModal from '~/pages/Boards/CreateNewBoardModal/Create'
+import Profiles from './Menus/Profiles'
+import Recent from './Menus/Recent'
+import Starred from './Menus/Starred'
+import Templates from './Menus/Templates'
+import Notifications from './Notifications/Notifications'
+import AutoCompleteSearchBoard from '../SearchInput/AutoCompleteSearchBoard'
 
 function AppBar() {
-
-  const navigate = useNavigate();
+  const navigate = useNavigate()
+  const isMobile = useMediaQuery('(max-width:975px)')
 
   const afterCreateNewBoardFromAppBar = (newBoard) => {
-    console.log('newBoard', newBoard)
     navigate(`/board/${newBoard._id}`)
   }
 
@@ -30,9 +26,15 @@ function AppBar() {
   const handleCloseCreateBoardModal = () => setOpenCreateBoardModal(false)
   /** */
 
+  /** More Menu */
+  const [anchorEl, setAnchorEl] = useState(null)
+  const handleOpenMoreMenu = (event) => setAnchorEl(event.currentTarget)
+  const handleCloseMoreMenu = () => setAnchorEl(null)
+  const openMoreMenu = Boolean(anchorEl)
+  /** */
+
   return (
     <Box px={2} sx={{
-      // backgroundColor: 'primary.light',
       width: '100%',
       height: (theme) => theme.trelloCustom.appBarHeight,
       display: 'flex',
@@ -46,45 +48,74 @@ function AppBar() {
     }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
         <Link to='/boards'>
-          <AppsIcon sx={{ color: 'white', verticalAlign: 'middle' }} />
-        </Link>
-        <Link to='/'>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Typography variant='span' sx={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'white', cursor: 'pointer' }}
-            >
+            <Typography variant='span' sx={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'white', cursor: 'pointer' }}>
               Trello
             </Typography>
           </Box>
         </Link>
 
-        <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1 }}>
-          <Workspaces />
-          <Recent />
-          <Starred />
-          <Templates />
-          <Button
-            variant='outlined'
-            startIcon={<LibraryAdd />}
-            onClick={handleOpenCreateBoardModal}
-            sx={{ color: 'white' }}>Create</Button>
-        </Box>
+        {isMobile ? (
+          <>
+            <Button
+              sx={{ color: 'white' }}
+              id="basic-button-recent"
+              aria-controls="more-menu"
+              aria-haspopup="true"
+              aria-expanded={open ? 'true' : undefined}
+              onClick={handleOpenMoreMenu}
+              endIcon={<ExpandMore />}
+            >
+              More
+            </Button>
+            <Menu
+              id="more-menu"
+              anchorEl={anchorEl}
+              open={openMoreMenu}
+              onClose={handleCloseMoreMenu}
+              MenuListProps={{
+                'aria-labelledby': 'more-button'
+              }}
+            >
+              <MenuItem>
+                <Recent />
+              </MenuItem>
+              <MenuItem>
+                <Starred />
+              </MenuItem>
+              <MenuItem>
+                <Templates />
+              </MenuItem>
+              <MenuItem onClick={() => { handleOpenCreateBoardModal(); handleCloseMoreMenu() }}>
+                <LibraryAdd sx={{ mr: 1 }} /> Create
+              </MenuItem>
+            </Menu>
+          </>
+        ) : (
+          <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1 }}>
+            <Recent />
+            <Starred />
+            <Templates />
+            <Button
+              variant='outlined'
+              startIcon={<LibraryAdd />}
+              onClick={handleOpenCreateBoardModal}
+              sx={{ color: 'white' }}
+            >
+              Create
+            </Button>
+          </Box>
+        )}
       </Box>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
         <AutoCompleteSearchBoard variant="default" />
-        {/* Dark mode light mode */}
         <ModeSelect />
-
-        {/* Notifications */}
         <Notifications />
-
-        <Tooltip title='Help'>
-          <HelpCenterOutlined sx={{ color: 'white' }} />
-        </Tooltip>
         <Profiles />
       </Box>
-      <CreateBoardModal 
-        open={openCreateBoardModal} 
-        handleClose={handleCloseCreateBoardModal} 
+      <CreateBoardModal
+        open={openCreateBoardModal}
+        handleClose={handleCloseCreateBoardModal}
         afterCreateNewBoardFromAppBar={afterCreateNewBoardFromAppBar}
       />
     </Box>

@@ -10,6 +10,8 @@ import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { selectCurrentActiveBoard } from '~/redux/activeBoard/activeBoardSlice'
 import { selectCurrentUser } from '~/redux/user/userSlice'
+import { createNewNotificationAPI } from '~/apis'
+import { socketIoIntance } from '~/socketClient'
 
 const CardActivitySection = ({ column, activeCard, cardMemberIds = [], cardComments = [], onAddCardComment, onUpdateCardComment }) => {
   const currentUser = useSelector(selectCurrentUser)
@@ -42,7 +44,6 @@ const CardActivitySection = ({ column, activeCard, cardMemberIds = [], cardComme
   }
 
   const handleChange = (event, newValue, newPlainTextValue, mentions) => {
-
     if (newValue === '') {
       setMention([])
       setComment(newValue)
@@ -65,6 +66,24 @@ const CardActivitySection = ({ column, activeCard, cardMemberIds = [], cardComme
     setComment(newValue)
   }
 
+  const handleEmitMentionNotification = (uniqueMentions) => {
+    {uniqueMentions.length > 0 && uniqueMentions.map(taggedUser => {
+      createNewNotificationAPI({
+        type: 'mention',
+        userId: taggedUser,
+        details: {
+          boardId: board._id,
+          boardTitle: board.title,
+          cardId: activeCard._id,
+          cardTitle: activeCard.title,
+          senderId: currentUser._id,
+          senderName: currentUser.username
+        }
+      }).then(() => {
+        socketIoIntance.emit('FE_FETCH_NOTI', { userId: taggedUser })
+      })
+    })}
+  }
   const handleAddCardComment = (event) => {
     if ((event.key === 'Enter' && !event.shiftKey) || event.type === 'click') {
       if (event.key === 'Enter' && !event.shiftKey) {
@@ -81,6 +100,8 @@ const CardActivitySection = ({ column, activeCard, cardMemberIds = [], cardComme
         taggedUserIds: uniqueMentions,
         boardId: board?._id
       }
+
+      handleEmitMentionNotification(uniqueMentions)
 
       onAddCardComment(commentToAdd).then(() => {
         setComment('')
@@ -127,6 +148,7 @@ const CardActivitySection = ({ column, activeCard, cardMemberIds = [], cardComme
       action: 'EDIT'
     }
 
+    handleEmitMentionNotification(uniqueMentions)
 
     onUpdateCardComment(commentToUpdate)
     setEditingCommentId('')
@@ -161,7 +183,7 @@ const CardActivitySection = ({ column, activeCard, cardMemberIds = [], cardComme
   const id = openPopover ? 'simple-popover' : undefined
 
   return (
-    <Box sx={{ mt: 2 }}>
+    <Box sx={{ mt: 2 }} id='comment'>
       {column?.isClosed === false && activeCard?.isClosed === false && (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
           <Avatar
