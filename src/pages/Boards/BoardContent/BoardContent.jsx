@@ -8,9 +8,9 @@ import { generatePlaceholderCard } from '~/utils/formmatters'
 import Column from './ListColumns/Column/Column'
 import Card from './ListColumns/Column/ListCards/Card/Card'
 import ListColumns from './ListColumns/ListColumns'
-
 import { socketIoIntance } from '~/socketClient'
 import { useTheme } from '@emotion/react'
+import { useDebounceFn } from '~/customHooks/useDebounceFn'
 
 const ACTIVE_DRAG_ITEM_TYPE = {
   COLUMN: 'COLUMN',
@@ -25,7 +25,6 @@ function BoardContent(props) {
   const sensors = useSensors(mouseSensor, touchSensor)
 
   const [orderedColumns, setOrderedColumns] = useState([])
-
   const [activeDragItemId, setActiveDragItemId] = useState(null)
   const [activeDragItemType, setActiveDragItemType] = useState(null)
   const [activeDragItemData, setActiveDragItemData] = useState(null)
@@ -33,11 +32,10 @@ function BoardContent(props) {
 
   const lastOverId = useRef(null)
 
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 
-  const BOARD_BAR_HEIGHT = isMobile ? '100px' : '62px';
-  // const BOARD_CONTENT_HEIGHT = `calc(100vh - ${theme.trelloCustom.appBarHeight} - ${BOARD_BAR_HEIGHT})`;
+  const BOARD_BAR_HEIGHT = isMobile ? '100px' : '62px'
 
   useEffect(() => {
     if (board?.columns) {
@@ -139,6 +137,10 @@ function BoardContent(props) {
     }
   }
 
+  const debouncedEmitBatch = useDebounceFn(() => {
+    socketIoIntance.emit('batch', { boardId: board._id })
+  }, 2300)
+
   const handleDragEnd = (e) => {
     const { active, over } = e
 
@@ -194,9 +196,7 @@ function BoardContent(props) {
       }
     }
 
-    setTimeout(() => {
-      socketIoIntance.emit('batch', { boardId: board._id })
-    }, 2654)
+    debouncedEmitBatch()
 
     setActiveDragItemId(null)
     setActiveDragItemType(null)

@@ -51,9 +51,9 @@ function AccountTab() {
 
   const uploadAvatar = (e) => {
     // Lấy file thông qua e.target?.files[0] và validate nó trước khi xử lý
-    console.log('e.target?.files[0]: ', e.target?.files[0])
     const error = singleFileValidator(e.target?.files[0])
     if (error) {
+      console.log('error: ', error)
       toast.error(error)
       return
     }
@@ -61,11 +61,13 @@ function AccountTab() {
     // Sử dụng FormData để xử lý dữ liệu liên quan tới file khi gọi API
     let reqData = new FormData()
     reqData.append('avatar', e.target?.files[0])
+
+    console.log('reqData: ', reqData)
     // Cách để log được dữ liệu thông qua FormData
-    // console.log('reqData: ', reqData)
-    // for (const value of reqData.values()) {
-    //   console.log('reqData Value: ', value)
-    // }
+    console.log('reqData: ', reqData)
+    for (const value of reqData.values()) {
+      console.log('reqData Value: ', value)
+    }
 
     // Gọi API...
     toast.promise(

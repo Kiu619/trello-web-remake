@@ -1,15 +1,14 @@
-import { Box } from '@mui/material'
+import { Box, Typography } from '@mui/material'
 import { useEffect, useState, useMemo } from 'react'
 import Button from '@mui/material/Button'
 import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
-import ListItemText from '@mui/material/ListItemText'
 import { ExpandMore } from '@mui/icons-material'
 import { useSelector } from 'react-redux'
 import { selectRecentBoards } from '~/redux/user/userSlice'
 import { useNavigate } from 'react-router-dom'
 
-function Recent() {
+function Recent({ currentUser }) {
   const recentBoardsFromRedux = useSelector(selectRecentBoards)
   const recentBoards = useMemo(() => recentBoardsFromRedux || [], [recentBoardsFromRedux])
   const navigate = useNavigate()
@@ -53,7 +52,32 @@ function Recent() {
               handleClose()
             }}
           >
-            <ListItemText primary={board.title} />
+            <Box sx={{
+              display: 'flex', alignItems: 'center', gap: 1.5, width: 200, overflow: 'hidden',
+              whiteSpace: 'nowrap',
+              textOverflow: 'ellipsis'
+            }}>
+              <Box>
+                <Typography
+                  variant='body2'
+                  component='div'
+                  sx={{
+                    overflow: 'hidden',
+                    whiteSpace: 'nowrap',
+                    textOverflow: 'ellipsis',
+                    maxWidth: '100%'
+                  }}
+                >
+                  {board.title || 'Unnamed Board'}
+                </Typography>
+                <Typography
+                  variant='caption'
+                  sx={{ color: 'text.secondary' }}
+                >
+                  {board.ownerIds.includes(currentUser?._id) ? 'Your board' : 'Collaborator board'}
+                </Typography>
+              </Box>
+            </Box>
           </MenuItem>
         ))}
       </Menu>

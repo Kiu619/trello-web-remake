@@ -83,7 +83,7 @@ export const userSlice = createSlice({
         state.recentBoards = user.recentBoards
         state.is_2fa_verified = user.is_2fa_verified
       })
-      .addCase(logoutUserAPI.fulfilled, (state, action) => {
+      .addCase(logoutUserAPI.fulfilled, (state) => {
         state.currentUser = null
       })
       .addCase(updateUserAPI.fulfilled, (state, action) => {

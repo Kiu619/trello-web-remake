@@ -53,7 +53,6 @@ function ListColumns(props) {
     dispatch(updateCurrentActiveBoard(newBoard))
     setTimeout(() => {
       socketIoIntance.emit('batch', { boardId: board._id })
-      console.log('batch')
     }, 2000)
 
     // Reset form

@@ -140,7 +140,7 @@ const BoardMenu = ({ board, currentUser }) => {
           <Divider />
 
           {board?.isClosed === false && (
-            <Copy />
+            <Copy board={board} handleMenuClose={handleMenuClose} />
           )}
 
           <Divider />

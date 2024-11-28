@@ -11,10 +11,13 @@ import Starred from './Menus/Starred'
 import Templates from './Menus/Templates'
 import Notifications from './Notifications/Notifications'
 import AutoCompleteSearchBoard from '../SearchInput/AutoCompleteSearchBoard'
+import { selectCurrentUser } from '~/redux/user/userSlice'
+import { useSelector } from 'react-redux'
 
 function AppBar() {
   const navigate = useNavigate()
   const isMobile = useMediaQuery('(max-width:975px)')
+  const currentUser = useSelector(selectCurrentUser)
 
   const afterCreateNewBoardFromAppBar = (newBoard) => {
     navigate(`/board/${newBoard._id}`)
@@ -78,10 +81,10 @@ function AppBar() {
               }}
             >
               <MenuItem>
-                <Recent />
+                <Recent currentUser={currentUser} />
               </MenuItem>
               <MenuItem>
-                <Starred />
+                <Starred currentUser={currentUser}/>
               </MenuItem>
               <MenuItem>
                 <Templates />
@@ -93,8 +96,8 @@ function AppBar() {
           </>
         ) : (
           <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1 }}>
-            <Recent />
-            <Starred />
+            <Recent currentUser={currentUser} />
+            <Starred currentUser={currentUser}/>
             <Templates />
             <Button
               variant='outlined'

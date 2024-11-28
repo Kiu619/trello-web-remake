@@ -112,7 +112,6 @@ const LocationSearch = ({ updateLocation }) => {
       searchCache.set(query, data)
       setLocations(data)
     } catch (error) {
-      console.error('Error fetching locations:', error)
       setLocations([])
     } finally {
       setLoading(false)
@@ -155,7 +154,7 @@ const LocationSearch = ({ updateLocation }) => {
     <>
       <SidebarItem onClick={handleOpenPopover}>
         <LocationOnOutlinedIcon fontSize="small" />
-                Location
+        Location
       </SidebarItem>
 
 
@@ -180,7 +179,7 @@ const LocationSearch = ({ updateLocation }) => {
             fontWeight: 600,
             mb: 2
           }}>
-                        Change Location
+            Change Location
           </Typography>
 
           <Box sx={{ position: 'relative', mb: 2 }}>

@@ -57,16 +57,16 @@ function MyAccount() {
               to="/my-account/security" />
           </TabList>
         </Box>
-        <TabPanel 
-        sx={{
-          bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#24303d' : '#fff')
-        }} 
-        value={TABS.ACCOUNT}><AccountTab /></TabPanel>
         <TabPanel
-        sx={{
-          bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#24303d' : '#fff')
-        }} 
-        value={TABS.SECURITY}><SecurityTab /></TabPanel>
+          sx={{
+            bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#24303d' : '#fff')
+          }}
+          value={TABS.ACCOUNT}><AccountTab /></TabPanel>
+        <TabPanel
+          sx={{
+            bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#24303d' : '#fff')
+          }}
+          value={TABS.SECURITY}><SecurityTab /></TabPanel>
       </TabContext>
     </Container>
   )

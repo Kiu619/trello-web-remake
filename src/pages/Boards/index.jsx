@@ -212,7 +212,7 @@ function BoardList() {
                   mb: isMobile ? 1 : 0
                 }}
               >
-                Your boards
+                Boards
               </Typography>
               <SortingControls />
             </HeaderSection>

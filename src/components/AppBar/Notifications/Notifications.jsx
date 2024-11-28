@@ -3,6 +3,7 @@ import moment from 'moment'
 import Badge from '@mui/material/Badge'
 import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone'
 import Box from '@mui/material/Box'
+import WatchLaterOutlinedIcon from '@mui/icons-material/WatchLaterOutlined'
 import Typography from '@mui/material/Typography'
 import Tooltip from '@mui/material/Tooltip'
 import Button from '@mui/material/Button'
@@ -192,12 +193,12 @@ function Notifications() {
             )
             break
 
-            case 'duedateInCard':
+          case 'dueDateInCard':
             notificationContent = (
               <Box onClick={handleClose} sx={{ maxWidth: '100%', wordBreak: 'break-word', whiteSpace: 'pre-wrap', display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Link to={`/board/${notification?.details?.boardId}/card/${notification?.details?.cardId}`} style={{ textDecoration: 'none' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: theme => theme.palette.mode === 'dark' ? '#fff' : '#000' }}>
-                    <Comment />
+                    <WatchLaterOutlinedIcon />
                     <Box>
                       <strong>{notification?.details?.senderName}</strong> had set a due date in the card <strong>{notification?.details?.cardTitle}</strong> in the board <strong>{notification?.details?.boardTitle}</strong>
                     </Box>

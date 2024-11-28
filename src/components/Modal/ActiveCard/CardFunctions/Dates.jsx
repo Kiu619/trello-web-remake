@@ -1,18 +1,18 @@
-import React, { useEffect, useState } from 'react'
-import {
-  Box,
-  Button,
-  Popover,
-  Typography,
-  IconButton,
-  Checkbox,
-  TextField,
-  Select,
-  MenuItem
-} from '@mui/material'
 import CancelIcon from '@mui/icons-material/Cancel'
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
+import {
+  Box,
+  Button,
+  Checkbox,
+  IconButton,
+  MenuItem,
+  Popover,
+  Select,
+  TextField,
+  Typography
+} from '@mui/material'
+import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { selectActiveCard } from '~/redux/activeCard/activeCardSlice'
 

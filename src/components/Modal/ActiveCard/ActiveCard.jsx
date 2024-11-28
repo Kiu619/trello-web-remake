@@ -157,7 +157,6 @@ function ActiveCard() {
   }
 
   const onUpdateDueDate = (dueDateData) => {
-    console.log('dueDateData', dueDateData)
     // callApiUpdateCard({ dueDate: dueDateData })
     callApiUpdateCard({ dueDate: dueDateData })
       .then(response => {

@@ -1,6 +1,6 @@
 import { Box, Container } from '@mui/material'
 import { cloneDeep, isEmpty } from 'lodash'
-import { useEffect } from 'react'
+import { useEffect, useMemo, useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useParams } from 'react-router-dom'
 import { moveCardToDifferentColumnAPI, updateBoardDetailsAPI, updateColumnDetailsAPI } from '~/apis'
@@ -12,22 +12,18 @@ import BoardBar from './BoardBar/BoardBar'
 import BoardContent from './BoardContent/BoardContent'
 import { updateRecentBoards, updateUserAPI } from '~/redux/user/userSlice'
 import { hideModalActiveCard, showModalActiveCard } from '~/redux/activeCard/activeCardSlice'
-
 import { socketIoIntance } from '~/socketClient'
 import PrivateBoard from './PrivateBoard'
 import InvaldUrl from '../ErrorPages/InvalidUrl'
 
 function Board() {
-
   const dispatch = useDispatch()
-  // Dùng State của Redux Toolkit thay cho useState
-  // const [board, setBoard] = useState(null)
   const board = useSelector(selectCurrentActiveBoard)
   const error = useSelector(selectActiveBoardError)
   const { boardId: fullBoardId, cardId: fullCardId } = useParams()
 
-  const boardId = fullBoardId.substring(0, 24)
-  const cardId = fullCardId?.substring(0, 24)
+  const boardId = useMemo(() => fullBoardId.substring(0, 24), [fullBoardId])
+  const cardId = useMemo(() => fullCardId?.substring(0, 24), [fullCardId])
 
   useEffect(() => {
     dispatch(fetchBoardDetailsApiRedux(boardId))
@@ -47,11 +43,9 @@ function Board() {
     socketIoIntance.on('batch', handleBatch)
     socketIoIntance.on('copyCardInSameBoard', handleCardCopyInSameBoard)
 
-    // Cleanup function to remove the event listener when the component unmounts
     return () => {
       socketIoIntance.off('batch', handleBatch)
       socketIoIntance.off('copyCardInSameBoard', handleCardCopyInSameBoard)
-      // socketIoIntance.off('copyCardInSameBoard', handleCardCopyInSameBoard)
     }
   }, [boardId, dispatch])
 
@@ -66,36 +60,31 @@ function Board() {
   useEffect(() => {
     let timeoutId
 
-    if (!isEmpty(board)) {
+    if (!isEmpty(board) && !board.forShare) {
       timeoutId = setTimeout(() => {
         dispatch(updateRecentBoards(board))
         dispatch(updateUserAPI({ boardId: board._id, forRecent: true }))
-      }, 1000) // delay 2 seconds
+      }, 1000)
     }
 
-    // Cleanup function để tránh memory leak
     return () => {
       if (timeoutId) {
         clearTimeout(timeoutId)
       }
     }
-  }, [board, dispatch])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [boardId, dispatch])
 
-  const moveColumns = (dndOrderedColumns) => {
+  const moveColumns = useCallback((dndOrderedColumns) => {
     const dndOrderedColumnsId = dndOrderedColumns.map(c => c._id)
-
-    // const newBoard = { ...board }
     const newBoard = cloneDeep(board)
     newBoard.columns = dndOrderedColumns
     newBoard.columnOrderIds = dndOrderedColumnsId
     dispatch(updateCurrentActiveBoard(newBoard))
-
-    // Call API to update board
     updateBoardDetailsAPI(newBoard._id, { columnOrderIds: dndOrderedColumnsId })
-  }
+  }, [board, dispatch])
 
-  const moveCardInTheSameColumns = (dndOrderedCards, dndOrderedCardIds, columnId) => {
-    // const newBoard = { ...board }
+  const moveCardInTheSameColumns = useCallback((dndOrderedCards, dndOrderedCardIds, columnId) => {
     const newBoard = cloneDeep(board)
     const columnToUpdate = newBoard.columns.find(c => c._id === columnId)
     if (columnToUpdate) {
@@ -103,52 +92,40 @@ function Board() {
       columnToUpdate.cardOrderIds = dndOrderedCardIds
     }
     dispatch(updateCurrentActiveBoard(newBoard))
-
-    // Call API to update column
     updateColumnDetailsAPI(columnId, { cardOrderIds: dndOrderedCardIds })
-  }
+  }, [board, dispatch])
 
-  /**
-* Khi di chuyển card sang Column khác:
-* B1: Cập nhật mảng cardOrderIds của Column ban đầu chứa nó (Hiểu bản chất là xóa cái _id của Card ra khỏi
-mång)
-* B2: cập nhật mảng cardOrderIds của Column tiếp theo (Hiểu bản chất là thêm _id của Card vào mảng)
-* B3: Cập nhật lại trường columnId mới của cái Card đã kéo
-* => Làm một API support riêng.
-*/
-  const moveCardToDifferentColumn = (currentCardId, prevColumnId, nextColumnId, dndOrderedColumns) => {
-
+  const moveCardToDifferentColumn = useCallback((currentCardId, prevColumnId, nextColumnId, dndOrderedColumns) => {
     const dndOrderedColumnsIds = dndOrderedColumns.map(c => c._id)
-    // const newBoard = { ...board }
     const newBoard = cloneDeep(board)
     newBoard.columns = dndOrderedColumns
     newBoard.columnOrderIds = dndOrderedColumnsIds
     dispatch(updateCurrentActiveBoard(newBoard))
 
-
     let prevCardOrderIds = dndOrderedColumns.find(c => c._id === prevColumnId)?.cardOrderIds
     if (prevCardOrderIds[0].includes('-placeholder-card')) {
       prevCardOrderIds = prevCardOrderIds.filter(cardId => !cardId.includes('-placeholder-card'))
     }
-    // Call API to update board
     moveCardToDifferentColumnAPI({
       currentCardId,
       prevColumnId,
-
       prevCardOrderIds: prevCardOrderIds,
       nextColumnId,
       nextCardOrderIds: dndOrderedColumns.find(c => c._id === nextColumnId)?.cardOrderIds
     })
-  }
+  }, [board, dispatch])
+
   if (error) {
-    return <Container disableGutters maxWidth={false} sx={{ height: '100vh' }}>
-      <AppBar />
-      <InvaldUrl />
-    </Container>
+    return (
+      <Container disableGutters maxWidth={false} sx={{ height: '100vh' }}>
+        <AppBar />
+        <InvaldUrl />
+      </Container>
+    )
   }
 
   if (isEmpty(board)) {
-    return <PageLoadingSpinner/>
+    return <PageLoadingSpinner />
   }
 
   const boardContent = (

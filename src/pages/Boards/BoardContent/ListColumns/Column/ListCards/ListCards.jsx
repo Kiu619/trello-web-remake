@@ -3,7 +3,7 @@ import { Box } from '@mui/material'
 import Card from './Card/Card'
 
 function ListCards(props) {
-  const { column, cards } = props
+  const { cards } = props
 
   return (
     <SortableContext items={cards?.map(c => c._id)} strategy={verticalListSortingStrategy}>
