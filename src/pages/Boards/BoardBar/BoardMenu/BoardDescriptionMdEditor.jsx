@@ -14,7 +14,7 @@ import { updateCurrentActiveBoard } from '~/redux/activeBoard/activeBoardSlice'
 import { socketIoIntance } from '~/socketClient'
 
 function BoardDescriptionMdEditor(props) {
-  const { board } = props
+  const { currentUser, board } = props
 
   const { mode } = useColorScheme()
   const dispatch = useDispatch()
@@ -95,7 +95,7 @@ function BoardDescriptionMdEditor(props) {
             </Box>
             {/* {board?.isClosed === false && (
             )} */}
-            {board?.isClosed === false && (
+            {(board?.memberIds?.includes(currentUser?._id) || board?.ownerIds?.includes(currentUser?._id)) && board?.isClosed === false && (
               <Button
                 sx={{ alignSelf: 'flex-end' }}
                 onClick={() => setMarkdownEditMode(true)}

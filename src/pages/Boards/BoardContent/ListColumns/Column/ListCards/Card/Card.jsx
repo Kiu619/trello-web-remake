@@ -38,7 +38,7 @@ function Card({ card }) {
       style={dndKitCardStyle}
       {...attributes}
       {...listeners}
-      data-no-dnd={card?.FE_PlaceholderCard ? true : undefined}
+      data-no-dnd={card?.isClosed === true || card?.FE_PlaceholderCard ? true : undefined}
       sx={{
         cursor: 'pointer',
         boxShadow: card?.FE_PlaceholderCard ? 'none' : '0 1px 1px rgba(0,0,0,0.2)',

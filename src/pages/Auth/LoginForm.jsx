@@ -126,9 +126,13 @@ function LoginForm() {
               Login
             </Button>
           </CardActions>
-          <Box sx={{ padding: '0 1em 1em 1em', textAlign: 'center' }}>
+          <Box sx={{ display: 'flex', padding: '0 1em 1em 1em', textAlign: 'center', justifyContent: 'space-between' }}>
             <Link to="/register" style={{ textDecoration: 'none' }}>
               <Typography sx={{ color: 'primary.main', '&:hover': { color: '#ffbb39' } }}>Create account!</Typography>
+            </Link>
+
+            <Link to="/forgot-password" style={{ textDecoration: 'none' }}>
+              <Typography sx={{ color: 'primary.main', '&:hover': { color: '#ffbb39' } }}>Forgot password?</Typography>
             </Link>
           </Box>
         </MuiCard>

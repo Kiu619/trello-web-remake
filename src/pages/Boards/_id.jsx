@@ -19,6 +19,7 @@ import InvaldUrl from '../ErrorPages/InvalidUrl'
 function Board() {
   const dispatch = useDispatch()
   const board = useSelector(selectCurrentActiveBoard)
+  console.log(board)
   const error = useSelector(selectActiveBoardError)
   const { boardId: fullBoardId, cardId: fullCardId } = useParams()
 
@@ -151,7 +152,7 @@ function Board() {
 
   return (
     <>
-      {board?.forShare ? boardForShareContent : boardContent}
+      {(board?.forShare && board?.type === 'private') ? boardForShareContent : boardContent}
     </>
   )
 }

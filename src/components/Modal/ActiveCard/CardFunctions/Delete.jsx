@@ -34,9 +34,9 @@ const SidebarItem = styled(Box)(({ theme }) => ({
 
 function Delete({ activeCard, currentBoard }) {
   const dispatch = useDispatch()
-  const confirmDeleteCard = useConfirm()
   const navigate = useNavigate()
 
+  const confirmDeleteCard = useConfirm()
   const handleDeleteCard = () => {
     confirmDeleteCard({
       title: 'Delete this card',

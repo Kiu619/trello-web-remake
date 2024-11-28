@@ -1,4 +1,5 @@
 import AddCircleOutlinedIcon from '@mui/icons-material/AddCircleOutlined'
+import RemoveCircleIcon from '@mui/icons-material/RemoveCircle'
 import ArrowBackIosNewOutlinedIcon from '@mui/icons-material/ArrowBackIosNewOutlined'
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined'
 import { Avatar, Box, Button, Divider, Drawer, FormControl, FormHelperText, MenuItem, Popover, Select, Typography } from '@mui/material'
@@ -7,9 +8,11 @@ import BoardDescriptionMdEditor from './BoardDescriptionMdEditor'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectCurrentUser } from '~/redux/user/userSlice'
 import { toast } from 'react-toastify'
-import { addBoardAdminAPI } from '~/apis'
-import { fetchBoardDetailsApiRedux } from '~/redux/activeBoard/activeBoardSlice'
+import { addBoardAdminAPI, removeBoardAdminAPI } from '~/apis'
+import { fetchBoardDetailsApiRedux, updateCurrentActiveBoard } from '~/redux/activeBoard/activeBoardSlice'
 import { socketIoIntance } from '~/socketClient'
+import { useConfirm } from 'material-ui-confirm'
+import { cloneDeep } from 'lodash'
 
 const AboutThisBoard = ({ currentUser, board, showAboutBoard, setShowAboutBoard }) => {
 
@@ -49,6 +52,25 @@ const AboutThisBoard = ({ currentUser, board, showAboutBoard, setShowAboutBoard 
       }
     } catch (error) {
       toast.error('Failed to add admin')
+    }
+  }
+
+  const handleRemoveAdmin = async (ownerId) => {
+    try {
+      const res = await removeBoardAdminAPI(board._id, { userId: ownerId })
+      if (res) {
+        const newBoard = cloneDeep(board)
+        newBoard.owners = newBoard.owners.filter(owner => owner._id !== ownerId)
+        dispatch(updateCurrentActiveBoard(newBoard))
+
+        setTimeout(() => {
+          socketIoIntance.emit('batch', { boardId: board._id })
+        }, 2000)
+
+        toast.success('Admin removed successfully')
+      }
+    } catch (error) {
+      toast.error('Failed to remove admin')
     }
   }
 
@@ -97,31 +119,42 @@ const AboutThisBoard = ({ currentUser, board, showAboutBoard, setShowAboutBoard 
           )}
         </Box>
         {board?.owners?.map((owner, index) => (
-          <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, ml: 2, mb: 2 }}>
-            <Avatar
-              src={owner.avatar}
-              alt={owner.displayName}
-              sx={{ width: 60, height: 60 }}
-            >
-              {!owner.avatar && (owner.displayName?.charAt(0).toUpperCase() || 'U')}
-            </Avatar>
-            <Box>
-              <Typography variant='h6'>
-                {owner.displayName || 'Unnamed User'}
-              </Typography>
-              <Typography
-                variant='caption'
-                sx={{ color: 'text.secondary' }}
+          <Box key={index} sx={{ display: 'flex', justifyContent: 'space-between' }} >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, ml: 2, mb: 2 }}>
+              <Avatar
+                src={owner.avatar}
+                alt={owner.displayName}
+                sx={{ width: 60, height: 60 }}
               >
-                @{owner.username}
-              </Typography>
+                {!owner.avatar && (owner.displayName?.charAt(0).toUpperCase() || 'U')}
+              </Avatar>
+              <Box>
+                <Typography variant='h6'>
+                  {owner.displayName || 'Unnamed User'}
+                </Typography>
+                <Typography
+                  variant='caption'
+                  sx={{ color: 'text.secondary' }}
+                >
+                  @{owner.username}
+                </Typography>
+              </Box>
             </Box>
+            {owner._id !== currentUser._id && board?.isClosed === false && board?.creator === currentUser._id && (
+              <Box sx={{ display: 'flex', alignItems: 'center', mr: 2 }}
+                onClick={() => handleRemoveAdmin(owner._id)}
+              >
+                <RemoveCircleIcon
+                  color='info' sx={{ cursor: 'pointer' }}
+                />
+              </Box>
+            )}
           </Box>
         ))}
 
         {/* Description */}
         <Box sx={{ mx: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <BoardDescriptionMdEditor board={board} />
+          <BoardDescriptionMdEditor currentUser={currentUser} board={board} />
         </Box>
       </Drawer>
 

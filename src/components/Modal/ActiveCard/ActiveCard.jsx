@@ -75,15 +75,14 @@ function ActiveCard() {
   const navigate = useNavigate()
   const currentBoard = useSelector(selectCurrentActiveBoard)
   const error = useSelector(selectActiveCardError)
+  const currentUser = useSelector(selectCurrentUser)
 
 
   const dispatch = useDispatch()
   const activeCard = useSelector(selectActiveCard)
   const isShowModalActiveCard = useSelector(selectIsShowModalActiveCard)
 
-  const column = currentBoard.columns.find(c => c._id === activeCard?.columnId)
-
-  const currentUser = useSelector(selectCurrentUser)
+  const column = currentBoard?.columns?.find(c => c._id === activeCard?.columnId)
 
   // Date Popover
   const [dateAnchorEl, setDateAnchorEl] = useState(null)
@@ -159,30 +158,6 @@ function ActiveCard() {
   const onUpdateDueDate = (dueDateData) => {
     // callApiUpdateCard({ dueDate: dueDateData })
     callApiUpdateCard({ dueDate: dueDateData })
-      .then(response => {
-        // Xử lý notification - lọc bỏ currentUser._id
-        if (activeCard?.memberIds?.length > 0) {
-          const otherMembers = activeCard.memberIds.filter(memberId => memberId !== currentUser._id)
-
-          otherMembers.forEach(memberId => {
-            createNewNotificationAPI({
-              type: 'dueDateInCard',
-              userId: memberId,
-              details: {
-                boardId: currentBoard._id,
-                boardTitle: currentBoard.title,
-                cardId: activeCard._id,
-                cardTitle: activeCard.title,
-                senderId: currentUser._id,
-                senderName: currentUser.username
-              }
-            }).then(() => {
-              socketIoIntance.emit('FE_FETCH_NOTI', { userId: memberId })
-            })
-          })
-        }
-        return response
-      })
   }
 
   const onUpdateCardDescription = (newDescription) => {
@@ -334,7 +309,7 @@ function ActiveCard() {
           <CreditCardIcon />
 
           {/* Feature 01: Xử lý tiêu đề của Card */}
-          {activeCard?.isClosed === false && column?.isClosed === false ? (
+          {(currentBoard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && activeCard?.isClosed === false && column?.isClosed === false ? (
             <ToggleFocusInput
               inputFontSize='22px'
               value={activeCard?.title || ''}
@@ -365,6 +340,8 @@ function ActiveCard() {
             <Box sx={{ mb: 3 }}>
               {activeCard?.dueDate.dueDate && (
                 <DateTimeDisplay
+                  currentUser={currentUser}
+                  currentBoard={currentBoard}
                   column={column}
                   activeCard={activeCard}
                   title={activeCard.dueDate?.title}
@@ -373,6 +350,9 @@ function ActiveCard() {
                   dueDate={activeCard.dueDate?.dueDate}
                   dueDateTime={activeCard.dueDate?.dueDateTime}
                   isComplete={activeCard.dueDate?.isComplete}
+                  dayBeforeToRemind={activeCard.dueDate?.dayBeforeToRemind}
+                  isRemind={activeCard.dueDate?.isRemind}
+                  isOverdueNotified={activeCard.dueDate?.isOverdueNotified}
                   handleOpenDatePopover={handleOpenDatePopover}
                   onUpdateDueDate={onUpdateDueDate}
                 />
@@ -382,6 +362,8 @@ function ActiveCard() {
             <Box sx={{ mb: 3 }}>
               {/* Feature 03: Xử lý mô tả của Card */}
               <CardDescriptionMdEditor
+                currentUser={currentUser}
+                currentBoard={currentBoard}
                 column={column}
                 activeCard={activeCard}
                 cardDescriptionProp={activeCard?.description}
@@ -395,12 +377,15 @@ function ActiveCard() {
                   <LocationOnOutlinedIcon />
                   <Typography variant="span" sx={{ fontWeight: '600', fontSize: '20px' }}>Location</Typography>
                 </Box>
-                <LocationMap column={column} activeCard={activeCard} location={activeCard.location} updateLocation={updateLocation} />
+                <LocationMap currentUser={currentUser}
+                  currentBoard={currentBoard} column={column} activeCard={activeCard} location={activeCard.location} updateLocation={updateLocation} />
               </Box>
             )}
 
             <Box sx={{ mb: 3 }}>
               <CardAttachment
+              currentUser={currentUser}
+              currentBoard={currentBoard}
                 column={column}
                 activeCard={activeCard}
                 onAddCardAttachment={onAddCardAttachment}
@@ -417,6 +402,8 @@ function ActiveCard() {
               /> */}
               {activeCard?.checklists.map((checklist, index) => (
                 <CardChecklist
+                currentUser={currentUser}
+              currentBoard={currentBoard}
                   column={column}
                   activeCard={activeCard}
                   key={index}
@@ -435,7 +422,9 @@ function ActiveCard() {
               </Box>
 
               {/* Feature 05: Xử lý các hành động, ví dụ comment vào Card */}
-              <CardActivitySection id
+              <CardActivitySection
+                currentUser={currentUser}
+                currentBoard={currentBoard}
                 column={column}
                 activeCard={activeCard}
                 cardMemberIds={activeCard?.memberIds}
@@ -448,7 +437,7 @@ function ActiveCard() {
 
           {/* Right side */}
           <Grid item xs={12} sm={3}>
-            {column?.isClosed === false && activeCard?.isClosed === false && (
+            {(currentBoard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && column?.isClosed === false && activeCard?.isClosed === false && (
               <Stack direction="column" spacing={1}>
                 <Typography sx={{ fontWeight: '600', color: 'primary.main', mb: 1 }}>Add To Card</Typography>
                 {/* Feature 05: Xử lý hành động bản thân user tự join vào card */}
@@ -498,9 +487,9 @@ function ActiveCard() {
                 <Location updateLocation={updateLocation} />
               </Stack>
             )}
-            {column?.isClosed === false && activeCard?.isClosed === false && (<Divider sx={{ my: 2 }} />)}
+            {(currentBoard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) &&  column?.isClosed === false && activeCard?.isClosed === false && (<Divider sx={{ my: 2 }} />)}
 
-            {column?.isClosed === false && activeCard?.isClosed === false && (
+            {(currentBoard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) &&  column?.isClosed === false && activeCard?.isClosed === false && (
               <Stack direction="column" spacing={1}>
                 <Typography sx={{ fontWeight: '600', color: 'primary.main', mb: 1 }}>Power-Ups</Typography>
                 {/* <SidebarItem><AspectRatioOutlinedIcon fontSize="small" />Card Size</SidebarItem> */}
@@ -509,11 +498,11 @@ function ActiveCard() {
               </Stack>
             )}
 
-            {column?.isClosed === false && activeCard?.isClosed === false && (<Divider sx={{ my: 2 }} />)}
+            {(currentBoard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && column?.isClosed === false && activeCard?.isClosed === false && (<Divider sx={{ my: 2 }} />)}
 
             <Typography sx={{ fontWeight: '600', color: 'primary.main', mb: 1 }}>Actions</Typography>
 
-            {column?.isClosed === false && activeCard?.isClosed === false && (
+            {(currentBoard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && column?.isClosed === false && activeCard?.isClosed === false && (
               <Stack direction="column" spacing={1} sx={{ mb: 1 }}>
                 {/* <SidebarItem><ArrowForwardOutlinedIcon fontSize="small" />Move</SidebarItem> */}
                 {currentBoard.ownerIds.includes(currentUser?._id) && (<Move activeCard={activeCard} currentBoard={currentBoard} />)}

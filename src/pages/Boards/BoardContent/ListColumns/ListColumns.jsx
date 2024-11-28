@@ -10,6 +10,7 @@ import { selectCurrentActiveBoard, updateCurrentActiveBoard } from '~/redux/acti
 import { generatePlaceholderCard } from '~/utils/formmatters'
 import Column from './Column/Column'
 import { socketIoIntance } from '~/socketClient'
+import { selectCurrentUser } from '~/redux/user/userSlice'
 
 function ListColumns(props) {
   const { columns } = props
@@ -21,6 +22,7 @@ function ListColumns(props) {
 
   const dispatch = useDispatch()
   const board = useSelector(selectCurrentActiveBoard)
+  const currentUser = useSelector(selectCurrentUser)
 
   const addNewColumn = async () => {
     if (!newColumnTitle) {
@@ -83,83 +85,83 @@ function ListColumns(props) {
             <Column
               key={column._id}
               column={column}
+              board={board}
+              currentUser={currentUser}
             />
           )
         })}
 
-        {/* Add new column form */
-          !openNewColumnForm
-            ?
-            <Box onClick={toggleOpenNewColumnForm} sx={{
-              minWidth: '200px',
-              maxWidth: '200px',
-              mx: 2,
-              borderRadius: '6px',
-              height: 'fit-content',
-              bgcolor: '#ffffff3d'
-            }}>
-              <Button startIcon={<NoteAdd />}
+
+        {board?.isClosed === false && (board?.memberIds?.includes(currentUser?._id) || board?.ownerIds?.includes(currentUser?._id)) && !openNewColumnForm && (<Box onClick={toggleOpenNewColumnForm} sx={{
+          minWidth: '200px',
+          maxWidth: '200px',
+          mx: 2,
+          borderRadius: '6px',
+          height: 'fit-content',
+          bgcolor: '#ffffff3d'
+        }}>
+          <Button startIcon={<NoteAdd />}
+            sx={{
+              color: 'white',
+              width: '100%',
+              justifyContent: 'flex-start',
+              pl: 2.5,
+              py: 1.1
+            }}
+          >
+            Add new column
+          </Button>
+        </Box>)}
+        {openNewColumnForm && (
+          <Box sx={{
+            minWidth: '200px',
+            maxWidth: '200px',
+            mx: 2,
+            p: 1,
+            borderRadius: '6px',
+            height: 'fit-content',
+            bgcolor: '#ffffff3d',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 1
+          }}>
+            <TextField
+              label='Enter column title'
+              type='type'
+              size='small'
+              variant='outlined'
+              autoFocus
+              value={newColumnTitle}
+              onChange={(e) => setNewColumnTitle(e.target.value)}
+              sx={{
+                '& label': { color: 'white' },
+                '& label.Mui-focused': { color: 'white' },
+                '& input': { color: 'white' },
+                '& .MuiOutLinedInput-root': {
+                  '& fieldset': {
+                    borderColor: 'white'
+                  }
+                }
+              }}
+            />
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Button
+                className='interceptor-loading'
+                onClick={addNewColumn}
+                variant='outlined' startIcon={<NoteAdd />}
                 sx={{
                   color: 'white',
-                  width: '100%',
-                  justifyContent: 'flex-start',
-                  pl: 2.5,
-                  py: 1.1
-                }}
-              >
-                                Add new column
-              </Button>
-            </Box>
-            :
-            <Box sx={{
-              minWidth: '200px',
-              maxWidth: '200px',
-              mx: 2,
-              p: 1,
-              borderRadius: '6px',
-              height: 'fit-content',
-              bgcolor: '#ffffff3d',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 1
-            }}>
-              <TextField
-                label='Enter column title'
-                type='type'
-                size='small'
-                variant='outlined'
-                autoFocus
-                value={newColumnTitle}
-                onChange={(e) => setNewColumnTitle(e.target.value)}
-                sx={{
-                  '& label': { color: 'white' },
-                  '& label.Mui-focused': { color: 'white' },
-                  '& input': { color: 'white' },
-                  '& .MuiOutLinedInput-root': {
-                    '& fieldset': {
-                      borderColor: 'white'
-                    }
+                  borderColor: 'white',
+                  '&:hover': {
+                    borderColor: 'white'
                   }
                 }}
-              />
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Button
-                  className='interceptor-loading'
-                  onClick={addNewColumn}
-                  variant='outlined' startIcon={<NoteAdd />}
-                  sx={{
-                    color: 'white',
-                    borderColor: 'white',
-                    '&:hover': {
-                      borderColor: 'white'
-                    }
-                  }}
-                >
-                                    Add column
-                </Button>
-                <Close onClick={toggleOpenNewColumnForm} sx={{ color: 'white', cursor: 'pointer' }} />
-              </Box>
+              >
+                Add column
+              </Button>
+              <Close onClick={toggleOpenNewColumnForm} sx={{ color: 'white', cursor: 'pointer' }} />
             </Box>
+          </Box>)
         }
       </Box>
     </SortableContext>

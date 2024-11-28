@@ -13,8 +13,12 @@ import {
   Typography
 } from '@mui/material'
 import { useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
-import { selectActiveCard } from '~/redux/activeCard/activeCardSlice'
+import { useDispatch, useSelector } from 'react-redux'
+import { createNewNotificationAPI, updateCardDetailsAPI } from '~/apis'
+import { selectCurrentActiveBoard, updateCardInBoard } from '~/redux/activeBoard/activeBoardSlice'
+import { selectActiveCard, updateCurrentActiveCard } from '~/redux/activeCard/activeCardSlice'
+import { selectCurrentUser } from '~/redux/user/userSlice'
+import { socketIoIntance } from '~/socketClient'
 
 const CalendarHeader = ({ children, ...props }) => (
   <Box
@@ -86,11 +90,14 @@ const TimePickerWrapper = ({ children, ...props }) => (
   </Box>
 )
 
-function Dates({ onUpdateDueDate,
+function Dates({
   anchorEl, handleClosePopover
 }) {
   // const [anchorEl, setAnchorEl] = useState(null)
   const activeCard = useSelector(selectActiveCard)
+  const currentBoard = useSelector(selectCurrentActiveBoard)
+  const currentUser = useSelector(selectCurrentUser)
+  const dispatch = useDispatch()
 
   const [dueDateTitle, setDueDateTitle] = useState('') // title of due date
   const [selectedDate, setSelectedDate] = useState(null) // due date
@@ -100,7 +107,8 @@ function Dates({ onUpdateDueDate,
   const [dueDateChecked, setDueDateChecked] = useState(true)
   const [selectedStartTime, setSelectedStartTime] = useState('10:10')
   const [selectedTime, setSelectedTime] = useState('10:10')
-  const [reminderSetting, setReminderSetting] = useState('1 Day before')
+  const [dayBeforeToRemind, setDayBeforeToRemind] = useState(1)
+  // const [is]
 
   const [startDateError, setStartDateError] = useState('')
   const [startTimeError, setStartTimeError] = useState('')
@@ -112,7 +120,8 @@ function Dates({ onUpdateDueDate,
         startDate: cardStartDate,
         startTime: cardStartTime,
         dueDate: cardDueDate,
-        dueDateTime: cardDueTime
+        dueDateTime: cardDueTime,
+        dayBeforeToRemind: cardDayBeforeToRemind
       } = activeCard.dueDate
 
       // Set selected date and current month view
@@ -140,6 +149,9 @@ function Dates({ onUpdateDueDate,
       } else {
         setDueDateChecked(false)
       }
+
+      // Set day before to remind state
+      setDayBeforeToRemind(cardDayBeforeToRemind || 1)
     } else {
       // Reset states if no dueDate data
       setSelectedDate(null)
@@ -149,6 +161,8 @@ function Dates({ onUpdateDueDate,
       setDueDateChecked(true)
       setSelectedStartTime('10:10')
       setSelectedTime('10:10')
+      setDueDateTitle('')
+      setDayBeforeToRemind(1)
     }
   }, [activeCard])
 
@@ -367,6 +381,55 @@ function Dates({ onUpdateDueDate,
 
   const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
+  const callApiUpdateCard = async (updateData) => {
+    // console.log('updateData', updateData)
+    const res = await updateCardDetailsAPI(activeCard._id, updateData)
+
+    // // Cập nhật thông tin Card mới nhất vào Redux
+    dispatch(updateCurrentActiveCard(res))
+    // // Cập nhật thông tin Card mới nhất vào Redux của Board
+    dispatch(updateCardInBoard(res))
+
+    // Gửi thông báo tới server thông qua socket.io
+    // socketIoIntance.emit('FE_UPDATE_CARD', res)
+    setTimeout(() => {
+      socketIoIntance.emit('batch', { boardId: currentBoard._id })
+      socketIoIntance.emit('activeCardUpdate', activeCard._id)
+    }, 1234)
+
+    return res
+
+  }
+
+  const onUpdateDueDate = (dueDateData) => {
+    // callApiUpdateCard({ dueDate: dueDateData })
+    callApiUpdateCard({ dueDate: dueDateData })
+      .then(response => {
+        // Xử lý notification - lọc bỏ currentUser._id
+        if (activeCard?.memberIds?.length > 0) {
+          const otherMembers = activeCard.memberIds.filter(memberId => memberId !== currentUser._id)
+
+          otherMembers.forEach(memberId => {
+            createNewNotificationAPI({
+              type: 'dueDateInCard',
+              userId: memberId,
+              details: {
+                boardId: currentBoard._id,
+                boardTitle: currentBoard.title,
+                cardId: activeCard._id,
+                cardTitle: activeCard.title,
+                senderId: currentUser._id,
+                senderName: currentUser.username
+              }
+            }).then(() => {
+              socketIoIntance.emit('FE_FETCH_NOTI', { userId: memberId })
+            })
+          })
+        }
+        return response
+      })
+  }
+
   const handleSaveDueDate = () => {
     let dueDateData = null
     if (startDateChecked) {
@@ -376,7 +439,10 @@ function Dates({ onUpdateDueDate,
         startTime: selectedStartTime,
         dueDate: selectedDate,
         dueDateTime: selectedTime,
-        isComplete: activeCard?.dueDate?.isComplete || false
+        isComplete: activeCard?.dueDate?.isComplete || false,
+        dayBeforeToRemind: dayBeforeToRemind,
+        isRemind: activeCard?.dueDate?.isRemind || false,
+        isOverdueNotified: activeCard?.dueDate?.isOverdueNotified || false
       }
     } else {
       dueDateData = {
@@ -385,7 +451,10 @@ function Dates({ onUpdateDueDate,
         startTime: null,
         dueDate: selectedDate,
         dueDateTime: selectedTime,
-        isComplete: activeCard?.dueDate?.isComplete || false
+        isComplete: activeCard?.dueDate?.isComplete || false,
+        dayBeforeToRemind: dayBeforeToRemind,
+        isRemind: activeCard?.dueDate?.isRemind || false,
+        isOverdueNotified: activeCard?.dueDate?.isOverdueNotified || false
       }
     }
     onUpdateDueDate(dueDateData)
@@ -400,7 +469,8 @@ function Dates({ onUpdateDueDate,
       dueDateTime: null,
       isComplete: false
     }
-    onUpdateDueDate(dueDateData)
+    // onUpdateDueDate(dueDateData)
+    callApiUpdateCard({ dueDate: dueDateData })
     handleClosePopover()
   }
 
@@ -560,14 +630,16 @@ function Dates({ onUpdateDueDate,
             <Box sx={{ mt: 2 }}>
               <Typography sx={{ mb: 1 }}>Set due date reminder</Typography>
               <Select
-                value={reminderSetting}
-                onChange={(e) => setReminderSetting(e.target.value)}
+                // value={reminderSetting}
+                // onChange={(e) => setReminderSetting(e.target.value)}
+                value={dayBeforeToRemind}
+                onChange={(e) => setDayBeforeToRemind(e.target.value)}
                 fullWidth
                 size="small"
               >
-                <MenuItem value="1 Day before">1 Day before</MenuItem>
-                <MenuItem value="2 Days before">2 Days before</MenuItem>
-                <MenuItem value="3 Days before">3 Days before</MenuItem>
+                <MenuItem value='1'>1 Day before</MenuItem>
+                <MenuItem value="2">2 Days before</MenuItem>
+                <MenuItem value="3">3 Days before</MenuItem>
               </Select>
             </Box>
 

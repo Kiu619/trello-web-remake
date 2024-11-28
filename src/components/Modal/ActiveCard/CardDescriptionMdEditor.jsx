@@ -10,7 +10,7 @@ import { toast } from 'react-toastify'
 import rehypeSanitize from 'rehype-sanitize'
 
 function CardDescriptionMdEditor(props) {
-  const { column, activeCard, cardDescriptionProp, onUpdateCardDescription } = props
+  const { currentUser, currentBoard, column, activeCard, cardDescriptionProp, onUpdateCardDescription } = props
 
   const { mode } = useColorScheme()
 
@@ -83,7 +83,7 @@ function CardDescriptionMdEditor(props) {
               <SubjectRoundedIcon />
               <Typography variant="span" sx={{ fontWeight: '600', fontSize: '20px' }}>Description</Typography>
             </Box>
-            {activeCard?.isClosed === false && column?.isClosed === false && (
+            {activeCard?.isClosed === false && column?.isClosed === false && (currentBoard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && (
               <Button
                 sx={{ alignSelf: 'flex-end' }}
                 onClick={() => setMarkdownEditMode(true)}

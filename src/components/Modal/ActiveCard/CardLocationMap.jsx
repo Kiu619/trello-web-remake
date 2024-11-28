@@ -28,7 +28,7 @@ const MapUpdater = ({ center }) => {
   return null
 }
 
-const LocationMap = ({ column, activeCard, location, updateLocation }) => {
+const LocationMap = ({ currentUser, currentBoard, column, activeCard, location, updateLocation }) => {
   const center = {
     lat: parseFloat(location?.lat || 21.0302065),
     lng: parseFloat(location?.lon || 105.7966608)
@@ -90,7 +90,7 @@ const LocationMap = ({ column, activeCard, location, updateLocation }) => {
             width: 18
           }} />
         </IconButton>
-        {activeCard?.isClosed === false && column?.isClosed === false && (
+        {activeCard?.isClosed === false && column?.isClosed === false && (currentBoard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && (
           <IconButton
             size="small"
             edge="end"

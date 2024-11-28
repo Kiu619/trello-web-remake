@@ -25,10 +25,9 @@ import Copy from '~/components/ColumnFunctions/Copy'
 import OpenClose from '~/components/ColumnFunctions/OpenClose'
 
 function Column(props) {
-  const { column } = props
+  const { column, board, currentUser } = props
 
   const dispatch = useDispatch()
-  const board = useSelector(selectCurrentActiveBoard)
   const [selectColumn, setSelectColumn] = useState(null)
 
   const { attributes,
@@ -162,7 +161,7 @@ function Column(props) {
       <Box
         {...listeners}
         // data-no-dnd='true'
-        data-no-dnd={column?.isClosed === true ? true : undefined}
+        data-no-dnd={(!board?.memberIds?.includes(currentUser?._id) && !board?.ownerIds?.includes(currentUser?._id)) || column?.isClosed === true ? true : undefined}
         sx={{
           minWidth: '300px',
           maxWidth: '300px',
@@ -182,7 +181,7 @@ function Column(props) {
           alignItems: 'center',
           justifyContent: 'space-between'
         }}>
-          {column?.isClosed === false ? (
+          {(board?.memberIds?.includes(currentUser?._id) || board?.ownerIds?.includes(currentUser?._id)) && column?.isClosed === false  ? (
             <ToggleFocusInput
               value={column.title}
               // value={columnTitle}
@@ -192,73 +191,75 @@ function Column(props) {
             : (
               <Typography variant="h5" sx={{ fontWeight: '700', fontSize: '14px' }}>{column?.title}</Typography>
             )}
-          <Box>
-            <Tooltip title='More options'>
-              <ExpandMore sx={{ color: 'text.primary', cursor: 'pointer' }}
-                id="basic-column-dropdown"
-                aria-controls={open ? 'basic-menu-column-dropdown' : undefined}
-                aria-haspopup="true"
-                aria-expanded={open ? 'true' : undefined}
-                onClick={handleClick}
-              />
-            </Tooltip>
-            <Menu
-              id="basic-menu-column-dropdown"
-              anchorEl={anchorEl}
-              open={open}
-              onClose={handleClose}
-              MenuListProps={{
-                'aria-labelledby': 'basic-column-dropdown'
-              }}
-            >
-              {column?.isClosed === false ? (
-                <Box>
-                  <MenuItem
-                    sx={{
-                      '&:hover': {
-                        color: 'primary.main',
-                        '& .add-card-icon': {
-                          color: 'primary.main'
+          {(board?.memberIds?.includes(currentUser?._id) || board?.ownerIds?.includes(currentUser?._id)) && (
+            <Box>
+              <Tooltip title='More options'>
+                <ExpandMore sx={{ color: 'text.primary', cursor: 'pointer' }}
+                  id="basic-column-dropdown"
+                  aria-controls={open ? 'basic-menu-column-dropdown' : undefined}
+                  aria-haspopup="true"
+                  aria-expanded={open ? 'true' : undefined}
+                  onClick={handleClick}
+                />
+              </Tooltip>
+              <Menu
+                id="basic-menu-column-dropdown"
+                anchorEl={anchorEl}
+                open={open}
+                onClose={handleClose}
+                MenuListProps={{
+                  'aria-labelledby': 'basic-column-dropdown'
+                }}
+              >
+                {column?.isClosed === false ? (
+                  <Box>
+                    <MenuItem
+                      sx={{
+                        '&:hover': {
+                          color: 'primary.main',
+                          '& .add-card-icon': {
+                            color: 'primary.main'
+                          }
                         }
-                      }
-                    }} onClick={toggleOpenNewCardForm}>
-                    <ListItemIcon>
-                      <AddCard className='add-card-icon' fontSize="small" />
-                    </ListItemIcon>
-                    <ListItemText>Add new card</ListItemText>
-                  </MenuItem>
+                      }} onClick={toggleOpenNewCardForm}>
+                      <ListItemIcon>
+                        <AddCard className='add-card-icon' fontSize="small" />
+                      </ListItemIcon>
+                      <ListItemText>Add new card</ListItemText>
+                    </MenuItem>
 
-                  <Move column={selectColumn} />
+                    <Move column={selectColumn} />
 
-                  <Copy column={selectColumn} />
+                    <Copy column={selectColumn} />
 
-                  <MoveAllCards column={selectColumn} />
+                    <MoveAllCards column={selectColumn} />
 
-                  <Divider />
+                    <Divider />
 
-                  <MenuItem
-                    onClick={handleDeleteColumn}
-                    sx={{
-                      '&:hover': {
-                        color: 'error.dark',
-                        '& .remove-icon': {
-                          color: 'error.dark'
+                    <MenuItem
+                      onClick={handleDeleteColumn}
+                      sx={{
+                        '&:hover': {
+                          color: 'error.dark',
+                          '& .remove-icon': {
+                            color: 'error.dark'
+                          }
                         }
-                      }
-                    }}>
-                    <ListItemIcon>
-                      <DeleteForever className='remove-icon' fontSize="small" />
-                    </ListItemIcon>
-                    <ListItemText>Remove this column</ListItemText>
-                  </MenuItem>
+                      }}>
+                      <ListItemIcon>
+                        <DeleteForever className='remove-icon' fontSize="small" />
+                      </ListItemIcon>
+                      <ListItemText>Remove this column</ListItemText>
+                    </MenuItem>
 
+                    <OpenClose column={selectColumn} board={board} handleClose={handleClose} />
+                  </Box>
+                ) : (
                   <OpenClose column={selectColumn} board={board} handleClose={handleClose} />
-                </Box>
-              ) : (
-                <OpenClose column={selectColumn} board={board} handleClose={handleClose} />
-              )}
-            </Menu>
-          </Box>
+                )}
+              </Menu>
+            </Box>
+          )}
         </Box>
 
         {/* Column Content */}
@@ -266,81 +267,83 @@ function Column(props) {
 
 
         {/* Column Footer */}
-        <Box sx={{
-          height: (theme) => theme.trelloCustom.columnFooterHeight,
-          p: 1
-        }}>
-          {!openNewCardForm && column?.isClosed === false &&
-            (<Box sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between'
-            }}>
-              <Button startIcon={<AddCard />} onClick={toggleOpenNewCardForm}> Add new card</Button>
-              <Tooltip title='Drag to move'>
-                <DragHandle sx={{ cursor: 'pointer' }} />
-              </Tooltip>
-            </Box>)
-          }
-          {openNewCardForm && column?.isClosed === false && (
-            <Box sx={{
-              height: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1
-            }}>
-              <TextField
-                label='Enter card title'
-                type='type'
-                size='small'
-                variant='outlined'
-                autoFocus
-                data-no-dnd='true'
-                value={newCardTitle}
-                onChange={(e) => setNewCardTitle(e.target.value)}
-                sx={{
-                  '& label': { color: 'text.primary' },
-                  '& input': {
-                    color: (theme) => theme.palette.primary.main,
-                    bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#333643' : '#ebecf0')
-                  },
-                  '& label.Mui-focused': { color: (theme) => theme.palette.primary.main },
-                  '& .MuiOutlined Input-root': {
-                    '& fieldset': { borderColor: (theme) => theme.palette.primary.main },
-                    '&:hover fieldset': { borderColor: (theme) => theme.palette.primary.main },
-                    '&. Mui-focused fieldset': { borderColor: (theme) => theme.palette.primary.main }
-                  },
-                  '& .MuiOutlinedInput-input': {
-                    borderRadius: 1
-                  }
-                }}
-
-              />
-              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                <Button
-                  className='interceptor-loading'
-                  onClick={addNewCard}
+        {(board?.memberIds?.includes(currentUser?._id) || board?.ownerIds?.includes(currentUser?._id)) && (
+          <Box sx={{
+            height: (theme) => theme.trelloCustom.columnFooterHeight,
+            p: 1
+          }}>
+            { !openNewCardForm && column?.isClosed === false &&
+              (<Box sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between'
+              }}>
+                <Button startIcon={<AddCard />} onClick={toggleOpenNewCardForm}> Add new card</Button>
+                <Tooltip title='Drag to move'>
+                  <DragHandle sx={{ cursor: 'pointer' }} />
+                </Tooltip>
+              </Box>)
+            }
+            {openNewCardForm && column?.isClosed === false && (
+              <Box sx={{
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1
+              }}>
+                <TextField
+                  label='Enter card title'
+                  type='type'
+                  size='small'
+                  variant='outlined'
+                  autoFocus
                   data-no-dnd='true'
-                  variant='outlined' startIcon={<NoteAdd />}
+                  value={newCardTitle}
+                  onChange={(e) => setNewCardTitle(e.target.value)}
                   sx={{
-                    color: (theme) => theme.palette.primary.main,
-                    borderColor: 'white',
-                    '&:hover': {
-                      borderColor: 'white'
+                    '& label': { color: 'text.primary' },
+                    '& input': {
+                      color: (theme) => theme.palette.primary.main,
+                      bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#333643' : '#ebecf0')
+                    },
+                    '& label.Mui-focused': { color: (theme) => theme.palette.primary.main },
+                    '& .MuiOutlined Input-root': {
+                      '& fieldset': { borderColor: (theme) => theme.palette.primary.main },
+                      '&:hover fieldset': { borderColor: (theme) => theme.palette.primary.main },
+                      '&. Mui-focused fieldset': { borderColor: (theme) => theme.palette.primary.main }
+                    },
+                    '& .MuiOutlinedInput-input': {
+                      borderRadius: 1
                     }
                   }}
-                >
-                  Add
-                </Button>
-                <Close fontSize='small' onClick={toggleOpenNewCardForm} sx={{ color: (theme) => (theme.palette.mode === 'dark' ? '#white' : 'black'), cursor: 'pointer' }} />
+  
+                />
+                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                  <Button
+                    className='interceptor-loading'
+                    onClick={addNewCard}
+                    data-no-dnd='true'
+                    variant='outlined' startIcon={<NoteAdd />}
+                    sx={{
+                      color: (theme) => theme.palette.primary.main,
+                      borderColor: 'white',
+                      '&:hover': {
+                        borderColor: 'white'
+                      }
+                    }}
+                  >
+                    Add
+                  </Button>
+                  <Close fontSize='small' onClick={toggleOpenNewCardForm} sx={{ color: (theme) => (theme.palette.mode === 'dark' ? '#white' : 'black'), cursor: 'pointer' }} />
+                </Box>
               </Box>
-            </Box>
-          )}
-
-          {column?.isClosed === true && (
-            <Button startIcon={<DoDisturbOutlinedIcon />}> Column is closed</Button>
-          )}
-        </Box>
+            )}
+  
+            {column?.isClosed === true && (
+              <Button startIcon={<DoDisturbOutlinedIcon />}> Column is closed</Button>
+            )}
+          </Box>
+        )}
       </Box>
     </div>
   )

@@ -6,16 +6,11 @@ import { Box, Button, Checkbox, FormControlLabel, IconButton, LinearProgress, Po
 import Avatar from '@mui/material/Avatar'
 import Badge from '@mui/material/Badge'
 import { useState } from 'react'
-import { useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
 import ToggleFocusInput from '~/components/Form/ToggleFocusInput'
-import { selectCurrentActiveBoard } from '~/redux/activeBoard/activeBoardSlice'
-import { selectCurrentUser } from '~/redux/user/userSlice'
 
-const CardChecklist = ({ column, activeCard, cardMemberIds = [], cardChecklist, onUpdateChecklist, onUpdateChecklistItem }) => {
-  const board = useSelector(selectCurrentActiveBoard)
-  const currentUser = useSelector(selectCurrentUser)
-  const FE_CardMembers = cardMemberIds.map(memberId => board?.FE_allUsers.find(user => user._id === memberId))
+const CardChecklist = ({ currentUser, currentBoard, column, activeCard, cardMemberIds = [], cardChecklist, onUpdateChecklist, onUpdateChecklistItem }) => {
+  const FE_CardMembers = cardMemberIds.map(memberId => currentBoard?.FE_allUsers.find(user => user._id === memberId))
 
   const [newItem, setNewItem] = useState('')
 
@@ -97,7 +92,7 @@ const CardChecklist = ({ column, activeCard, cardMemberIds = [], cardChecklist, 
 
   const handleCheckboxChange = (itemId) => {
     const item = cardChecklist.items.find(item => item._id === itemId)
-    if (item.assignedTo.length === 0 || item.assignedTo.includes(currentUser._id) || board.ownerIds.includes(currentUser._id)) {
+    if (item.assignedTo.length === 0 || item.assignedTo.includes(currentUser._id) || currentBoard.ownerIds.includes(currentUser._id)) {
       const incomingChecklistItemInfo =
       {
         checklistId: cardChecklist._id,
@@ -159,7 +154,7 @@ const CardChecklist = ({ column, activeCard, cardMemberIds = [], cardChecklist, 
       // Ngược lại thì thêm user vào danh sách assignedTo
       incomingChecklistItemInfo.assignedTo.push(user._id)
       incomingChecklistItemInfo.assignMember = user
-      incomingChecklistItemInfo.board = board
+      incomingChecklistItemInfo.board = currentBoard
       incomingChecklistItemInfo.cardChecklist = cardChecklist
     }
     // console.log('incomingChecklistItemInfo', incomingChecklistItemInfo)
@@ -181,7 +176,7 @@ const CardChecklist = ({ column, activeCard, cardMemberIds = [], cardChecklist, 
     <Box sx={{ mt: 3 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
         <TaskAltOutlinedIcon />
-        {column?.isClosed === false && activeCard?.isClosed === false ? (
+        {column?.isClosed === false && activeCard?.isClosed === false && (currentBoard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) ? (
           <ToggleFocusInput
             inputFontSize='22px'
             value={cardChecklist.title}
@@ -190,7 +185,7 @@ const CardChecklist = ({ column, activeCard, cardMemberIds = [], cardChecklist, 
           : (
             <Typography variant="h5" sx={{ fontWeight: '600', fontSize: '22px' }}>{activeCard?.title}</Typography>
           )}
-        {column?.isClosed === false && activeCard?.isClosed === false && board.ownerIds.includes(currentUser._id) && (
+        {column?.isClosed === false && activeCard?.isClosed === false && currentBoard.ownerIds.includes(currentUser._id) && (
           <IconButton
             sx={{
               ml: 'auto',
@@ -222,13 +217,13 @@ const CardChecklist = ({ column, activeCard, cardMemberIds = [], cardChecklist, 
             sx={{}}
             control={
               <Checkbox
-                disabled={activeCard?.isClosed === true || column?.isClosed === true}
+                disabled={!currentBoard?.memberIds?.includes(currentUser?._id) || !currentBoard?.ownerIds?.includes(currentUser?._id) ||activeCard?.isClosed === true || column?.isClosed === true}
                 checked={item.isChecked}
                 onChange={() => handleCheckboxChange(item._id)}
               />
             }
           />
-          {(column?.isClosed === false && activeCard?.isClosed === false && isEdit === index) ? (
+          {((currentBoard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && column?.isClosed === false && activeCard?.isClosed === false && isEdit === index) ? (
             <Box
               onBlur={() => setIsEdit(null)}
               sx={{ width: '100%' }}
@@ -255,7 +250,7 @@ const CardChecklist = ({ column, activeCard, cardMemberIds = [], cardChecklist, 
               justifyContent: 'space-between'
             }} onClick={() => setIsEdit(index)}>
               <Typography sx={{ ml: 1, fontWeight: 'bold' }}>{item?.title}</Typography>
-              {(column?.isClosed === false && activeCard?.isClosed === false && board.ownerIds.includes(currentUser._id)) && (
+              {(column?.isClosed === false && activeCard?.isClosed === false && currentBoard.ownerIds.includes(currentUser._id)) && (
                 <Box className="icon-buttons" sx={{
                   display: 'none',
                   alignItems: 'center'
@@ -356,7 +351,7 @@ const CardChecklist = ({ column, activeCard, cardMemberIds = [], cardChecklist, 
           </Box>
         </Box>
       ) }
-      {column?.isClosed === false && (activeCard?.isClosed === false && !isAddItem) && (
+      {(currentBoard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) &&  column?.isClosed === false && (activeCard?.isClosed === false && !isAddItem) && (
         <Button onClick={() => setIsAddItem(true)} variant="contained" color="info" sx={{ mt: 1, height: '30px' }}>
           Add an item
         </Button>

@@ -13,10 +13,8 @@ import { selectCurrentUser } from '~/redux/user/userSlice'
 import { createNewNotificationAPI } from '~/apis'
 import { socketIoIntance } from '~/socketClient'
 
-const CardActivitySection = ({ column, activeCard, cardMemberIds = [], cardComments = [], onAddCardComment, onUpdateCardComment }) => {
-  const currentUser = useSelector(selectCurrentUser)
-  const board = useSelector(selectCurrentActiveBoard)
-  const FE_CardMembers = cardMemberIds.map(memberId => board?.FE_allUsers.find(user => user._id === memberId)).filter(user => user?._id !== currentUser?._id)
+const CardActivitySection = ({ currentUser, currentBoard, column, activeCard, cardMemberIds = [], cardComments = [], onAddCardComment, onUpdateCardComment }) => {
+  const FE_CardMembers = cardMemberIds.map(memberId => currentBoard?.FE_allUsers.find(user => user._id === memberId)).filter(user => user?._id !== currentUser?._id)
 
   const formattedBoardMembers = FE_CardMembers.map(member => ({
     id: member?._id,
@@ -72,8 +70,8 @@ const CardActivitySection = ({ column, activeCard, cardMemberIds = [], cardComme
         type: 'mention',
         userId: taggedUser,
         details: {
-          boardId: board._id,
-          boardTitle: board.title,
+          boardId: currentBoard._id,
+          boardTitle: currentBoard.title,
           cardId: activeCard._id,
           cardTitle: activeCard.title,
           senderId: currentUser._id,
@@ -98,7 +96,7 @@ const CardActivitySection = ({ column, activeCard, cardMemberIds = [], cardComme
         userDisplayName: currentUser?.displayName,
         content: comment.trim(),
         taggedUserIds: uniqueMentions,
-        boardId: board?._id
+        boardId: currentBoard?._id
       }
 
       handleEmitMentionNotification(uniqueMentions)
@@ -142,7 +140,7 @@ const CardActivitySection = ({ column, activeCard, cardMemberIds = [], cardComme
       userDisplayName: currentUser?.displayName,
       content: newComment.trim(),
       taggedUserIds: uniqueMentions,
-      boardId: board?._id,
+      boardId: currentBoard?._id,
       _id: commentId,
       commentedAt: editingCommentedAt,
       action: 'EDIT'
@@ -184,7 +182,7 @@ const CardActivitySection = ({ column, activeCard, cardMemberIds = [], cardComme
 
   return (
     <Box sx={{ mt: 2 }} id='comment'>
-      {column?.isClosed === false && activeCard?.isClosed === false && (
+      {(currentBoard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && column?.isClosed === false && activeCard?.isClosed === false && (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
           <Avatar
             sx={{ width: 36, height: 36, cursor: 'pointer' }}
@@ -412,13 +410,13 @@ const CardActivitySection = ({ column, activeCard, cardMemberIds = [], cardComme
               })()
             )}
 
-            {column?.isClosed === false && activeCard?.isClosed === false && currentUser._id === board.ownerIds[0] && currentUser._id != comment.userId && (
+            {column?.isClosed === false && activeCard?.isClosed === false && currentUser._id === currentBoard.ownerIds[0] && currentUser._id != comment.userId && (
               <>
                 <Typography variant="caption" sx={{ color: '#aab3bd', cursor: 'pointer' }} onClick={(e) => handleOpenPopover(e, comment._id)}>Delete</Typography>
               </>
             )}
 
-            {column?.isClosed === false && activeCard?.isClosed === false && !editingCommentId && currentUser._id === comment.userId && (
+            {(currentBoard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && column?.isClosed === false && activeCard?.isClosed === false && !editingCommentId && currentUser._id === comment.userId && (
               <>
                 <Typography variant="caption" sx={{ color: '#aab3bd', cursor: 'pointer', mr: 1.5 }} onClick={() => {
                   setEditingCommentId(comment._id)

@@ -47,6 +47,11 @@ export const addBoardAdminAPI = async (boardId, userId) => {
   return response.data
 }
 
+export const removeBoardAdminAPI = async (boardId, userId) => { 
+  const response = await authorizedAxiosInstance.put(`${API_ROOT}/v1/board/${boardId}/removeBoardAdmin`, userId)
+  return response.data
+}
+
 export const closeBoardAPI = async (boardId) => {
   const response = await authorizedAxiosInstance.put(`${API_ROOT}/v1/board/${boardId}/close`)
   toast.success('Close board successfully!')
@@ -72,6 +77,11 @@ export const copyBoardAPI = async (boardId, data) => {
 export const leaveBoardAPI = async (boardId) => {
   const response = await authorizedAxiosInstance.put(`${API_ROOT}/v1/board/${boardId}/leaveBoard`)
   toast.success('Leave board successfully!')
+  return response.data
+}
+
+export const removeMembersFromBoardAPI = async (boardId, data) => {
+  const response = await authorizedAxiosInstance.put(`${API_ROOT}/v1/board/${boardId}/removeMembers`, data)
   return response.data
 }
 

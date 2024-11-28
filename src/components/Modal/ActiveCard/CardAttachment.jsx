@@ -61,7 +61,7 @@ const ToggleButton = styled(Button)(({ theme }) => ({
   color: theme.palette.mode === 'dark' ? '#90caf9' : '#000'
 }))
 
-const CardAttachment = ({ column, activeCard, attachments = [], onAddCardAttachment, onEditCardAttachment }) => {
+const CardAttachment = ({ currentUser, currentBoard, column, activeCard, attachments = [], onAddCardAttachment, onEditCardAttachment }) => {
   const [anchorEl, setAnchorEl] = useState(null)
   const [selectedFile, setSelectedFile] = useState(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
@@ -135,7 +135,7 @@ const CardAttachment = ({ column, activeCard, attachments = [], onAddCardAttachm
               Attachment
           </Typography>
         </Box>
-        {activeCard?.isClosed === false && column?.isClosed === false && (
+        {activeCard?.isClosed === false && column?.isClosed === false && (currentBoard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && (
           <Button
             sx={{ alignSelf: 'flex-end' }}
             component="label"
@@ -155,7 +155,7 @@ const CardAttachment = ({ column, activeCard, attachments = [], onAddCardAttachm
             key={file._id}
             onClick={() => handleAttachmentClick(file)}
             secondaryAction={
-              activeCard?.isClosed === false && column?.isClosed === false && (
+              activeCard?.isClosed === false && column?.isClosed === false && (currentBoard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && (
                 <IconButton
                   edge="end"
                   onClick={(e) => {

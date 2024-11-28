@@ -15,10 +15,14 @@ import { socketIoIntance } from '~/socketClient'
 import OpenClose from './OpenClose'
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined'
 import Copy from './Copy'
-const BoardMenu = ({ board, currentUser }) => {
+import Members from './Member'
+import GroupOutlinedIcon from '@mui/icons-material/GroupOutlined';
 
+const BoardMenu = ({ board, currentUser }) => {
   const [anchorEl, setAnchorEl] = useState(null)
   const [showAboutBoard, setShowAboutBoard] = useState(false)
+  const [showMembers, setShowMembers] = useState(false)
+
   const open = Boolean(anchorEl)
 
   const navigate = useNavigate()
@@ -30,10 +34,15 @@ const BoardMenu = ({ board, currentUser }) => {
   const handleMenuClose = () => {
     setAnchorEl(null)
     setShowAboutBoard(false)
+    setShowMembers(false)
   }
 
   const handleAboutBoardClick = () => {
     setShowAboutBoard(true)
+  }
+
+  const handleMembersClick = () => {
+    setShowMembers(true)
   }
 
   const confirmLeaveBoard = useConfirm()
@@ -68,9 +77,6 @@ const BoardMenu = ({ board, currentUser }) => {
       description: `This will delete the entire column "${board.title}". Are you sure?`
     })
       .then(() => {
-        // deleteBoardAPI(board._id).then((res) => {
-        //   toast.success(res?.deleteResult)
-        // })
         deleteBoardAPI(board._id).then((res) => {
           if (res) {
             navigate('/boards')
@@ -115,10 +121,8 @@ const BoardMenu = ({ board, currentUser }) => {
             <CancelIcon color="error" sx={{ '&:hover': { color: 'error.light' } }} onClick={handleMenuClose} />
           </Box>
         </Box>
+        <Divider />
         <List sx={{ width: 335 }}>
-
-          <Divider />
-
           <ListItem
             onClick={handleAboutBoardClick}
             sx={{
@@ -136,40 +140,68 @@ const BoardMenu = ({ board, currentUser }) => {
               About this board
             </Box>
           </ListItem>
-
           <Divider />
 
-          {board?.isClosed === false && (
-            <Copy board={board} handleMenuClose={handleMenuClose} />
+          <ListItem
+            onClick={handleMembersClick}
+            sx={{
+              cursor: 'pointer',
+              '&:hover': {
+                color: 'primary.main',
+                '& .primary-icon': {
+                  color: 'primary.main'
+                }
+              }
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <GroupOutlinedIcon className='primary-icon' />
+              Members
+            </Box>
+          </ListItem>
+
+          {(board?.memberIds?.includes(currentUser?._id) || board?.ownerIds?.includes(currentUser?._id)) && board?.isClosed === false && (
+            <>
+              <Copy board={board} handleMenuClose={handleMenuClose} />
+              <Divider />
+            </>
           )}
 
-          <Divider />
 
-          {board?.ownerIds.includes(currentUser._id) && (<OpenClose board={board} handleMenuClose={handleMenuClose} />)}
-
-          <Divider />
-
-          {!board?.ownerIds.includes(currentUser._id) && (
-            <ListItem
-              onClick={handleLeaveBoard}
-              sx={{
-                cursor: 'pointer',
-                '&:hover': {
-                  color: 'error.dark',
-                  '& .danger-icon': {
-                    color: 'error.dark'
+          {/* {(board?.memberIds?.includes(currentUser?._id) || board?.ownerIds?.includes(currentUser?._id)) && board?.isClosed === false && (
+            <>
+              <Copy board={board} handleMenuClose={handleMenuClose} />
+              <Divider />
+            </>
+          )} */}
+          {board?.ownerIds.includes(currentUser._id) && (
+            <>
+              <OpenClose board={board} handleMenuClose={handleMenuClose} />
+              <Divider />
+            </>
+          )}
+          {board?.memberIds?.includes(currentUser?._id) && (
+            <>
+              <ListItem
+                onClick={handleLeaveBoard}
+                sx={{
+                  cursor: 'pointer',
+                  '&:hover': {
+                    color: 'error.dark',
+                    '& .danger-icon': {
+                      color: 'error.dark'
+                    }
                   }
-                }
-              }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}
+                }}
               >
-                <LogoutOutlinedIcon className='danger-icon' />
-                Leave board
-              </Box>
-            </ListItem>)}
-
-          <Divider />
-
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <LogoutOutlinedIcon className='danger-icon' />
+                  Leave board
+                </Box>
+              </ListItem>
+              <Divider />
+            </>
+          )}
           {board?.ownerIds.includes(currentUser._id) && (
             <ListItem
               onClick={handleDeleteBoard}
@@ -181,19 +213,22 @@ const BoardMenu = ({ board, currentUser }) => {
                     color: 'error.dark'
                   }
                 }
-              }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}
-              >
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <DeleteOutlineIcon className='danger-icon' />
                 Delete board
               </Box>
             </ListItem>
           )}
-
         </List>
       </Drawer>
       {showAboutBoard && (
         <AboutThisBoard currentUser={currentUser} board={board} showAboutBoard={showAboutBoard} setShowAboutBoard={setShowAboutBoard} />
+      )}
+
+      {showMembers && (
+        <Members currentUser={currentUser} board={board} showMembers={showMembers} setShowMembers={setShowMembers} />
       )}
     </>
   )
