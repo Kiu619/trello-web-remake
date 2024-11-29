@@ -217,7 +217,7 @@ const CardChecklist = ({ currentUser, currentBoard, column, activeCard, cardMemb
             sx={{}}
             control={
               <Checkbox
-                disabled={!currentBoard?.memberIds?.includes(currentUser?._id) || !currentBoard?.ownerIds?.includes(currentUser?._id) ||activeCard?.isClosed === true || column?.isClosed === true}
+                disabled={(!currentBoard?.memberIds?.includes(currentUser?._id) && !currentBoard?.ownerIds?.includes(currentUser?._id)) ||activeCard?.isClosed === true || column?.isClosed === true}
                 checked={item.isChecked}
                 onChange={() => handleCheckboxChange(item._id)}
               />

@@ -140,7 +140,7 @@ const AboutThisBoard = ({ currentUser, board, showAboutBoard, setShowAboutBoard 
                 </Typography>
               </Box>
             </Box>
-            {owner._id !== currentUser._id && board?.isClosed === false && board?.creator === currentUser._id && (
+            {owner._id !== currentUser._id && board?.isClosed === false && board?.creatorId === currentUser._id && (
               <Box sx={{ display: 'flex', alignItems: 'center', mr: 2 }}
                 onClick={() => handleRemoveAdmin(owner._id)}
               >

@@ -382,8 +382,9 @@ function Dates({
   const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
   const callApiUpdateCard = async (updateData) => {
-    // console.log('updateData', updateData)
+    console.log('updateData', updateData)
     const res = await updateCardDetailsAPI(activeCard._id, updateData)
+    console.log('res', res)
 
     // // Cập nhật thông tin Card mới nhất vào Redux
     dispatch(updateCurrentActiveCard(res))
@@ -441,8 +442,9 @@ function Dates({
         dueDateTime: selectedTime,
         isComplete: activeCard?.dueDate?.isComplete || false,
         dayBeforeToRemind: dayBeforeToRemind,
-        isRemind: activeCard?.dueDate?.isRemind || false,
-        isOverdueNotified: activeCard?.dueDate?.isOverdueNotified || false
+        isRemind: false,
+        isOverdueNotified: false
+        // isOverdueNotified: activeCard?.dueDate?.isOverdueNotified || false
       }
     } else {
       dueDateData = {
@@ -453,10 +455,11 @@ function Dates({
         dueDateTime: selectedTime,
         isComplete: activeCard?.dueDate?.isComplete || false,
         dayBeforeToRemind: dayBeforeToRemind,
-        isRemind: activeCard?.dueDate?.isRemind || false,
-        isOverdueNotified: activeCard?.dueDate?.isOverdueNotified || false
+        isRemind: false,
+        isOverdueNotified: false
       }
     }
+    console.log('dueDateData', dueDateData)
     onUpdateDueDate(dueDateData)
     handleClosePopover()
   }
@@ -467,7 +470,11 @@ function Dates({
       startTime: null,
       dueDate: null,
       dueDateTime: null,
-      isComplete: false
+      isComplete: false,
+      title: '',
+      dayBeforeToRemind: 1,
+      isRemind: false,
+      isOverdueNotified: false
     }
     // onUpdateDueDate(dueDateData)
     callApiUpdateCard({ dueDate: dueDateData })
