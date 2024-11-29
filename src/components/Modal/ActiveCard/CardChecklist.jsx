@@ -198,7 +198,7 @@ const CardChecklist = ({ currentUser, currentBoard, column, activeCard, cardMemb
             }}
             onClick={(e) => {
               e.stopPropagation(),
-              handleOpenPopover(e, cardChecklist._id)
+                handleOpenPopover(e, cardChecklist._id)
             }}
           >
             <DeleteOutlineIcon />
@@ -217,7 +217,7 @@ const CardChecklist = ({ currentUser, currentBoard, column, activeCard, cardMemb
             sx={{}}
             control={
               <Checkbox
-                disabled={(!currentBoard?.memberIds?.includes(currentUser?._id) && !currentBoard?.ownerIds?.includes(currentUser?._id)) ||activeCard?.isClosed === true || column?.isClosed === true}
+                disabled={(!currentBoard?.memberIds?.includes(currentUser?._id) && !currentBoard?.ownerIds?.includes(currentUser?._id)) || activeCard?.isClosed === true || column?.isClosed === true}
                 checked={item.isChecked}
                 onChange={() => handleCheckboxChange(item._id)}
               />
@@ -346,12 +346,12 @@ const CardChecklist = ({ currentUser, currentBoard, column, activeCard, cardMemb
               Cancel
             </Button>
             <Button onClick={handleAddItem} variant="contained" color="info" sx={{ mt: 1, height: '30px' }}>
-                  Add
+              Add
             </Button>
           </Box>
         </Box>
-      ) }
-      {(currentBoard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) &&  column?.isClosed === false && (activeCard?.isClosed === false && !isAddItem) && (
+      )}
+      {(currentBoard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && column?.isClosed === false && (activeCard?.isClosed === false && !isAddItem) && (
         <Button onClick={() => setIsAddItem(true)} variant="contained" color="info" sx={{ mt: 1, height: '30px' }}>
           Add an item
         </Button>

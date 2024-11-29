@@ -59,13 +59,10 @@ const AboutThisBoard = ({ currentUser, board, showAboutBoard, setShowAboutBoard 
     try {
       const res = await removeBoardAdminAPI(board._id, { userId: ownerId })
       if (res) {
-        const newBoard = cloneDeep(board)
-        newBoard.owners = newBoard.owners.filter(owner => owner._id !== ownerId)
-        dispatch(updateCurrentActiveBoard(newBoard))
-
+        dispatch(fetchBoardDetailsApiRedux(board._id))
         setTimeout(() => {
           socketIoIntance.emit('batch', { boardId: board._id })
-        }, 2000)
+        }, 1234)
 
         toast.success('Admin removed successfully')
       }

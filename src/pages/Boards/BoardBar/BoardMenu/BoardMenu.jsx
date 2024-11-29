@@ -15,7 +15,7 @@ import { socketIoIntance } from '~/socketClient'
 import OpenClose from './OpenClose'
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined'
 import Copy from './Copy'
-import Members from './Member'
+import Members from './Members'
 import GroupOutlinedIcon from '@mui/icons-material/GroupOutlined';
 
 const BoardMenu = ({ board, currentUser }) => {

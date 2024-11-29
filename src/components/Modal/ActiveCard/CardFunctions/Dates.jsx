@@ -382,10 +382,7 @@ function Dates({
   const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
   const callApiUpdateCard = async (updateData) => {
-    console.log('updateData', updateData)
     const res = await updateCardDetailsAPI(activeCard._id, updateData)
-    console.log('res', res)
-
     // // Cập nhật thông tin Card mới nhất vào Redux
     dispatch(updateCurrentActiveCard(res))
     // // Cập nhật thông tin Card mới nhất vào Redux của Board

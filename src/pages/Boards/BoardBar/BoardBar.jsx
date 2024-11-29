@@ -18,6 +18,7 @@ import BoardUserGroup from './BoardUserGroup'
 import InviteBoardUser from './InviteBoardUser'
 import { updateCurrentActiveBoard } from '~/redux/activeBoard/activeBoardSlice'
 import { cloneDeep } from 'lodash'
+import { toast } from 'react-toastify'
 
 const MENU_STYLE = {
   color: 'white',
@@ -111,6 +112,11 @@ function BoardBar(props) {
 
   const triggerBlur = () => {
     const trimmedValue = inputValue.trim()
+    if (trimmedValue === '' || trimmedValue.length < 3 || trimmedValue.length > 50) {
+      setInputValue(board.title)
+      toast.error('Board title must be between 3 and 50 characters and cannot be empty.')
+      return
+    }
     setInputValue(trimmedValue)
 
     if (trimmedValue && trimmedValue !== board.title) {
@@ -145,11 +151,70 @@ function BoardBar(props) {
       borderBottom: '1px solid #00bfa5'
     }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-        {/* <ToggleFocusInput
-          value={board.title}
-          onChangedValue={onUpdateBoardTitle}
-        /> */}
 
+
+        {((board?.memberIds?.includes(currentUser?._id) || board?.ownerIds?.includes(currentUser?._id)) && board?.isClosed === false) ? (
+          <TextField
+            fullWidth
+            variant='outlined'
+            size="small"
+            value={inputValue}
+            onChange={(event) => { setInputValue(event.target.value) }}
+            onBlur={triggerBlur}
+            sx={{
+              '& label': {},
+              '& input': { fontSize: '18px', fontWeight: 'bold', color: 'white' },
+              '& .MuiOutlinedInput-root': {
+                backgroundColor: 'transparent',
+                '& fieldset': { borderColor: 'transparent' }
+              },
+              '& .MuiOutlinedInput-root:hover': {
+                borderColor: 'transparent',
+                '& fieldset': { borderColor: 'transparent' }
+              },
+              '& .MuiOutlinedInput-root.Mui-focused': {
+                backgroundColor: (theme) => theme.palette.mode === 'dark' ? '#33485D' : '#1976d2',
+                '& fieldset': { borderColor: (theme) => theme.palette.mode === 'dark' ? 'primary.main' : 'white' }
+              },
+              '& .MuiOutlinedInput-input': {
+                px: '6px',
+                overflow: 'hidden',
+                whiteSpace: 'nowrap',
+                textOverflow: 'ellipsis'
+              }
+            }}
+          />
+        ) : (
+          <TextField
+            fullWidth
+            variant='outlined'
+            size="small"
+            value={inputValue}
+            sx={{
+              '& label': {},
+              '& input': { fontSize: '18px', fontWeight: 'bold', color: 'white' },
+              '& .MuiOutlinedInput-root': {
+                backgroundColor: 'transparent',
+                '& fieldset': { borderColor: 'transparent' }
+              },
+              '& .MuiOutlinedInput-root:hover': {
+                borderColor: 'transparent',
+                '& fieldset': { borderColor: 'transparent' }
+              },
+              '& .MuiOutlinedInput-root.Mui-focused': {
+                backgroundColor: (theme) => theme.palette.mode === 'dark' ? '#33485D' : '#1976d2',
+                '& fieldset': { borderColor: (theme) => theme.palette.mode === 'dark' ? 'primary.main' : 'white' }
+              },
+              '& .MuiOutlinedInput-input': {
+                px: '6px',
+                overflow: 'hidden',
+                whiteSpace: 'nowrap',
+                textOverflow: 'ellipsis'
+              }
+            }}
+          />
+        )}
+        {/*
         <TextField
           fullWidth
           variant='outlined'
@@ -179,7 +244,7 @@ function BoardBar(props) {
               textOverflow: 'ellipsis'
             }
           }}
-        />
+        /> */}
 
         <Tooltip title={capitalizeFirstLetter(visibility)}>
           <Chip

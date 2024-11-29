@@ -223,20 +223,20 @@ function Notifications() {
             )
             break
 
-            case 'dueDateOverdue':
-              notificationContent = (
-                <Box onClick={handleClose} sx={{ maxWidth: '100%', wordBreak: 'break-word', whiteSpace: 'pre-wrap', display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  <Link to={`/board/${notification?.details?.boardId}/card/${notification?.details?.cardId}`} style={{ textDecoration: 'none' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: theme => theme.palette.mode === 'dark' ? '#fff' : '#000' }}>
-                      <WatchLaterOutlinedIcon />
-                      <Box>
+          case 'dueDateOverdue':
+            notificationContent = (
+              <Box onClick={handleClose} sx={{ maxWidth: '100%', wordBreak: 'break-word', whiteSpace: 'pre-wrap', display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Link to={`/board/${notification?.details?.boardId}/card/${notification?.details?.cardId}`} style={{ textDecoration: 'none' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: theme => theme.palette.mode === 'dark' ? '#fff' : '#000' }}>
+                    <WatchLaterOutlinedIcon />
+                    <Box>
                         Due date in card: <strong>{notification?.details?.cardTitle}</strong> in the board <strong>{notification?.details?.boardTitle}</strong> is overdue
-                      </Box>
                     </Box>
-                  </Link>
-                </Box>
-              )
-              break
+                  </Box>
+                </Link>
+              </Box>
+            )
+            break
 
           case 'assignment':
             notificationContent = (

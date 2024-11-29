@@ -3,7 +3,6 @@ import { Box, Button, ListItem, Popover, TextField, Typography } from '@mui/mate
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { copyBoardAPI } from '~/apis'
-import PageLoadingSpinner from '~/components/Loading/PageLoadingSpinner'
 
 const Copy = ({ board, handleMenuClose }) => {
   const [anchorEl, setAnchorEl] = useState(null)
