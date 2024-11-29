@@ -4,8 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --host",
-    "build": "vite build",
+    "dev": "cross-env BUILD_MODE=dev vite --host",
+    "build": "cross-env BUILD_MODE=build vite build --base=./",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
@@ -26,6 +26,7 @@
     "@reduxjs/toolkit": "^2.0.1",
     "@uiw/react-md-editor": "^4.0.4",
     "axios": "^1.7.2",
+    "cross-env": "^7.0.3",
     "framer-motion": "^11.11.17",
     "leaflet": "^1.9.4",
     "lodash": "^4.17.21",
