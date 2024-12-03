@@ -631,7 +631,7 @@ function Dates({
               </TimePickerWrapper>
             )}
 
-            <Box sx={{ mt: 2 }}>
+            {/* <Box sx={{ mt: 2 }}>
               <Typography sx={{ mb: 1 }}>Set due date reminder</Typography>
               <Select
                 // value={reminderSetting}
@@ -649,7 +649,7 @@ function Dates({
 
             <Typography sx={{ mt: 2, color: 'text.secondary', fontSize: '0.875rem' }}>
               Reminders will be sent to all members and watchers of this card.
-            </Typography>
+            </Typography> */}
 
             <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
               <Button

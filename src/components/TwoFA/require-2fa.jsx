@@ -29,8 +29,7 @@ function Require2FA() {
       toast.success('Verify 2FA successfully!')
     }).catch((err) => {
       const errMsg = err.response?.data?.message || 'Failed to verify 2FA.'
-      setError('otpToken', { type: 'manual', message: errMsg })
-      toast.error(errMsg)
+      // setError('otpToken', { type: 'manual', message: errMsg })
     })
   }
 

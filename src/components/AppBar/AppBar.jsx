@@ -13,6 +13,7 @@ import Notifications from './Notifications/Notifications'
 import AutoCompleteSearchBoard from '../SearchInput/AutoCompleteSearchBoard'
 import { selectCurrentUser } from '~/redux/user/userSlice'
 import { useSelector } from 'react-redux'
+import MobileSearchWrapper from '../SearchInput/MobileSearchWrapper '
 
 function AppBar() {
   const navigate = useNavigate()
@@ -81,13 +82,13 @@ function AppBar() {
               }}
             >
               <MenuItem>
-                <Recent currentUser={currentUser} />
+                <Recent currentUser={currentUser} isMobile={isMobile} />
               </MenuItem>
               <MenuItem>
-                <Starred currentUser={currentUser}/>
+                <Starred currentUser={currentUser} isMobile={isMobile}/>
               </MenuItem>
               <MenuItem>
-                <Templates />
+                <Templates isMobile={isMobile} />
               </MenuItem>
               <MenuItem onClick={() => { handleOpenCreateBoardModal(); handleCloseMoreMenu() }}>
                 <LibraryAdd sx={{ mr: 1 }} /> Create
@@ -110,8 +111,9 @@ function AppBar() {
           </Box>
         )}
       </Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-        <AutoCompleteSearchBoard variant="default" />
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <MobileSearchWrapper variant="default" />
+        {/* <AutoCompleteSearchBoard variant="default" /> */}
         <ModeSelect />
         <Notifications />
         <Profiles />

@@ -135,7 +135,7 @@ const CardAttachment = ({ currentUser, currentBoard, column, activeCard, attachm
               Attachment
           </Typography>
         </Box>
-        {activeCard?.isClosed === false && column?.isClosed === false && (currentBoard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && (
+        {activeCard?.isClosed === false && column?.isClosed === false && (activeCard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && (
           <Button
             sx={{ alignSelf: 'flex-end' }}
             component="label"
@@ -155,7 +155,7 @@ const CardAttachment = ({ currentUser, currentBoard, column, activeCard, attachm
             key={file._id}
             onClick={() => handleAttachmentClick(file)}
             secondaryAction={
-              activeCard?.isClosed === false && column?.isClosed === false && (currentBoard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && (
+              activeCard?.isClosed === false && column?.isClosed === false && (activeCard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && (
                 <IconButton
                   edge="end"
                   onClick={(e) => {

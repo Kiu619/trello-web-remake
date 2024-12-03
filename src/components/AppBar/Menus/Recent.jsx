@@ -8,7 +8,7 @@ import { useSelector } from 'react-redux'
 import { selectRecentBoards } from '~/redux/user/userSlice'
 import { useNavigate } from 'react-router-dom'
 
-function Recent({ currentUser }) {
+function Recent({ currentUser, isMobile }) {
   const recentBoardsFromRedux = useSelector(selectRecentBoards)
   const recentBoards = useMemo(() => recentBoardsFromRedux || [], [recentBoardsFromRedux])
   const navigate = useNavigate()
@@ -25,7 +25,8 @@ function Recent({ currentUser }) {
   return (
     <Box>
       <Button
-        sx={{ color: 'white' }}
+        // sx={{ color: theme => theme.palette.text.primary }}
+        sx={{ color: isMobile ? theme => theme.palette.text.primary : 'white' }}
         id="basic-button-recent"
         aria-controls={open ? 'basic-menu-recent' : undefined}
         aria-haspopup="true"

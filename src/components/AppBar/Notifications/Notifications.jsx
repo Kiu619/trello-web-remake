@@ -23,6 +23,7 @@ import { socketIoIntance } from '~/socketClient'
 import { selectCurrentUser } from '~/redux/user/userSlice'
 import { Link, useNavigate } from 'react-router-dom'
 import { Attachment, Comment, TaskAltOutlined } from '@mui/icons-material'
+import { fetchBoardDetailsApiRedux } from '~/redux/activeBoard/activeBoardSlice'
 
 const BOARD_INVITATION_STATUS = {
   PENDING: 'PENDING',
@@ -87,6 +88,7 @@ function Notifications() {
           }
         }).then(() => {
           socketIoIntance.emit('FE_FETCH_NOTI', { userId: senderId })
+          dispatch(fetchBoardDetailsApiRedux(boardId))
         })
       }
     })
@@ -208,7 +210,7 @@ function Notifications() {
             )
             break
 
-          case 'dueDateReminder':
+          case 'remindDueDateInCard':
             notificationContent = (
               <Box onClick={handleClose} sx={{ maxWidth: '100%', wordBreak: 'break-word', whiteSpace: 'pre-wrap', display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Link to={`/board/${notification?.details?.boardId}/card/${notification?.details?.cardId}`} style={{ textDecoration: 'none' }}>
@@ -223,7 +225,7 @@ function Notifications() {
             )
             break
 
-          case 'dueDateOverdue':
+          case 'overdueDueDateInCard':
             notificationContent = (
               <Box onClick={handleClose} sx={{ maxWidth: '100%', wordBreak: 'break-word', whiteSpace: 'pre-wrap', display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Link to={`/board/${notification?.details?.boardId}/card/${notification?.details?.cardId}`} style={{ textDecoration: 'none' }}>

@@ -176,7 +176,7 @@ const CardChecklist = ({ currentUser, currentBoard, column, activeCard, cardMemb
     <Box sx={{ mt: 3 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
         <TaskAltOutlinedIcon />
-        {column?.isClosed === false && activeCard?.isClosed === false && (currentBoard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) ? (
+        {column?.isClosed === false && activeCard?.isClosed === false && (activeCard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) ? (
           <ToggleFocusInput
             inputFontSize='22px'
             value={cardChecklist.title}
@@ -217,13 +217,13 @@ const CardChecklist = ({ currentUser, currentBoard, column, activeCard, cardMemb
             sx={{}}
             control={
               <Checkbox
-                disabled={(!currentBoard?.memberIds?.includes(currentUser?._id) && !currentBoard?.ownerIds?.includes(currentUser?._id)) || activeCard?.isClosed === true || column?.isClosed === true}
+                disabled={(!activeCard?.memberIds?.includes(currentUser?._id) && !currentBoard?.ownerIds?.includes(currentUser?._id)) || activeCard?.isClosed === true || column?.isClosed === true}
                 checked={item.isChecked}
                 onChange={() => handleCheckboxChange(item._id)}
               />
             }
           />
-          {((currentBoard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && column?.isClosed === false && activeCard?.isClosed === false && isEdit === index) ? (
+          {((activeCard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && column?.isClosed === false && activeCard?.isClosed === false && isEdit === index) ? (
             <Box
               onBlur={() => setIsEdit(null)}
               sx={{ width: '100%' }}
@@ -351,7 +351,7 @@ const CardChecklist = ({ currentUser, currentBoard, column, activeCard, cardMemb
           </Box>
         </Box>
       )}
-      {(currentBoard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && column?.isClosed === false && (activeCard?.isClosed === false && !isAddItem) && (
+      {(activeCard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && column?.isClosed === false && (activeCard?.isClosed === false && !isAddItem) && (
         <Button onClick={() => setIsAddItem(true)} variant="contained" color="info" sx={{ mt: 1, height: '30px' }}>
           Add an item
         </Button>

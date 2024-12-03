@@ -8,7 +8,7 @@ import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { selectStarredBoards } from '~/redux/user/userSlice'
 
-function Starred({ currentUser }) {
+function Starred({ currentUser, isMobile }) {
   const starredBoardsFromRedux = useSelector(selectStarredBoards)
   const starredBoards = useMemo(() => starredBoardsFromRedux || [], [starredBoardsFromRedux])
   const navigate = useNavigate()
@@ -30,7 +30,7 @@ function Starred({ currentUser }) {
   return (
     <Box>
       <Button
-        sx={{ color: 'white' }}
+        sx={{ color: isMobile ? theme => theme.palette.text.primary : 'white' }}
         id="basic-button-starred"
         aria-controls={open ? 'basic-menu-starred' : undefined}
         aria-haspopup="true"

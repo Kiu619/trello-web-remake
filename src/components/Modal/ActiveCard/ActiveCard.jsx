@@ -437,11 +437,7 @@ function ActiveCard() {
 
           {/* Right side */}
           <Grid item xs={12} sm={3}>
-            {(currentBoard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && column?.isClosed === false && activeCard?.isClosed === false && (
-              <Stack direction="column" spacing={1}>
-                <Typography sx={{ fontWeight: '600', color: 'primary.main', mb: 1 }}>Add To Card</Typography>
-                {/* Feature 05: Xử lý hành động bản thân user tự join vào card */}
-                {!activeCard?.memberIds.includes(currentUser?._id) &&
+          {!currentBoard?.memberIds.includes(currentUser?._id) || !activeCard?.memberIds.includes(currentUser?._id) &&
                   <SidebarItem className="active"
                     onClick={() => onUpdateCardMembers({ userId: currentUser?._id, action: CARD_MEMBER_ACTIONS.ADD })}
                   >
@@ -458,6 +454,27 @@ function ActiveCard() {
                     Leave
                   </SidebarItem>
                 }
+            {(activeCard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && column?.isClosed === false && activeCard?.isClosed === false && (
+              <Stack direction="column" spacing={1}>
+                <Typography sx={{ fontWeight: '600', color: 'primary.main', mb: 1 }}>Add To Card</Typography>
+                {/* Feature 05: Xử lý hành động bản thân user tự join vào card */}
+                {/* {!activeCard?.memberIds.includes(currentUser?._id) &&
+                  <SidebarItem className="active"
+                    onClick={() => onUpdateCardMembers({ userId: currentUser?._id, action: CARD_MEMBER_ACTIONS.ADD })}
+                  >
+                    <PersonOutlineOutlinedIcon fontSize="small" />
+                    Join
+                  </SidebarItem>
+                }
+
+                {activeCard?.memberIds.includes(currentUser?._id) &&
+                  <SidebarItem className="active"
+                    onClick={() => onUpdateCardMembers({ userId: currentUser?._id, action: CARD_MEMBER_ACTIONS.REMOVE })}
+                  >
+                    <PersonOutlineOutlinedIcon fontSize="small" />
+                    Leave
+                  </SidebarItem>
+                } */}
 
                 {/* Feature 06: Xử lý hành động cập nhật ảnh Cover của Card */}
                 <Cover callApiUpdateCard={callApiUpdateCard} card={activeCard} />
@@ -487,9 +504,9 @@ function ActiveCard() {
                 <Location updateLocation={updateLocation} />
               </Stack>
             )}
-            {(currentBoard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) &&  column?.isClosed === false && activeCard?.isClosed === false && (<Divider sx={{ my: 2 }} />)}
+            {(activeCard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) &&  column?.isClosed === false && activeCard?.isClosed === false && (<Divider sx={{ my: 2 }} />)}
 
-            {(currentBoard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) &&  column?.isClosed === false && activeCard?.isClosed === false && (
+            {(activeCard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) &&  column?.isClosed === false && activeCard?.isClosed === false && (
               <Stack direction="column" spacing={1}>
                 <Typography sx={{ fontWeight: '600', color: 'primary.main', mb: 1 }}>Power-Ups</Typography>
                 {/* <SidebarItem><AspectRatioOutlinedIcon fontSize="small" />Card Size</SidebarItem> */}
@@ -498,18 +515,18 @@ function ActiveCard() {
               </Stack>
             )}
 
-            {(currentBoard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && column?.isClosed === false && activeCard?.isClosed === false && (<Divider sx={{ my: 2 }} />)}
+            {(activeCard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && column?.isClosed === false && activeCard?.isClosed === false && (<Divider sx={{ my: 2 }} />)}
 
             <Typography sx={{ fontWeight: '600', color: 'primary.main', mb: 1 }}>Actions</Typography>
 
-            {(currentBoard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && column?.isClosed === false && activeCard?.isClosed === false && (
+            {(activeCard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && column?.isClosed === false && activeCard?.isClosed === false && (
               <Stack direction="column" spacing={1} sx={{ mb: 1 }}>
                 {/* <SidebarItem><ArrowForwardOutlinedIcon fontSize="small" />Move</SidebarItem> */}
                 {currentBoard.ownerIds.includes(currentUser?._id) && (<Move activeCard={activeCard} currentBoard={currentBoard} />)}
                 {/* <SidebarItem><ContentCopyOutlinedIcon fontSize="small" />Copy</SidebarItem> */}
                 <Copy activeCard={activeCard} />
-                <SidebarItem><ArchiveOutlinedIcon fontSize="small" />Archive</SidebarItem>
-                <SidebarItem><ShareOutlinedIcon fontSize="small" />Share</SidebarItem>
+                {/* <SidebarItem><ArchiveOutlinedIcon fontSize="small" />Archive</SidebarItem>
+                <SidebarItem><ShareOutlinedIcon fontSize="small" />Share</SidebarItem> */}
 
                 {/* Open / Close */}
                 {/* Delete */}

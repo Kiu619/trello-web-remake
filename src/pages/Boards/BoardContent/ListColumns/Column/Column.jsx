@@ -181,7 +181,7 @@ function Column(props) {
           alignItems: 'center',
           justifyContent: 'space-between'
         }}>
-          {(board?.memberIds?.includes(currentUser?._id) || board?.ownerIds?.includes(currentUser?._id)) && column?.isClosed === false  ? (
+          {(board?.memberIds?.includes(currentUser?._id) || board?.ownerIds?.includes(currentUser?._id)) && column?.isClosed === false ? (
             <ToggleFocusInput
               value={column.title}
               // value={columnTitle}
@@ -228,31 +228,31 @@ function Column(props) {
                       <ListItemText>Add new card</ListItemText>
                     </MenuItem>
 
-                    <Move column={selectColumn} />
+                    {board?.ownerIds?.includes(currentUser?._id) && (<Move column={selectColumn} />)}
 
                     <Copy column={selectColumn} />
 
                     <MoveAllCards column={selectColumn} />
 
                     <Divider />
-
-                    <MenuItem
-                      onClick={handleDeleteColumn}
-                      sx={{
-                        '&:hover': {
-                          color: 'error.dark',
-                          '& .remove-icon': {
-                            color: 'error.dark'
+                    {board?.ownerIds?.includes(currentUser?._id) && (
+                      <MenuItem
+                        onClick={handleDeleteColumn}
+                        sx={{
+                          '&:hover': {
+                            color: 'error.dark',
+                            '& .remove-icon': {
+                              color: 'error.dark'
+                            }
                           }
-                        }
-                      }}>
-                      <ListItemIcon>
-                        <DeleteForever className='remove-icon' fontSize="small" />
-                      </ListItemIcon>
-                      <ListItemText>Remove this column</ListItemText>
-                    </MenuItem>
-
-                    <OpenClose column={selectColumn} board={board} handleClose={handleClose} />
+                        }}>
+                        <ListItemIcon>
+                          <DeleteForever className='remove-icon' fontSize="small" />
+                        </ListItemIcon>
+                        <ListItemText>Remove this column</ListItemText>
+                      </MenuItem>
+                    )}
+                    {board?.ownerIds?.includes(currentUser?._id) && ( <OpenClose column={selectColumn} board={board} handleClose={handleClose} />)}
                   </Box>
                 ) : (
                   <OpenClose column={selectColumn} board={board} handleClose={handleClose} />
@@ -316,7 +316,7 @@ function Column(props) {
                       borderRadius: 1
                     }
                   }}
-  
+
                 />
                 <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                   <Button
@@ -338,7 +338,7 @@ function Column(props) {
                 </Box>
               </Box>
             )}
-  
+
             {column?.isClosed === true && (
               <Button startIcon={<DoDisturbOutlinedIcon />}> Column is closed</Button>
             )}

@@ -8,7 +8,7 @@ import ListItemText from '@mui/material/ListItemText'
 import ListItemIcon from '@mui/material/ListItemIcon'
 import { Check, ExpandMore } from '@mui/icons-material'
 
-function Templates() {
+function Templates({ isMobile }) {
   const [anchorEl, setAnchorEl] = useState(null)
   const open = Boolean(anchorEl)
   const handleClick = (event) => {
@@ -22,7 +22,7 @@ function Templates() {
   return (
     <Box>
       <Button
-        sx={{ color:'white' }}
+        sx={{ color: isMobile ? theme => theme.palette.text.primary : 'white' }}
         id="basic-button-templates"
         aria-controls={open ? 'basic-menu-templates' : undefined}
         aria-haspopup="true"

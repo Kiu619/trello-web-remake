@@ -7,6 +7,7 @@ import { toast } from 'react-toastify'
 import { clearAndHideCurrentActiveBoard } from '~/redux/activeBoard/activeBoardSlice'
 import { useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
+import { socketIoIntance } from '~/socketClient'
 
 function Move({ column }) {
   // console.log('column', column)
@@ -95,6 +96,8 @@ function Move({ column }) {
       console.log('Column moved successfully:', res)
       dispatch(clearAndHideCurrentActiveBoard())
       setTimeout(() => {
+        socketIoIntance.emit('batch', { boardId: column.boardId })
+        socketIoIntance.emit('batch', { boardId: selectedBoard._id })
         navigate(`/board/${selectedBoard._id}`)
       }, 1500)
     }).catch((error) => {

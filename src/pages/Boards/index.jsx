@@ -236,7 +236,7 @@ function BoardList() {
                   >
                     <BoardCard>
                       <Box sx={{
-                        height: '120px',
+                        height: '100px',
                         backgroundColor: randomColor(),
                         borderRadius: '4px 4px 0 0'
                       }} />

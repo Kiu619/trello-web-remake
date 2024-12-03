@@ -90,7 +90,7 @@ const LocationMap = ({ currentUser, currentBoard, column, activeCard, location, 
             width: 18
           }} />
         </IconButton>
-        {activeCard?.isClosed === false && column?.isClosed === false && (currentBoard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && (
+        {activeCard?.isClosed === false && column?.isClosed === false && (activeCard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && (
           <IconButton
             size="small"
             edge="end"

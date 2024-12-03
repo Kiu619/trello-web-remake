@@ -8,94 +8,6 @@ import { socketIoIntance } from '~/socketClient'
 
 const DateTimeDisplay = ({ currentUser, currentBoard, column, activeCard, title, startDate, startTime, dueDate, dueDateTime, isComplete, dayBeforeToRemind, isRemind, isOverdueNotified, handleOpenDatePopover, onUpdateDueDate }) => {
 
-  // Nếu ngày hiện tại bằng số ngày trước khi nhắc nhở thì gửi thông báo
-  useEffect(() => {
-    if (activeCard?.dueDate) {
-      const { dayBeforeToRemind, dueDate, dueDateTime } = activeCard.dueDate
-
-      if (dueDate && dayBeforeToRemind && isRemind === false) {
-        const dueDateObj = new Date(dueDate)
-        const [hours, minutes] = dueDateTime.split(':')
-        dueDateObj.setHours(parseInt(hours), parseInt(minutes), 0, 0)
-
-        const reminderDate = new Date(dueDateObj)
-        reminderDate.setDate(dueDateObj.getDate() - dayBeforeToRemind)
-
-        // Send reminder notification
-        if (new Date().toDateString() === reminderDate.toDateString()) {
-          const dueDateData = {
-            startDate: startDate,
-            startTime: startTime,
-            dueDate: dueDate,
-            dueDateTime: dueDateTime,
-            isComplete: isComplete,
-            title: title,
-            dayBeforeToRemind: dayBeforeToRemind,
-            isRemind: true,
-            isOverdueNotified: isOverdueNotified
-          }
-          onUpdateDueDate(dueDateData)
-
-          const otherMembers = activeCard.memberIds.filter(memberId => memberId !== currentUser._id)
-
-          otherMembers.forEach(memberId => {
-            createNewNotificationAPI({
-              type: 'dueDateReminder',
-              userId: memberId,
-              details: {
-                boardId: currentBoard._id,
-                boardTitle: currentBoard.title,
-                cardId: activeCard._id,
-                cardTitle: activeCard.title
-              }
-            }).then(() => {
-              socketIoIntance.emit('FE_FETCH_NOTI', { userId: memberId })
-            })
-          })
-        }
-      }
-
-      // Check if overdue and send notification
-      if (dueDate && dueDateTime && isOverdueNotified === false) {
-        const dueDateObj = new Date(dueDate)
-        const [hours, minutes] = dueDateTime.split(':')
-        dueDateObj.setHours(parseInt(hours), parseInt(minutes), 0, 0)
-
-        if (dueDateObj < new Date()) {
-          const dueDateData = {
-            startDate: startDate,
-            startTime: startTime,
-            dueDate: dueDate,
-            dueDateTime: dueDateTime,
-            isComplete: isComplete,
-            title: title,
-            dayBeforeToRemind: dayBeforeToRemind,
-            isRemind: isRemind,
-            isOverdueNotified: true
-          }
-          onUpdateDueDate(dueDateData)
-
-          const otherMembers = activeCard.memberIds.filter(memberId => memberId !== currentUser._id)
-
-          otherMembers.forEach(memberId => {
-            createNewNotificationAPI({
-              type: 'dueDateOverdue',
-              userId: memberId,
-              details: {
-                boardId: currentBoard._id,
-                boardTitle: currentBoard.title,
-                cardId: activeCard._id,
-                cardTitle: activeCard.title
-              }
-            }).then(() => {
-              socketIoIntance.emit('FE_FETCH_NOTI', { userId: memberId })
-            })
-          })
-        }
-      }
-    }
-  }, [activeCard])
-
   const formatDateTime = (startDate, startTime) => {
     if (!startDate || !startTime) return ''
 
@@ -166,7 +78,7 @@ const DateTimeDisplay = ({ currentUser, currentBoard, column, activeCard, title,
           sx={{}}
           control={
             <Checkbox
-              disabled={activeCard?.isClosed === true || column?.isClosed === true || (!currentBoard?.memberIds?.includes(currentUser?._id) && !currentBoard?.ownerIds?.includes(currentUser?._id))}
+              disabled={activeCard?.isClosed === true || column?.isClosed === true || (!activeCard?.memberIds?.includes(currentUser?._id) && !currentBoard?.ownerIds?.includes(currentUser?._id))}
               checked={isComplete}
               onChange={handleCheckboxChange}
             />
@@ -175,7 +87,7 @@ const DateTimeDisplay = ({ currentUser, currentBoard, column, activeCard, title,
         <Button
           onClick={handleOpenDatePopover}
           endIcon={<ExpandMoreIcon />}
-          disabled={activeCard?.isClosed === true || column?.isClosed === true || (!currentBoard?.memberIds?.includes(currentUser?._id) && !currentBoard?.ownerIds?.includes(currentUser?._id))}
+          disabled={activeCard?.isClosed === true || column?.isClosed === true || (!activeCard?.memberIds?.includes(currentUser?._id) && !currentBoard?.ownerIds?.includes(currentUser?._id))}
           sx={{
             display: 'flex',
             alignItems: 'center',

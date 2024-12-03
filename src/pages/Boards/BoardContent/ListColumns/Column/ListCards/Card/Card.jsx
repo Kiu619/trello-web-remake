@@ -12,7 +12,7 @@ import { showModalActiveCard, updateCurrentActiveCard } from '~/redux/activeCard
 function Card({ card }) {
   const dispatch = useDispatch()
   const currentBoard = useSelector(selectCurrentActiveBoard)
-  const shouldShowCardActions = () => card?.memberIds?.length > 0 || card?.comments?.length > 0 || card?.attachments?.length > 0
+  const shouldShowCardActions = () => card?.memberIds?.length > 0 || card?.comments?.length > 0 || card?.attachments?.length > 0 || card?.checklists?.length > 0
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: card._id,

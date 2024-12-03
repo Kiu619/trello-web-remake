@@ -68,7 +68,6 @@ function Copy({ column }) {
           setColumnPositions([])
         }
       } catch (error) {
-        console.error('Failed to fetch board details:', error)
         setErrorMessage('Failed to fetch board details')
       }
     }

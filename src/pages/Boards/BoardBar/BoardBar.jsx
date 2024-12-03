@@ -153,7 +153,7 @@ function BoardBar(props) {
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
 
 
-        {((board?.memberIds?.includes(currentUser?._id) || board?.ownerIds?.includes(currentUser?._id)) && board?.isClosed === false) ? (
+        {((board?.ownerIds?.includes(currentUser?._id)) && board?.isClosed === false) ? (
           <TextField
             fullWidth
             variant='outlined'
@@ -214,37 +214,6 @@ function BoardBar(props) {
             }}
           />
         )}
-        {/*
-        <TextField
-          fullWidth
-          variant='outlined'
-          size="small"
-          value={inputValue}
-          onChange={(event) => { setInputValue(event.target.value) }}
-          onBlur={triggerBlur}
-          sx={{
-            '& label': {},
-            '& input': { fontSize: '18px', fontWeight: 'bold', color: 'white' },
-            '& .MuiOutlinedInput-root': {
-              backgroundColor: 'transparent',
-              '& fieldset': { borderColor: 'transparent' }
-            },
-            '& .MuiOutlinedInput-root:hover': {
-              borderColor: 'transparent',
-              '& fieldset': { borderColor: 'transparent' }
-            },
-            '& .MuiOutlinedInput-root.Mui-focused': {
-              backgroundColor: (theme) => theme.palette.mode === 'dark' ? '#33485D' : '#1976d2',
-              '& fieldset': { borderColor: (theme) => theme.palette.mode === 'dark' ? 'primary.main' : 'white' }
-            },
-            '& .MuiOutlinedInput-input': {
-              px: '6px',
-              overflow: 'hidden',
-              whiteSpace: 'nowrap',
-              textOverflow: 'ellipsis'
-            }
-          }}
-        /> */}
 
         <Tooltip title={capitalizeFirstLetter(visibility)}>
           <Chip

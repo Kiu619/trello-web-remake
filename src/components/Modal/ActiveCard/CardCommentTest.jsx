@@ -4,7 +4,6 @@ import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
 import moment from 'moment'
 import { Mention, MentionsInput } from 'react-mentions'
-
 import { Button, Popover } from '@mui/material'
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
@@ -24,13 +23,14 @@ const CardActivitySection = ({ currentUser, currentBoard, column, activeCard, ca
 
   const [comment, setComment] = useState('')
   const [mention, setMention] = useState([])
-
   const [editingCommentId, setEditingCommentId] = useState('')
   const [editingCommentValue, setEditingCommentValue] = useState('')
   const [editingCommentTaggedUserIds, setEditingCommentTaggedUserIds] = useState([])
   const [editingCommentedAt, setEditingCommentedAt] = useState('')
-
   const [isFocused, setIsFocused] = useState(false)
+  const [anchorEl, setAnchorEl] = useState(null)
+  const [deleteCommentId, setDeleteCommentId] = useState(null)
+  const [visibleComments, setVisibleComments] = useState(10)
 
   const buttonStyle = {
     justifyContent: 'flex-start',
@@ -65,7 +65,7 @@ const CardActivitySection = ({ currentUser, currentBoard, column, activeCard, ca
   }
 
   const handleEmitMentionNotification = (uniqueMentions) => {
-    {uniqueMentions.length > 0 && uniqueMentions.map(taggedUser => {
+    uniqueMentions.length > 0 && uniqueMentions.map(taggedUser => {
       createNewNotificationAPI({
         type: 'mention',
         userId: taggedUser,
@@ -80,8 +80,9 @@ const CardActivitySection = ({ currentUser, currentBoard, column, activeCard, ca
       }).then(() => {
         socketIoIntance.emit('FE_FETCH_NOTI', { userId: taggedUser })
       })
-    })}
+    })
   }
+
   const handleAddCardComment = (event) => {
     if ((event.key === 'Enter' && !event.shiftKey) || event.type === 'click') {
       if (event.key === 'Enter' && !event.shiftKey) {
@@ -164,9 +165,6 @@ const CardActivitySection = ({ currentUser, currentBoard, column, activeCard, ca
     handleClosePopover()
   }
 
-  const [anchorEl, setAnchorEl] = useState(null)
-  const [deleteCommentId, setDeleteCommentId] = useState(null)
-
   const handleOpenPopover = (event, commentId) => {
     setAnchorEl(event.currentTarget)
     setDeleteCommentId(commentId)
@@ -180,9 +178,13 @@ const CardActivitySection = ({ currentUser, currentBoard, column, activeCard, ca
   const openPopover = Boolean(anchorEl)
   const id = openPopover ? 'simple-popover' : undefined
 
+  const handleSeeMore = () => {
+    setVisibleComments(prev => prev + 10)
+  }
+
   return (
     <Box sx={{ mt: 2 }} id='comment'>
-      {(currentBoard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && column?.isClosed === false && activeCard?.isClosed === false && (
+      {(activeCard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && column?.isClosed === false && activeCard?.isClosed === false && (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
           <Avatar
             sx={{ width: 36, height: 36, cursor: 'pointer' }}
@@ -283,7 +285,7 @@ const CardActivitySection = ({ currentUser, currentBoard, column, activeCard, ca
       {cardComments.length === 0 &&
         <Typography sx={{ pl: '45px', fontSize: '14px', fontWeight: '500', color: '#b1b1b1' }}>No activity found!</Typography>
       }
-      {cardComments.map((comment, index) =>
+      {cardComments.slice(0, visibleComments).map((comment, index) =>
         <Box sx={{ display: 'flex', gap: 1, width: '100%', mb: 1.5 }} key={index}>
           <Tooltip title={comment?.userDisplayName}>
             <Avatar
@@ -416,7 +418,7 @@ const CardActivitySection = ({ currentUser, currentBoard, column, activeCard, ca
               </>
             )}
 
-            {(currentBoard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && column?.isClosed === false && activeCard?.isClosed === false && !editingCommentId && currentUser._id === comment.userId && (
+            {(activeCard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && column?.isClosed === false && activeCard?.isClosed === false && !editingCommentId && currentUser._id === comment.userId && (
               <>
                 <Typography variant="caption" sx={{ color: '#aab3bd', cursor: 'pointer', mr: 1.5 }} onClick={() => {
                   setEditingCommentId(comment._id)
@@ -430,6 +432,11 @@ const CardActivitySection = ({ currentUser, currentBoard, column, activeCard, ca
               </>
             )}
           </Box>
+        </Box>
+      )}
+      {cardComments.length > visibleComments && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+          <Button onClick={handleSeeMore}>See More</Button>
         </Box>
       )}
       <Popover
