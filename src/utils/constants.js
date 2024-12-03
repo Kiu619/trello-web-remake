@@ -5,7 +5,7 @@ if (process.env.BUILD_MODE === 'dev') {
 }
 
 if (process.env.BUILD_MODE === 'production') {
-  apiRoot = 'https://trelle-api-remake.onrender.com'
+  apiRoot = 'https://trello-api-remake.onrender.com/'
 }
 // export const API_ROOT = 'http://localhost:8011';
 export const API_ROOT = apiRoot
