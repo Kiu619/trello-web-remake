@@ -5,26 +5,25 @@
 ---
 
 ## ✨ Features
-
-✅ Drag-and-drop cards and lists
-✅ Real-time updates (WebSockets or polling if implemented)
-✅ Authentication & authorization
-✅ Notification with Gmail
-✅ 2FA with Google Authentication
-✅ Task comments and attachments
-✅ Dark mode support
-✅ Responsive UI with Material-UI
+✅ Drag-and-drop cards and lists  
+✅ Real-time updates (WebSockets or polling if implemented)  
+✅ Authentication & authorization  
+✅ Notification with Gmail  
+✅ 2FA with Google Authentication  
+✅ Task comments and attachments  
+✅ Dark mode support  
+✅ Responsive UI with Material-UI  
 
 ---
 
 ## 🛠 Tech Stack 
 
-✅ **Frontend**: **React, Redux, Material-UI**
-✅ **Backend: Node.js, Express.js**
-✅ **Database: MongoDB**
+✅ **Frontend**: **React, Redux, Material-UI**  
+✅ **Backend: Node.js, Express.js**  
+✅ **Database: MongoDB**  
 ✅ **State Management: Redux Toolkit**  
-✅ **Authentication: JWT**
-✅ **Deployment: Vercel(for frontend), Render(for backend)**
+✅ **Authentication: JWT**  
+✅ **Deployment: Vercel(for frontend), Render(for backend)**  
 
 ---
 
@@ -42,9 +41,8 @@ You need to start Backend before go to Frontend
 ```bash
 # Clone project
 git clone https://github.com/Kiu619/trello-web-remake.git
-cd trello-web-remake
 
-#
+# Install and run 
 npm install
-npm run dev
+npm run dev 
 
