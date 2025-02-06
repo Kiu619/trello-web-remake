@@ -6,7 +6,7 @@
 
 ## ✨ Features
 ✅ Drag-and-drop cards and lists  
-✅ Real-time updates (WebSockets or polling if implemented)  
+✅ Real-time updates (using WebSockets)  
 ✅ Authentication & authorization  
 ✅ Notification with Gmail  
 ✅ 2FA with Google Authentication  
