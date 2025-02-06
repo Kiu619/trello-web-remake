@@ -1,8 +1,50 @@
-# React + Vite
+# 📝 Trello Clone
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**A Trello clone** built with **React, Redux, Material-UI, and Node.js**, featuring real-time collaboration, drag-and-drop functionality, and efficient task management.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## ✨ Features
+
+✅ Drag-and-drop cards and lists
+✅ Real-time updates (WebSockets or polling if implemented)
+✅ Authentication & authorization
+✅ Notification with Gmail
+✅ 2FA with Google Authentication
+✅ Task comments and attachments
+✅ Dark mode support
+✅ Responsive UI with Material-UI
+
+---
+
+## 🛠 Tech Stack 
+
+✅ **Frontend**: **React, Redux, Material-UI**
+✅ **Backend: Node.js, Express.js**
+✅ **Database: MongoDB**
+✅ **State Management: Redux Toolkit**  
+✅ **Authentication: JWT**
+✅ **Deployment: Vercel(for frontend), Render(for backend)**
+
+---
+
+## 🚀 Live Demo
+
+🔗 [**Demo (Frontend**](https://trello-web-remake.vercel.app/)
+🔗 [**Demo (Backend**](https://trello-api-remake.onrender.com/)
+
+You need to start Backend before go to Frontend
+
+---
+
+## 📂 Installation & Setup
+
+```bash
+# Clone project
+git clone https://github.com/Kiu619/trello-web-remake.git
+cd trello-web-remake
+
+#
+npm install
+npm run dev
+
