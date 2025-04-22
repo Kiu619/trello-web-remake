@@ -1,19 +1,17 @@
-import { ExpandMore, HelpCenterOutlined, LibraryAdd, MoreVert } from '@mui/icons-material'
-import AppsIcon from '@mui/icons-material/Apps'
-import { Box, Button, IconButton, Menu, MenuItem, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material'
+import { ExpandMore, LibraryAdd } from '@mui/icons-material'
+import { Box, Button, Menu, MenuItem, Typography, useMediaQuery } from '@mui/material'
 import { useState } from 'react'
+import { useSelector } from 'react-redux'
 import { Link, useNavigate } from 'react-router-dom'
 import ModeSelect from '~/components/ModeSelect/ModeSelect'
 import CreateBoardModal from '~/pages/Boards/CreateNewBoardModal/Create'
+import { selectCurrentUser } from '~/redux/user/userSlice'
+import MobileSearchWrapper from '../SearchInput/MobileSearchWrapper '
 import Profiles from './Menus/Profiles'
 import Recent from './Menus/Recent'
 import Starred from './Menus/Starred'
-import Templates from './Menus/Templates'
+import MenuTemplates from './Menus/Templates'
 import Notifications from './Notifications/Notifications'
-import AutoCompleteSearchBoard from '../SearchInput/AutoCompleteSearchBoard'
-import { selectCurrentUser } from '~/redux/user/userSlice'
-import { useSelector } from 'react-redux'
-import MobileSearchWrapper from '../SearchInput/MobileSearchWrapper '
 
 function AppBar() {
   const navigate = useNavigate()
@@ -88,7 +86,7 @@ function AppBar() {
                 <Starred currentUser={currentUser} isMobile={isMobile}/>
               </MenuItem>
               <MenuItem>
-                <Templates isMobile={isMobile} />
+                <MenuTemplates isMobile={isMobile} />
               </MenuItem>
               <MenuItem onClick={() => { handleOpenCreateBoardModal(); handleCloseMoreMenu() }}>
                 <LibraryAdd sx={{ mr: 1 }} /> Create
@@ -99,7 +97,7 @@ function AppBar() {
           <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1 }}>
             <Recent currentUser={currentUser} />
             <Starred currentUser={currentUser}/>
-            <Templates />
+            <MenuTemplates />
             <Button
               variant='outlined'
               startIcon={<LibraryAdd />}

@@ -9,7 +9,7 @@ import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
 import { cloneDeep } from 'lodash'
 import { useConfirm } from 'material-ui-confirm'
-import { useState } from 'react'
+import { memo, useState } from 'react'
 import DoDisturbOutlinedIcon from '@mui/icons-material/DoDisturbOutlined'
 import { useDispatch, useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
@@ -24,7 +24,7 @@ import ListCards from './ListCards/ListCards'
 import Copy from '~/components/ColumnFunctions/Copy'
 import OpenClose from '~/components/ColumnFunctions/OpenClose'
 
-function Column(props) {
+const Column =memo((props) => {
   const { column, board, currentUser } = props
 
   const dispatch = useDispatch()
@@ -347,6 +347,6 @@ function Column(props) {
       </Box>
     </div>
   )
-}
+})
 
 export default Column

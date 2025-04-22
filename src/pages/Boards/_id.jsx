@@ -10,13 +10,14 @@ import ActiveCard from '~/components/Modal/ActiveCard/ActiveCard'
 import { fetchBoardDetailsApiRedux, selectActiveBoardError, selectCurrentActiveBoard, updateCurrentActiveBoard } from '~/redux/activeBoard/activeBoardSlice'
 import BoardBar from './BoardBar/BoardBar'
 import BoardContent from './BoardContent/BoardContent'
-import { updateRecentBoards, updateUserAPI } from '~/redux/user/userSlice'
+import { updateRecentBoards, updateUserAPI, selectCurrentUser } from '~/redux/user/userSlice'
 import { hideModalActiveCard, showModalActiveCard } from '~/redux/activeCard/activeCardSlice'
 import { socketIoIntance } from '~/socketClient'
 import PrivateBoard from './PrivateBoard'
 import InvaldUrl from '../ErrorPages/InvalidUrl'
 
 function Board() {
+  const currentUser = useSelector(selectCurrentUser)
   const dispatch = useDispatch()
   const board = useSelector(selectCurrentActiveBoard)
   const error = useSelector(selectActiveBoardError)
@@ -26,6 +27,7 @@ function Board() {
   const cardId = useMemo(() => fullCardId?.substring(0, 24), [fullCardId])
 
   useEffect(() => {
+
     dispatch(fetchBoardDetailsApiRedux(boardId))
 
     const handleBatch = (receivedBoardId) => {
@@ -128,6 +130,13 @@ function Board() {
     return <PageLoadingSpinner />
   }
 
+  const forShare = () => {
+    if (!board.ownerIds.includes(currentUser._id) && !board.memberIds.includes(currentUser._id) && board?.type === 'private') {
+      return true
+    }
+    return false
+  }
+
   const boardContent = (
     <Container disableGutters maxWidth={false} sx={{ height: '100vh' }}>
       <ActiveCard />
@@ -151,7 +160,7 @@ function Board() {
 
   return (
     <>
-      {(board?.forShare && board?.type === 'private') ? boardForShareContent : boardContent}
+      { forShare() ? boardForShareContent : boardContent}
     </>
   )
 }

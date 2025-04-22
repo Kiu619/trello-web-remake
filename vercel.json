@@ -1,0 +1,11 @@
+{
+  "buildCommand": "CI=false npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+} 

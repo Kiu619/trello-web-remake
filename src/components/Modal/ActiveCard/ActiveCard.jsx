@@ -384,8 +384,8 @@ function ActiveCard() {
 
             <Box sx={{ mb: 3 }}>
               <CardAttachment
-              currentUser={currentUser}
-              currentBoard={currentBoard}
+                currentUser={currentUser}
+                currentBoard={currentBoard}
                 column={column}
                 activeCard={activeCard}
                 onAddCardAttachment={onAddCardAttachment}
@@ -402,8 +402,8 @@ function ActiveCard() {
               /> */}
               {activeCard?.checklists.map((checklist, index) => (
                 <CardChecklist
-                currentUser={currentUser}
-              currentBoard={currentBoard}
+                  currentUser={currentUser}
+                  currentBoard={currentBoard}
                   column={column}
                   activeCard={activeCard}
                   key={index}
@@ -437,103 +437,76 @@ function ActiveCard() {
 
           {/* Right side */}
           <Grid item xs={12} sm={3}>
-          {!currentBoard?.memberIds.includes(currentUser?._id) || !activeCard?.memberIds.includes(currentUser?._id) &&
-                  <SidebarItem className="active"
-                    onClick={() => onUpdateCardMembers({ userId: currentUser?._id, action: CARD_MEMBER_ACTIONS.ADD })}
-                  >
-                    <PersonOutlineOutlinedIcon fontSize="small" />
-                    Join
-                  </SidebarItem>
-                }
+            {((currentBoard?.ownerIds.includes(currentUser?._id) || currentBoard?.memberIds.includes(currentUser?._id)) && !activeCard?.memberIds.includes(currentUser?._id)) ? (
+              <SidebarItem className="active"
+                onClick={() => onUpdateCardMembers({ userId: currentUser?._id, action: CARD_MEMBER_ACTIONS.ADD })}
+              >
+                <PersonOutlineOutlinedIcon fontSize="small" />
+                Join
+              </SidebarItem>
+            ) : null}
 
-                {activeCard?.memberIds.includes(currentUser?._id) &&
-                  <SidebarItem className="active"
-                    onClick={() => onUpdateCardMembers({ userId: currentUser?._id, action: CARD_MEMBER_ACTIONS.REMOVE })}
-                  >
-                    <PersonOutlineOutlinedIcon fontSize="small" />
-                    Leave
-                  </SidebarItem>
-                }
-            {(activeCard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && column?.isClosed === false && activeCard?.isClosed === false && (
+            {activeCard?.memberIds.includes(currentUser?._id) ? (
+              <SidebarItem className="active"
+                onClick={() => onUpdateCardMembers({ userId: currentUser?._id, action: CARD_MEMBER_ACTIONS.REMOVE })}
+              >
+                <PersonOutlineOutlinedIcon fontSize="small" />
+                Leave
+              </SidebarItem>
+            ) : null}
+
+            {(activeCard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && column?.isClosed === false && activeCard?.isClosed === false ? (
               <Stack direction="column" spacing={1}>
                 <Typography sx={{ fontWeight: '600', color: 'primary.main', mb: 1 }}>Add To Card</Typography>
-                {/* Feature 05: Xử lý hành động bản thân user tự join vào card */}
-                {/* {!activeCard?.memberIds.includes(currentUser?._id) &&
-                  <SidebarItem className="active"
-                    onClick={() => onUpdateCardMembers({ userId: currentUser?._id, action: CARD_MEMBER_ACTIONS.ADD })}
-                  >
-                    <PersonOutlineOutlinedIcon fontSize="small" />
-                    Join
-                  </SidebarItem>
-                }
-
-                {activeCard?.memberIds.includes(currentUser?._id) &&
-                  <SidebarItem className="active"
-                    onClick={() => onUpdateCardMembers({ userId: currentUser?._id, action: CARD_MEMBER_ACTIONS.REMOVE })}
-                  >
-                    <PersonOutlineOutlinedIcon fontSize="small" />
-                    Leave
-                  </SidebarItem>
-                } */}
-
-                {/* Feature 06: Xử lý hành động cập nhật ảnh Cover của Card */}
                 <Cover callApiUpdateCard={callApiUpdateCard} card={activeCard} />
-
                 <SidebarItem className="active" component="label">
                   <AttachFileOutlinedIcon fontSize="small" />
                   Attachment
                   <VisuallyHiddenInput type="file" onChange={onAddCardAttachment} />
                 </SidebarItem>
-
-                {/* <SidebarItem><LocalOfferOutlinedIcon fontSize="small" />Labels</SidebarItem> */}
-
-                {/* Checklist */}
                 <Checklist onUpdateChecklist={onUpdateChecklist} />
-
-                {/* Dates */}
                 <Dates
                   onUpdateDueDate={onUpdateDueDate}
                   handleClosePopover={handleCloseDatePopover}
                   anchorEl={dateAnchorEl}
                 />
-                <SidebarItem onClick={handleOpenDatePopover} >
+                <SidebarItem onClick={handleOpenDatePopover}>
                   <WatchLaterOutlinedIcon fontSize="small" />
                   Dates
                 </SidebarItem>
-                {/* Location */}
                 <Location updateLocation={updateLocation} />
               </Stack>
-            )}
-            {(activeCard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) &&  column?.isClosed === false && activeCard?.isClosed === false && (<Divider sx={{ my: 2 }} />)}
+            ) : null}
 
-            {(activeCard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) &&  column?.isClosed === false && activeCard?.isClosed === false && (
+            {(activeCard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && column?.isClosed === false && activeCard?.isClosed === false ? (
+              <Divider sx={{ my: 2 }} />
+            ) : null}
+
+            {(activeCard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && column?.isClosed === false && activeCard?.isClosed === false ? (
               <Stack direction="column" spacing={1}>
                 <Typography sx={{ fontWeight: '600', color: 'primary.main', mb: 1 }}>Power-Ups</Typography>
-                {/* <SidebarItem><AspectRatioOutlinedIcon fontSize="small" />Card Size</SidebarItem> */}
                 <SidebarItem><AddToDriveOutlinedIcon fontSize="small" />Google Drive</SidebarItem>
                 <SidebarItem><AddOutlinedIcon fontSize="small" />Add Power-Ups</SidebarItem>
               </Stack>
-            )}
+            ) : null}
 
-            {(activeCard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && column?.isClosed === false && activeCard?.isClosed === false && (<Divider sx={{ my: 2 }} />)}
+            {(activeCard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && column?.isClosed === false && activeCard?.isClosed === false ? (
+              <Divider sx={{ my: 2 }} />
+            ) : null}
 
             <Typography sx={{ fontWeight: '600', color: 'primary.main', mb: 1 }}>Actions</Typography>
 
-            {(activeCard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && column?.isClosed === false && activeCard?.isClosed === false && (
+            {(activeCard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && column?.isClosed === false && activeCard?.isClosed === false ? (
               <Stack direction="column" spacing={1} sx={{ mb: 1 }}>
-                {/* <SidebarItem><ArrowForwardOutlinedIcon fontSize="small" />Move</SidebarItem> */}
                 {currentBoard.ownerIds.includes(currentUser?._id) && (<Move activeCard={activeCard} currentBoard={currentBoard} />)}
-                {/* <SidebarItem><ContentCopyOutlinedIcon fontSize="small" />Copy</SidebarItem> */}
                 <Copy activeCard={activeCard} />
-                {/* <SidebarItem><ArchiveOutlinedIcon fontSize="small" />Archive</SidebarItem>
-                <SidebarItem><ShareOutlinedIcon fontSize="small" />Share</SidebarItem> */}
-
-                {/* Open / Close */}
-                {/* Delete */}
-                {currentBoard.ownerIds.includes(currentUser?._id) && (<Delete activeCard={activeCard} currentBoard={currentBoard}/>)}
+                {currentBoard.ownerIds.includes(currentUser?._id) && (<Delete activeCard={activeCard} currentBoard={currentBoard} />)}
               </Stack>
+            ) : null}
+
+            {currentBoard.ownerIds.includes(currentUser?._id) && (
+              <OpenClose column={column} activeCard={activeCard} onUpdateOpenCloseCard={onUpdateOpenCloseCard} />
             )}
-            {currentBoard.ownerIds.includes(currentUser?._id) && (<OpenClose column={column} activeCard={activeCard} onUpdateOpenCloseCard={onUpdateOpenCloseCard} />)}
           </Grid>
         </Grid>
       </Box>

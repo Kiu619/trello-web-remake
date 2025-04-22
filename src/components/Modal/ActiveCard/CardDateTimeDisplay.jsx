@@ -2,9 +2,6 @@ import {
   ExpandMore as ExpandMoreIcon
 } from '@mui/icons-material'
 import { Box, Button, Checkbox, FormControlLabel, Typography } from '@mui/material'
-import { useEffect } from 'react'
-import { createNewNotificationAPI } from '~/apis'
-import { socketIoIntance } from '~/socketClient'
 
 const DateTimeDisplay = ({ currentUser, currentBoard, column, activeCard, title, startDate, startTime, dueDate, dueDateTime, isComplete, dayBeforeToRemind, isRemind, isOverdueNotified, handleOpenDatePopover, onUpdateDueDate }) => {
 

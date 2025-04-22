@@ -88,6 +88,7 @@ function Notifications() {
           }
         }).then(() => {
           socketIoIntance.emit('FE_FETCH_NOTI', { userId: senderId })
+          socketIoIntance.emit('batch', { boardId: boardId })
           dispatch(fetchBoardDetailsApiRedux(boardId))
         })
       }

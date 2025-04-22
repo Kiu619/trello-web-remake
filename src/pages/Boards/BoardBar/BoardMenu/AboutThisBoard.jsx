@@ -108,7 +108,7 @@ const AboutThisBoard = ({ currentUser, board, showAboutBoard, setShowAboutBoard 
             <PersonOutlineOutlinedIcon />
             Admins
           </Box>
-          {board?.isClosed === false && board?.ownerIds.includes(currentUser._id) && (
+          {board?.isClosed === false && board?.ownerIds.includes(currentUser?._id) && (
             <AddCircleOutlinedIcon
               onClick={handleOpenPopover}
               color='info' sx={{ cursor: 'pointer' }}
@@ -119,25 +119,25 @@ const AboutThisBoard = ({ currentUser, board, showAboutBoard, setShowAboutBoard 
           <Box key={index} sx={{ display: 'flex', justifyContent: 'space-between' }} >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, ml: 2, mb: 2 }}>
               <Avatar
-                src={owner.avatar}
-                alt={owner.displayName}
+                src={owner?.avatar}
+                alt={owner?.displayName}
                 sx={{ width: 60, height: 60 }}
               >
-                {!owner.avatar && (owner.displayName?.charAt(0).toUpperCase() || 'U')}
+                {!owner?.avatar && (owner?.displayName?.charAt(0).toUpperCase() || 'U')}
               </Avatar>
               <Box>
                 <Typography variant='h6'>
-                  {owner.displayName || 'Unnamed User'}
+                  {owner?.displayName || 'Unnamed User'}
                 </Typography>
                 <Typography
                   variant='caption'
                   sx={{ color: 'text.secondary' }}
                 >
-                  @{owner.username}
+                  @{owner?.username}
                 </Typography>
               </Box>
             </Box>
-            {owner._id !== currentUser._id && board?.isClosed === false && board?.creatorId === currentUser._id && (
+            {owner?._id !== currentUser?._id && board?.isClosed === false && board?.creatorId === currentUser?._id && (
               <Box sx={{ display: 'flex', alignItems: 'center', mr: 2 }}
                 onClick={() => handleRemoveAdmin(owner._id)}
               >
@@ -186,24 +186,24 @@ const AboutThisBoard = ({ currentUser, board, showAboutBoard, setShowAboutBoard 
                 <em>Select user</em>
               </MenuItem>
               {FE_CardMembers?.map((user) => (
-                <MenuItem key={user._id} value={user._id}>
+                <MenuItem key={user?._id} value={user?._id}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                     <Avatar
-                      src={user.avatar}
-                      alt={user.displayName}
+                      src={user?.avatar}
+                      alt={user?.displayName}
                       sx={{ width: 32, height: 32 }}
                     >
-                      {!user.avatar && (user.displayName?.charAt(0).toUpperCase() || 'U')}
+                      {!user?.avatar && (user?.displayName?.charAt(0).toUpperCase() || 'U')}
                     </Avatar>
                     <Box>
                       <Typography variant='body2' component='div'>
-                        {user.displayName || 'Unnamed User'}
+                        {user?.displayName || 'Unnamed User'}
                       </Typography>
                       <Typography
                         variant='caption'
                         sx={{ color: 'text.secondary' }}
                       >
-                        {user.email}
+                        {user?.email}
                       </Typography>
                     </Box>
                   </Box>

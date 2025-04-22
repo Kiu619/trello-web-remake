@@ -2,7 +2,7 @@ import { DndContext, DragOverlay, closestCenter, defaultDropAnimationSideEffects
 import { arrayMove } from '@dnd-kit/sortable'
 import { Box, useMediaQuery } from '@mui/material'
 import { cloneDeep, isEmpty } from 'lodash'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { MouseSensor, TouchSensor } from '~/customLibraries/DndKitSensors'
 import { generatePlaceholderCard } from '~/utils/formmatters'
 import Column from './ListColumns/Column/Column'
@@ -17,7 +17,7 @@ const ACTIVE_DRAG_ITEM_TYPE = {
   CARD: 'CARD'
 }
 
-function BoardContent(props) {
+const BoardContent = memo((props) => {
   const { board, moveColumns, moveCardInTheSameColumns, moveCardToDifferentColumn } = props
 
   const mouseSensor = useSensor(MouseSensor, { activationConstraint: { distance: 10 } })
@@ -273,6 +273,6 @@ function BoardContent(props) {
       </DndContext>
     </>
   )
-}
+})
 
 export default BoardContent

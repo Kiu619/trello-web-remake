@@ -4,12 +4,13 @@ import { Attachment, Comment, Group, TaskAltOutlined } from '@mui/icons-material
 import { Box, Button, CardActions, CardContent, CardMedia } from '@mui/material'
 import MuiCard from '@mui/material/Card'
 import Typography from '@mui/material/Typography'
+import { memo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { selectCurrentActiveBoard } from '~/redux/activeBoard/activeBoardSlice'
 import { showModalActiveCard, updateCurrentActiveCard } from '~/redux/activeCard/activeCardSlice'
 
-function Card({ card }) {
+const Card = memo(({ card }) => {
   const dispatch = useDispatch()
   const currentBoard = useSelector(selectCurrentActiveBoard)
   const shouldShowCardActions = () => card?.memberIds?.length > 0 || card?.comments?.length > 0 || card?.attachments?.length > 0 || card?.checklists?.length > 0
@@ -105,6 +106,6 @@ function Card({ card }) {
       )}
     </Box>
   )
-}
+})
 
 export default Card

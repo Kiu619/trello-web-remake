@@ -153,6 +153,12 @@ export const deleteCommentAPI = async (cardId, commentId) => {
   return response.data
 }
 
+// Template API
+export const fetchTemplatesAPI = async () => {
+  const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/template`)
+  return response.data
+}
+
 // User API
 export const registerAPI = async (newUser) => {
   const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/user/register`, newUser)

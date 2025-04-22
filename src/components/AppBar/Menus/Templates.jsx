@@ -7,69 +7,29 @@ import Divider from '@mui/material/Divider'
 import ListItemText from '@mui/material/ListItemText'
 import ListItemIcon from '@mui/material/ListItemIcon'
 import { Check, ExpandMore } from '@mui/icons-material'
+import Templates from '~/components/Templates/Templates'
 
-function Templates({ isMobile }) {
-  const [anchorEl, setAnchorEl] = useState(null)
-  const open = Boolean(anchorEl)
+function MenuTemplates({ isMobile }) {
+  // Template Popover
+  const [templateAnchorEl, setTemplateAnchorEl] = useState(null)
+  const handleCloseTemplatePopover = () => { setTemplateAnchorEl(null) }
+
   const handleClick = (event) => {
-    setAnchorEl(event.currentTarget)
+    setTemplateAnchorEl(event.currentTarget)
   }
-  const handleClose = () => {
-    setAnchorEl(null)
-  }
-
-
   return (
     <Box>
       <Button
         sx={{ color: isMobile ? theme => theme.palette.text.primary : 'white' }}
         id="basic-button-templates"
-        aria-controls={open ? 'basic-menu-templates' : undefined}
-        aria-haspopup="true"
-        aria-expanded={open ? 'true' : undefined}
         onClick={handleClick}
         endIcon={<ExpandMore />}
       >
-                Templates
+        Templates
       </Button>
-      <Menu
-        id="basic-menu-templates"
-        anchorEl={anchorEl}
-        open={open}
-        onClose={handleClose}
-        MenuListProps={{
-          'aria-labelledby': 'basic-button-templates'
-        }}
-      >
-        <MenuItem>
-          <ListItemText inset>Single</ListItemText>
-        </MenuItem>
-        <MenuItem>
-          <ListItemText inset>1.15</ListItemText>
-        </MenuItem>
-        <MenuItem>
-          <ListItemText inset>Double</ListItemText>
-        </MenuItem>
-        <MenuItem>
-          <ListItemIcon>
-            <Check />
-          </ListItemIcon>
-                    Custom: 1.2
-        </MenuItem>
-        <Divider />
-        <MenuItem>
-          <ListItemText>Add space before paragraph</ListItemText>
-        </MenuItem>
-        <MenuItem>
-          <ListItemText>Add space after paragraph</ListItemText>
-        </MenuItem>
-        <Divider />
-        <MenuItem>
-          <ListItemText>Custom spacing...</ListItemText>
-        </MenuItem>
-      </Menu>
+      <Templates anchorEl={templateAnchorEl} handleClosePopover={handleCloseTemplatePopover} />
     </Box>
   )
 }
 
-export default Templates
+export default MenuTemplates
