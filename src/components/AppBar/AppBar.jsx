@@ -85,9 +85,9 @@ function AppBar() {
               <MenuItem>
                 <Starred currentUser={currentUser} isMobile={isMobile}/>
               </MenuItem>
-              <MenuItem>
+              {/* <MenuItem>
                 <MenuTemplates isMobile={isMobile} />
-              </MenuItem>
+              </MenuItem> */}
               <MenuItem onClick={() => { handleOpenCreateBoardModal(); handleCloseMoreMenu() }}>
                 <LibraryAdd sx={{ mr: 1 }} /> Create
               </MenuItem>
@@ -97,7 +97,7 @@ function AppBar() {
           <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1 }}>
             <Recent currentUser={currentUser} />
             <Starred currentUser={currentUser}/>
-            <MenuTemplates />
+            {/* <MenuTemplates /> */}
             <Button
               variant='outlined'
               startIcon={<LibraryAdd />}
