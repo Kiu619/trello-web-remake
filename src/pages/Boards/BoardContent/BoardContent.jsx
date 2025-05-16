@@ -11,6 +11,7 @@ import ListColumns from './ListColumns/ListColumns'
 import { socketIoIntance } from '~/socketClient'
 import { useTheme } from '@emotion/react'
 import { useDebounceFn } from '~/customHooks/useDebounceFn'
+import FloatChatbotButton from '~/components/ChatBot/FloatChatbotButton'
 
 const ACTIVE_DRAG_ITEM_TYPE = {
   COLUMN: 'COLUMN',
@@ -271,6 +272,7 @@ const BoardContent = memo((props) => {
           </DragOverlay>
         </Box>
       </DndContext>
+      <FloatChatbotButton />
     </>
   )
 })

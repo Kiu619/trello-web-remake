@@ -296,6 +296,11 @@ const Column =memo((props) => {
                   type='type'
                   size='small'
                   variant='outlined'
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      addNewCard()
+                    }
+                  }}
                   autoFocus
                   data-no-dnd='true'
                   value={newCardTitle}
