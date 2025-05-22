@@ -77,17 +77,19 @@ const CardChecklist = ({ currentUser, currentBoard, column, activeCard, cardMemb
   }
 
   const onUpdatChecklistItemTitle = (itemId, value) => {
-    const incomingChecklistItemInfo =
-    {
-      checklistId: cardChecklist._id,
-      itemId: itemId,
-      action: 'UPDATE',
-      items: cardChecklist.items,
-      title: value,
-      isChecked: cardChecklist.items?.find(item => item._id === itemId).isChecked,
-      assignedTo: cardChecklist.items?.find(item => item._id === itemId).assignedTo
+    if (value.trim() !== '' && value.trim() !== cardChecklist.items?.find(item => item._id === itemId).title) {
+      const incomingChecklistItemInfo =
+      {
+        checklistId: cardChecklist._id,
+        itemId: itemId,
+        action: 'UPDATE',
+        items: cardChecklist.items,
+        title: value,
+        isChecked: cardChecklist.items?.find(item => item._id === itemId).isChecked,
+        assignedTo: cardChecklist.items?.find(item => item._id === itemId).assignedTo
+      }
+      onUpdateChecklistItem(incomingChecklistItemInfo)
     }
-    onUpdateChecklistItem(incomingChecklistItemInfo)
   }
 
   const handleCheckboxChange = (itemId) => {
@@ -198,7 +200,7 @@ const CardChecklist = ({ currentUser, currentBoard, column, activeCard, cardMemb
             }}
             onClick={(e) => {
               e.stopPropagation(),
-                handleOpenPopover(e, cardChecklist._id)
+              handleOpenPopover(e, cardChecklist._id)
             }}
           >
             <DeleteOutlineIcon />
@@ -305,6 +307,11 @@ const CardChecklist = ({ currentUser, currentBoard, column, activeCard, cardMemb
             size="small"
             placeholder="Add an item"
             value={newItem}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                handleAddItem()
+              }
+            }}
             onChange={handleInputChange}
             sx={{
               '& label': {},

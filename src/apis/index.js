@@ -228,3 +228,14 @@ export const fetchRequestToJoinBoardStatusAPI = async (boardId) => {
   const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/notification/requestToJoinBoardStatus/${boardId}`)
   return response.data
 }
+
+// Activity API
+export const fetchBoardActivityAPI = async (boardId) => {
+  const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/activity/board/${boardId}`)
+  return response.data
+}
+
+export const fetchUserActivitiesAPI = async (params) => {
+  const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/activity/user`, { params })
+  return response.data
+}

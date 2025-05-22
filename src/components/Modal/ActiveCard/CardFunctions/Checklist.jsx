@@ -78,6 +78,12 @@ function Checklist({ onUpdateChecklist }) {
             variant='outlined'
             size="small"
             value={newChecklist}
+            placeholder='Enter a title for this checklist'
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                handleAddNewChecklist()
+              }
+            }}
             onChange={(e) => setNewChecklist(e.target.value)}
             sx={{
               '& label': {},

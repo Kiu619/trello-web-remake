@@ -1,18 +1,15 @@
 import AddCircleOutlinedIcon from '@mui/icons-material/AddCircleOutlined'
-import RemoveCircleIcon from '@mui/icons-material/RemoveCircle'
 import ArrowBackIosNewOutlinedIcon from '@mui/icons-material/ArrowBackIosNewOutlined'
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined'
+import RemoveCircleIcon from '@mui/icons-material/RemoveCircle'
 import { Avatar, Box, Button, Divider, Drawer, FormControl, FormHelperText, MenuItem, Popover, Select, Typography } from '@mui/material'
-import { useCallback, useEffect, useState } from 'react'
-import BoardDescriptionMdEditor from './BoardDescriptionMdEditor'
-import { useDispatch, useSelector } from 'react-redux'
-import { selectCurrentUser } from '~/redux/user/userSlice'
+import { useCallback, useState } from 'react'
+import { useDispatch } from 'react-redux'
 import { toast } from 'react-toastify'
 import { addBoardAdminAPI, removeBoardAdminAPI } from '~/apis'
-import { fetchBoardDetailsApiRedux, updateCurrentActiveBoard } from '~/redux/activeBoard/activeBoardSlice'
+import { fetchBoardDetailsApiRedux } from '~/redux/activeBoard/activeBoardSlice'
 import { socketIoIntance } from '~/socketClient'
-import { useConfirm } from 'material-ui-confirm'
-import { cloneDeep } from 'lodash'
+import BoardDescriptionMdEditor from './BoardDescriptionMdEditor'
 
 const AboutThisBoard = ({ currentUser, board, showAboutBoard, setShowAboutBoard }) => {
 

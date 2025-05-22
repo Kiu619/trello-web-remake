@@ -1,6 +1,7 @@
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { AddCard, Close, DeleteForever, DragHandle, ExpandMore, NoteAdd } from '@mui/icons-material'
+import DoDisturbOutlinedIcon from '@mui/icons-material/DoDisturbOutlined'
 import { Box, Button, TextField, Tooltip, Typography } from '@mui/material'
 import Divider from '@mui/material/Divider'
 import ListItemIcon from '@mui/material/ListItemIcon'
@@ -10,19 +11,18 @@ import MenuItem from '@mui/material/MenuItem'
 import { cloneDeep } from 'lodash'
 import { useConfirm } from 'material-ui-confirm'
 import { memo, useState } from 'react'
-import DoDisturbOutlinedIcon from '@mui/icons-material/DoDisturbOutlined'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { toast } from 'react-toastify'
 import { createNewCardAPI, deleteColumnDetailsAPI, updateColumnDetailsAPI } from '~/apis'
 import ToggleFocusInput from '~/components/Form/ToggleFocusInput'
-import { selectCurrentActiveBoard, updateCurrentActiveBoard } from '~/redux/activeBoard/activeBoardSlice'
+import { updateCurrentActiveBoard } from '~/redux/activeBoard/activeBoardSlice'
 import { socketIoIntance } from '~/socketClient'
 
+import Copy from '~/components/ColumnFunctions/Copy'
 import Move from '~/components/ColumnFunctions/Move'
 import MoveAllCards from '~/components/ColumnFunctions/MoveAllCards'
-import ListCards from './ListCards/ListCards'
-import Copy from '~/components/ColumnFunctions/Copy'
 import OpenClose from '~/components/ColumnFunctions/OpenClose'
+import ListCards from './ListCards/ListCards'
 
 const Column =memo((props) => {
   const { column, board, currentUser } = props
@@ -105,7 +105,7 @@ const Column =memo((props) => {
 
   const onUpdateColumnTitle = (newTitle) => {
     // Call API to update column title
-    const updateData = { title: newTitle }
+    const updateData = { title: newTitle, oldTitle: column.title }
     updateColumnDetailsAPI(column._id, updateData).then((res) => {
       // toast.success(res?.updateResult)
       toast.success('Update column title successfully')
@@ -232,7 +232,7 @@ const Column =memo((props) => {
 
                     <Copy column={selectColumn} />
 
-                    <MoveAllCards column={selectColumn} />
+                    <MoveAllCards closePopupFromParent={handleClose} column={selectColumn} />
 
                     <Divider />
                     {board?.ownerIds?.includes(currentUser?._id) && (

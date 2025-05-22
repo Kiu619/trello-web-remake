@@ -454,7 +454,6 @@ function Dates({
         isOverdueNotified: false
       }
     }
-    console.log('dueDateData', dueDateData)
     onUpdateDueDate(dueDateData)
     handleClosePopover()
   }

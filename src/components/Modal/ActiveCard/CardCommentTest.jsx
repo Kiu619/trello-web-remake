@@ -83,30 +83,23 @@ const CardActivitySection = ({ currentUser, currentBoard, column, activeCard, ca
     })
   }
 
-  const handleAddCardComment = (event) => {
-    if ((event.key === 'Enter' && !event.shiftKey) || event.type === 'click') {
-      if (event.key === 'Enter' && !event.shiftKey) {
-        event.preventDefault()
-      }
-      if (!event.target?.value) return
+  const handleAddCardComment = () => {
+    const uniqueMentions = [...new Set(mention)]
 
-      const uniqueMentions = [...new Set(mention)]
-
-      const commentToAdd = {
-        userAvatar: currentUser?.avatar,
-        userDisplayName: currentUser?.displayName,
-        content: comment.trim(),
-        taggedUserIds: uniqueMentions,
-        boardId: currentBoard?._id
-      }
-
-      handleEmitMentionNotification(uniqueMentions)
-
-      onAddCardComment(commentToAdd).then(() => {
-        setComment('')
-        setMention([])
-      })
+    const commentToAdd = {
+      userAvatar: currentUser?.avatar,
+      userDisplayName: currentUser?.displayName,
+      content: comment.trim(),
+      taggedUserIds: uniqueMentions,
+      boardId: currentBoard?._id
     }
+
+    handleEmitMentionNotification(uniqueMentions)
+
+    onAddCardComment(commentToAdd).then(() => {
+      setComment('')
+      setMention([])
+    })
   }
 
   const handleChangeEditingComment = (event, newValue, newPlainTextValue, mentions) => {
@@ -197,7 +190,13 @@ const CardActivitySection = ({ currentUser, currentBoard, column, activeCard, ca
               onChange={handleChange}
               className="mentions__input"
               onFocus={() => setIsFocused(true)}
-              onKeyDown={handleAddCardComment}
+              onKeyDown={
+                (e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    handleAddCardComment()
+                  }
+                }
+              }
               style={{
                 control: {
                   fontSize: '14px',
@@ -275,7 +274,7 @@ const CardActivitySection = ({ currentUser, currentBoard, column, activeCard, ca
             Cancel
           </Button>
           <Button sx={buttonStyle} onClick={() => {
-            handleAddCardComment({ type: 'click' })
+            handleAddCardComment()
           }}>
             Send
           </Button>
@@ -283,7 +282,7 @@ const CardActivitySection = ({ currentUser, currentBoard, column, activeCard, ca
       )}
 
       {cardComments.length === 0 &&
-        <Typography sx={{ pl: '45px', fontSize: '14px', fontWeight: '500', color: '#b1b1b1' }}>No activity found!</Typography>
+        <Typography sx={{ pl: '45px', fontSize: '14px', fontWeight: '500', color: '#b1b1b1' }}>No comments found!</Typography>
       }
       {cardComments.slice(0, visibleComments).map((comment, index) =>
         <Box sx={{ display: 'flex', gap: 1, width: '100%', mb: 1.5 }} key={index}>

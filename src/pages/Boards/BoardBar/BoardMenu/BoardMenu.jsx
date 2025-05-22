@@ -1,27 +1,27 @@
+import { FormatAlignLeft } from '@mui/icons-material'
 import CancelIcon from '@mui/icons-material/Cancel'
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
-import DoDisturbOutlinedIcon from '@mui/icons-material/DoDisturbOutlined'
+import GroupOutlinedIcon from '@mui/icons-material/GroupOutlined'
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
+import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined'
 import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined'
 import { Box, Divider, Drawer, IconButton, List, ListItem, Typography } from '@mui/material'
-import { useState } from 'react'
-import AboutThisBoard from './AboutThisBoard'
-import ContentCopy from '@mui/icons-material/ContentCopy'
 import { useConfirm } from 'material-ui-confirm'
-import { deleteBoardAPI, leaveBoardAPI } from '~/apis'
-import { toast } from 'react-toastify'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { deleteBoardAPI, leaveBoardAPI } from '~/apis'
 import { socketIoIntance } from '~/socketClient'
-import OpenClose from './OpenClose'
-import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined'
+import AboutThisBoard from './AboutThisBoard'
 import Copy from './Copy'
 import Members from './Members'
-import GroupOutlinedIcon from '@mui/icons-material/GroupOutlined';
+import OpenClose from './OpenClose'
+import Activity from './Activity'
 
 const BoardMenu = ({ board, currentUser }) => {
   const [anchorEl, setAnchorEl] = useState(null)
   const [showAboutBoard, setShowAboutBoard] = useState(false)
   const [showMembers, setShowMembers] = useState(false)
+  const [showActivity, setShowActivity] = useState(false)
 
   const open = Boolean(anchorEl)
 
@@ -39,6 +39,10 @@ const BoardMenu = ({ board, currentUser }) => {
 
   const handleAboutBoardClick = () => {
     setShowAboutBoard(true)
+  }
+
+  const handleActivityClick = () => {
+    setShowActivity(true)
   }
 
   const handleMembersClick = () => {
@@ -143,6 +147,25 @@ const BoardMenu = ({ board, currentUser }) => {
           <Divider />
 
           <ListItem
+            onClick={handleActivityClick}
+            sx={{
+              cursor: 'pointer',
+              '&:hover': {
+                color: 'primary.main',
+                '& .primary-icon': {
+                  color: 'primary.main'
+                }
+              }
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <FormatAlignLeft className='primary-icon' />
+              Activity
+            </Box>
+          </ListItem>
+          <Divider />
+
+          <ListItem
             onClick={handleMembersClick}
             sx={{
               cursor: 'pointer',
@@ -159,6 +182,7 @@ const BoardMenu = ({ board, currentUser }) => {
               Members
             </Box>
           </ListItem>
+          <Divider />
 
           {(board?.memberIds?.includes(currentUser?._id) || board?.ownerIds?.includes(currentUser?._id)) && board?.isClosed === false && (
             <>
@@ -225,6 +249,10 @@ const BoardMenu = ({ board, currentUser }) => {
       </Drawer>
       {showAboutBoard && (
         <AboutThisBoard currentUser={currentUser} board={board} showAboutBoard={showAboutBoard} setShowAboutBoard={setShowAboutBoard} />
+      )}
+
+      {showActivity && (
+        <Activity board={board} showActivity={showActivity} setShowActivity={setShowActivity} />
       )}
 
       {showMembers && (

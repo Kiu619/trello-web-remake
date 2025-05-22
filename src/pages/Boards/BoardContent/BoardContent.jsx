@@ -43,6 +43,8 @@ const BoardContent = memo((props) => {
       const columns = board.columns
       setOrderedColumns(columns)
     }
+
+    document.title = `${board?.title || 'Board Title'} - Trello`
   }, [board])
 
   const findColumnByCardId = (cardId) => {

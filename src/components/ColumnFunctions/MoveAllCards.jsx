@@ -7,7 +7,7 @@ import { fetchBoardDetailsApi, moveAllCardsToAnotherColumnAPI } from '~/apis'
 import { fetchBoardDetailsApiRedux } from '~/redux/activeBoard/activeBoardSlice'
 import { socketIoIntance } from '~/socketClient'
 
-function MoveAllCards({ column }) {
+function MoveAllCards({ closePopupFromParent, column }) {
 
   const [anchorEl, setAnchorEl] = useState(null)
   const openPopover = Boolean(anchorEl)
@@ -26,6 +26,8 @@ function MoveAllCards({ column }) {
   const handleClosePopover = useCallback(() => {
     setAnchorEl(null)
     setSelectedColumn('')
+    closePopupFromParent()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleColumnChange = useCallback((event) => {

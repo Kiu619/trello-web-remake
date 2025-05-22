@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import {
   Box,
-  Avatar,
   Tooltip,
   Popover,
   useTheme,
   useMediaQuery
 } from '@mui/material'
+import Avatar from '~/components/Avatar'
 
 function BoardUserGroup({ boardUsers = [], limit = 5 }) {
   const theme = useTheme()
@@ -33,17 +33,7 @@ function BoardUserGroup({ boardUsers = [], limit = 5 }) {
       {boardUsers.map((user, index) => {
         if (index < effectiveLimit) {
           return (
-            <Tooltip title={user?.displayName} key={index}>
-              <Avatar
-                sx={{
-                  width: { xs: 28, sm: 34 },
-                  height: { xs: 28, sm: 34 },
-                  cursor: 'pointer'
-                }}
-                alt={user?.displayName}
-                src={user?.avatar}
-              />
-            </Tooltip>
+            <Avatar key={index} user={user} />
           )
         }
         return null
@@ -88,18 +78,7 @@ function BoardUserGroup({ boardUsers = [], limit = 5 }) {
           gap: { xs: 0.5, sm: 1 }
         }}>
           {boardUsers.map((user, index) => (
-            <Tooltip title={user?.displayName} key={index}>
-              <Avatar
-                sx={{
-                  width: { xs: 28, sm: 34 },
-                  height: { xs: 28, sm: 34 },
-                  margin: { xs: 0.5, sm: 0 },
-                  cursor: 'pointer'
-                }}
-                alt={user?.displayName}
-                src={user?.avatar}
-              />
-            </Tooltip>
+            <Avatar key={index} user={user} />
           ))}
         </Box>
       </Popover>

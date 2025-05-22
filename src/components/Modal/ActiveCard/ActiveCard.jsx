@@ -1,14 +1,11 @@
 import AddOutlinedIcon from '@mui/icons-material/AddOutlined'
 import AddToDriveOutlinedIcon from '@mui/icons-material/AddToDriveOutlined'
-import ArchiveOutlinedIcon from '@mui/icons-material/ArchiveOutlined'
-import AspectRatioOutlinedIcon from '@mui/icons-material/AspectRatioOutlined'
 import AttachFileOutlinedIcon from '@mui/icons-material/AttachFileOutlined'
 import CancelIcon from '@mui/icons-material/Cancel'
 import CreditCardIcon from '@mui/icons-material/CreditCard'
 import DvrOutlinedIcon from '@mui/icons-material/DvrOutlined'
 import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined'
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined'
-import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined'
 import WatchLaterOutlinedIcon from '@mui/icons-material/WatchLaterOutlined'
 import Box from '@mui/material/Box'
 import Divider from '@mui/material/Divider'
@@ -418,7 +415,7 @@ function ActiveCard() {
             <Box sx={{ mb: 3 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <DvrOutlinedIcon />
-                <Typography variant="span" sx={{ fontWeight: '600', fontSize: '20px' }}>Activity</Typography>
+                <Typography variant="span" sx={{ fontWeight: '600', fontSize: '20px' }}>Comments</Typography>
               </Box>
 
               {/* Feature 05: Xử lý các hành động, ví dụ comment vào Card */}

@@ -132,6 +132,11 @@ function ListColumns(props) {
               variant='outlined'
               autoFocus
               value={newColumnTitle}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  addNewColumn()
+                }
+              }}
               onChange={(e) => setNewColumnTitle(e.target.value)}
               sx={{
                 '& label': { color: 'white' },
