@@ -7,6 +7,7 @@ import DvrOutlinedIcon from '@mui/icons-material/DvrOutlined'
 import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined'
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined'
 import WatchLaterOutlinedIcon from '@mui/icons-material/WatchLaterOutlined'
+import LabelOutlinedIcon from '@mui/icons-material/LabelOutlined'
 import Box from '@mui/material/Box'
 import Divider from '@mui/material/Divider'
 import Grid from '@mui/material/Grid'
@@ -14,11 +15,11 @@ import Modal from '@mui/material/Modal'
 import Stack from '@mui/material/Stack'
 import { styled } from '@mui/material/styles'
 import Typography from '@mui/material/Typography'
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import { createNewNotificationAPI, updateCardDetailsAPI } from '~/apis'
+import { createNewNotificationAPI, updateCardDetailsAPI, updateCardLabelAPI } from '~/apis'
 import ToggleFocusInput from '~/components/Form/ToggleFocusInput'
 import VisuallyHiddenInput from '~/components/Form/VisuallyHiddenInput'
 import { selectCurrentActiveBoard, updateCardInBoard } from '~/redux/activeBoard/activeBoardSlice'
@@ -29,7 +30,7 @@ import { CARD_MEMBER_ACTIONS } from '~/utils/constants'
 import { singleFileValidatorForAttachment } from '~/utils/validators'
 import CardAttachment from './CardAttachment'
 import CardChecklist from './CardChecklist'
-import CardActivitySection from './CardCommentTest'
+import CardComment from './CardComment'
 import DateTimeDisplay from './CardDateTimeDisplay'
 import CardDescriptionMdEditor from './CardDescriptionMdEditor'
 import Checklist from './CardFunctions/Checklist'
@@ -42,6 +43,9 @@ import Move from './CardFunctions/Move'
 import OpenClose from './CardFunctions/OpenClose'
 import LocationMap from './CardLocationMap'
 import CardUserGroup from './CardUserGroup'
+import CardLabel from './CardLabel'
+import { Button, Chip } from '@mui/material'
+const CardActivitySection = lazy(() => import('./CardActivitySection'))
 
 const SidebarItem = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -80,6 +84,22 @@ function ActiveCard() {
   const isShowModalActiveCard = useSelector(selectIsShowModalActiveCard)
 
   const column = currentBoard?.columns?.find(c => c._id === activeCard?.columnId)
+
+  // Lấy thông tin labels của card từ labelIds và labels trong board
+  const getCardLabels = () => {
+    if (!activeCard?.labelIds || !currentBoard?.labels) return []
+
+    return currentBoard.labels.filter(label =>
+      activeCard.labelIds.includes(label._id)
+    )
+  }
+
+  const cardLabels = getCardLabels()
+
+  // Label Popover
+  const [labelAnchorEl, setLabelAnchorEl] = useState(null)
+  const handleOpenLabelPopover = (event) => { setLabelAnchorEl(event.currentTarget) }
+  const handleCloseLabelPopover = () => { setLabelAnchorEl(null) }
 
   // Date Popover
   const [dateAnchorEl, setDateAnchorEl] = useState(null)
@@ -131,7 +151,6 @@ function ActiveCard() {
   const callApiUpdateCard = async (updateData) => {
     // console.log('updateData', updateData)
     const res = await updateCardDetailsAPI(activeCard._id, updateData)
-
     // // Cập nhật thông tin Card mới nhất vào Redux
     dispatch(updateCurrentActiveCard(res))
     // // Cập nhật thông tin Card mới nhất vào Redux của Board
@@ -262,6 +281,8 @@ function ActiveCard() {
   const onUpdateOpenCloseCard = (isClosed) => {
     callApiUpdateCard({ isClosed })
   }
+  // Activity Section
+  const [isShowDetails, setIsShowDetails] = useState(false)
 
   return (
     <Modal
@@ -320,6 +341,25 @@ function ActiveCard() {
         <Grid container sx={{ m: 0 }} className='nghia'>
           {/* Left side */}
           <Grid item xs={12} sm={8.8} sx={{ mr: 1.5 }}>
+            <Box sx={{ mb: 1 }}>
+              {activeCard?.labelIds?.length > 0 && (
+                <>
+                  <Typography sx={{ fontWeight: '600', color: 'primary.main' }}>Labels</Typography>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                    {cardLabels.map(label => (
+                      <Chip key={label._id} label={label.title} sx={{
+                        backgroundColor: label.color || '#default',
+                        color: '#fff',
+                        fontSize: '0.75rem',
+                        fontWeight: '600',
+                        height: 20
+                      }} />
+                    ))}
+                  </Box>
+                </>
+              )}
+            </Box>
+
             <Box sx={{ mb: 3 }}>
               <Typography sx={{ fontWeight: '600', color: 'primary.main', mb: 1 }}>Members</Typography>
 
@@ -413,13 +453,37 @@ function ActiveCard() {
             </Box>
 
             <Box sx={{ mb: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <DvrOutlinedIcon />
+                  <Typography variant="span" sx={{ fontWeight: '600', fontSize: '20px' }}>Activities</Typography>
+                </Box>
+
+                <Button onClick={() => setIsShowDetails(!isShowDetails)} variant="contained" color="info" sx={{ mt: 1, height: '30px' }}>
+                  {isShowDetails ? 'Hide details' : 'Show details'}
+                </Button>
+              </Box>
+              {/* Feature 05: Activity Section */}
+              {isShowDetails && (
+                <Suspense fallback={<div>Loading...</div>}>
+                  <CardActivitySection
+                    currentUser={currentUser}
+                    currentBoard={currentBoard}
+                    activeCard={activeCard}
+                  />
+                </Suspense>
+              )}
+            </Box>
+
+            <Box sx={{ mb: 3 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <DvrOutlinedIcon />
                 <Typography variant="span" sx={{ fontWeight: '600', fontSize: '20px' }}>Comments</Typography>
               </Box>
 
               {/* Feature 05: Xử lý các hành động, ví dụ comment vào Card */}
-              <CardActivitySection
+              <CardComment
                 currentUser={currentUser}
                 currentBoard={currentBoard}
                 column={column}
@@ -461,6 +525,10 @@ function ActiveCard() {
                   Attachment
                   <VisuallyHiddenInput type="file" onChange={onAddCardAttachment} />
                 </SidebarItem>
+                <SidebarItem onClick={handleOpenLabelPopover}>
+                  <LabelOutlinedIcon fontSize="small" />
+                  Label
+                </SidebarItem>
                 <Checklist onUpdateChecklist={onUpdateChecklist} />
                 <Dates
                   onUpdateDueDate={onUpdateDueDate}
@@ -471,7 +539,14 @@ function ActiveCard() {
                   <WatchLaterOutlinedIcon fontSize="small" />
                   Dates
                 </SidebarItem>
+
                 <Location updateLocation={updateLocation} />
+
+                <CardLabel
+                  anchorEl={labelAnchorEl}
+                  handleCloseLabelPopover={handleCloseLabelPopover}
+                  activeCard={activeCard}
+                />
               </Stack>
             ) : null}
 

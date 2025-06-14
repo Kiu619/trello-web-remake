@@ -132,6 +132,11 @@ export const updateCardDetailsAPI = async (cardId, updateData) => {
   return response.data
 }
 
+export const updateCardLabelAPI = async (cardId, updateData) => {
+  const response = await authorizedAxiosInstance.put(`${API_ROOT}/v1/card/labels/${cardId}`, updateData)
+  return response.data
+}
+
 export const copyCardAPI = async (cardId, updateData) => {
   const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/card/copy_card/${cardId}`, updateData)
   return response.data
@@ -235,7 +240,33 @@ export const fetchBoardActivityAPI = async (boardId) => {
   return response.data
 }
 
+export const fetchCardActivityAPI = async (cardId) => {
+  const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/activity/card/${cardId}`)
+  return response.data
+}
+
 export const fetchUserActivitiesAPI = async (params) => {
   const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/activity/user`, { params })
+  return response.data
+}
+
+// Label API
+export const fetchLabelsAPI = async (boardId) => {
+  const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/label/${boardId}`)
+  return response.data
+}
+
+export const createNewLabelAPI = async (data) => {
+  const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/label`, data)
+  return response.data
+}
+
+export const updateLabelAPI = async (labelId, data) => {
+  const response = await authorizedAxiosInstance.put(`${API_ROOT}/v1/label/${labelId}`, data)
+  return response.data
+}
+
+export const deleteLabelAPI = async (labelId) => {
+  const response = await authorizedAxiosInstance.delete(`${API_ROOT}/v1/label/${labelId}`)
   return response.data
 }

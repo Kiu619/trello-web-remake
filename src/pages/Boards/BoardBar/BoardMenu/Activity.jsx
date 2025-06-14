@@ -29,6 +29,13 @@ const Activity = ({ board, showActivity, setShowActivity }) => {
           maxWidth: '100%'
         }
       }}
+      slotProps={{
+        backdrop: {
+          style: {
+            backgroundColor: 'transparent'
+          }
+        }
+      }}
     >
       <Box sx={{ display: 'flex', justifyContent: 'center', p: 1, alignItems: 'center' }}>
         <Box sx={{

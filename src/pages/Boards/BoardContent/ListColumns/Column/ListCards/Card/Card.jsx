@@ -1,7 +1,7 @@
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Attachment, Comment, Group, TaskAltOutlined } from '@mui/icons-material'
-import { Box, Button, CardActions, CardContent, CardMedia } from '@mui/material'
+import { Box, Button, CardActions, CardContent, CardMedia, Chip, Tooltip } from '@mui/material'
 import MuiCard from '@mui/material/Card'
 import Typography from '@mui/material/Typography'
 import { memo } from 'react'
@@ -32,6 +32,17 @@ const Card = memo(({ card }) => {
     dispatch(showModalActiveCard())
   }
 
+  // Lấy thông tin labels của card từ labelIds và labels trong board
+  const getCardLabels = () => {
+    if (!card?.labelIds || !currentBoard?.labels) return []
+
+    return currentBoard.labels.filter(label =>
+      card.labelIds.includes(label._id)
+    )
+  }
+
+  const cardLabels = getCardLabels()
+
   const cardContent = (
     <MuiCard
       onClick={card?.FE_PlaceholderCard ? undefined : setActiveCard}
@@ -54,6 +65,25 @@ const Card = memo(({ card }) => {
           image={card?.cover}
           title={card?.title}
         />
+      )}
+
+      {/* Hiển thị labels */}
+      {cardLabels?.length > 0 && (
+        <Box sx={{ p: '8px 8px 0 8px', display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+          {cardLabels.map(label => (
+            <Tooltip key={label._id} title={label.title}>
+              <Chip
+                size="small"
+                sx={{
+                  backgroundColor: label.color || '#default',
+                  color: '#fff',
+                  height: 10,
+                  width: 40
+                }}
+              />
+            </Tooltip>
+          ))}
+        </Box>
       )}
 
       <CardContent

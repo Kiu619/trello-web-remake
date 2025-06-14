@@ -1,94 +1,392 @@
-// import moment from 'moment'
-// import Box from '@mui/material/Box'
-// import Typography from '@mui/material/Typography'
-// import Avatar from '@mui/material/Avatar'
-// import TextField from '@mui/material/TextField'
-// import Tooltip from '@mui/material/Tooltip'
+import { fetchCardActivityAPI } from '~/apis'
+import { useEffect, useState } from 'react'
+import { Box, Typography, Avatar } from '@mui/material'
+import { Link } from 'react-router-dom'
+import moment from 'moment'
 
-// import { useSelector } from 'react-redux'
-// import { selectCurrentUser } from '~/redux/user/userSlice'
+const CardActivitySection = ({ currentUser, currentBoard, activeCard }) => {
 
-// function CardActivitySection({ cardComments = [], onAddCardComment }) {
-//   const currentUser = useSelector(selectCurrentUser)
+  const [activities, setActivities] = useState([])
 
-//   const handleAddCardComment = (event) => {
-//     // Bắt hành động người dùng nhấn phím Enter && không phải hành động Shift + Enter
-//     if (event.key === 'Enter' && !event.shiftKey) {
-//       event.preventDefault() // Thêm dòng này để khi Enter không bị nhảy dòng
-//       if (!event.target?.value) return // Nếu không có giá trị gì thì return không làm gì cả
+  useEffect(() => {
+    const fetchActivities = async () => {
+      const activities = await fetchCardActivityAPI(activeCard._id)
+      setActivities(activities)
+    }
+    fetchActivities()
+  }, [])
 
-//       // Tạo một biến commend data để gửi api
-//       const commentToAdd = {
-//         userAvatar: currentUser?.avatar,
-//         userDisplayName: currentUser?.displayName,
-//         content: event.target.value.trim()
-//       }
+  // Component ActivityItem riêng cho Card với "this card"
+  const CardActivityItem = ({ activity }) => {
+    const renderContent = () => {
+      switch (activity.type) {
+      case 'createCard':
+        return (
+          <>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.user.displayName}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> added this card to {activity.data.columnTitle}</Typography>
+          </>
+        )
 
-//       // Gọi hàm onAddCardComment để thêm comment vào Card (Ở props cha)
-//       onAddCardComment(commentToAdd).then(() => {
-//         event.target.value = '' // Reset lại giá trị của TextField
-//       })
-//     }
-//   }
+      case 'renameCard':
+        return (
+          <>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.user.displayName}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> renamed this card from </Typography>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.data.oldCardTitle}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> to </Typography>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.data.newCardTitle}
+            </Typography>
+          </>
+        )
 
-//   return (
-//     <Box sx={{ mt: 2 }}>
-//       {/* Xử lý thêm comment vào Card */}
-//       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-//         <Avatar
-//           sx={{ width: 36, height: 36, cursor: 'pointer' }}
-//           alt="trungquandev"
-//           src={currentUser?.avatar}
-//         />
-//         <TextField
-//           fullWidth
-//           placeholder="Write a comment..."
-//           type="text"
-//           variant="outlined"
-//           multiline
-//           onKeyDown={handleAddCardComment}
-//         />
-//       </Box>
+      case 'updateCardCover':
+        return (
+          <>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.user.displayName}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> updated the cover of this card</Typography>
+          </>
+        )
 
-//       {/* Hiển thị danh sách các comments */}
-//       {cardComments.length === 0 &&
-//         <Typography sx={{ pl: '45px', fontSize: '14px', fontWeight: '500', color: '#b1b1b1' }}>No activity found!</Typography>
-//       }
-//       {cardComments.map((comment, index) =>
-//         <Box sx={{ display: 'flex', gap: 1, width: '100%', mb: 1.5 }} key={index}>
-//           <Tooltip title={comment?.userDisplayName}>
-//             <Avatar
-//               sx={{ width: 36, height: 36, cursor: 'pointer' }}
-//               alt={comment?.userDisplayName}
-//               src={comment?.userAvatar}
-//             />
-//           </Tooltip>
-//           <Box sx={{ width: 'inherit' }}>
-//             <Typography variant="span" sx={{ fontWeight: 'bold', mr: 1 }}>
-//               {comment?.userDisplayName}
-//             </Typography>
+      case 'updateCardDescription':
+        return (
+          <>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.user.displayName}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> updated the description of this card</Typography>
+          </>
+        )
 
-//             <Typography variant="span" sx={{ fontSize: '12px' }}>
-//               {moment(comment.commentedAt).format('llll')}
-//             </Typography>
+      case 'updateCardMembers':
+        return (
+          <>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.user.displayName}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> {activity.data.joinType} this card</Typography>
+          </>
+        )
 
-//             <Box sx={{
-//               display: 'block',
-//               bgcolor: (theme) => theme.palette.mode === 'dark' ? '#33485D' : 'white',
-//               p: '8px 12px',
-//               mt: '4px',
-//               border: '0.5px solid rgba(0, 0, 0, 0.2)',
-//               borderRadius: '4px',
-//               wordBreak: 'break-word',
-//               boxShadow: '0 0 1px rgba(0, 0, 0, 0.2)'
-//             }}>
-//               {comment?.content}
-//             </Box>
-//           </Box>
-//         </Box>
-//       )}
-//     </Box>
-//   )
-// }
+      case 'addAttachment':
+        return (
+          <>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.user.displayName}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> added a new attachment </Typography>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.data.attachmentName}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> to this card</Typography>
+          </>
+        )
 
-// export default CardActivitySection
+      case 'editAttachment':
+        return (
+          <>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.user.displayName}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> edited attachment </Typography>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.data.attachmentName}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> to </Typography>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.data.newAttachmentName}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> in this card</Typography>
+          </>
+        )
+
+      case 'deleteAttachment':
+        return (
+          <>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.user.displayName}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> deleted attachment </Typography>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.data.attachmentName}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> from this card</Typography>
+          </>
+        )
+
+      case 'createChecklist':
+        return (
+          <>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.user.displayName}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> created checklist </Typography>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.data.checklistTitle}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> in this card</Typography>
+          </>
+        )
+
+      case 'updateChecklist':
+        return (
+          <>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.user.displayName}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> updated checklist </Typography>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.data.oldChecklistTitle}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> to </Typography>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.data.newChecklistTitle}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> in this card</Typography>
+          </>
+        )
+
+      case 'deleteChecklist':
+        return (
+          <>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.user.displayName}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> deleted checklist </Typography>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.data.checklistTitle}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> from this card</Typography>
+          </>
+        )
+
+      case 'addChecklistItem':
+        return (
+          <>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.user.displayName}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> added checklist item </Typography>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.data.checklistItemTitle}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> to </Typography>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.data.checklistTitle}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> in this card</Typography>
+          </>
+        )
+
+      case 'updateChecklistItem':
+        return (
+          <>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.user.displayName}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> updated checklist item </Typography>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.data.oldChecklistItemTitle}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> to </Typography>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.data.newChecklistItemTitle}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> in </Typography>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.data.checklistTitle}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> in this card</Typography>
+          </>
+        )
+
+      case 'deleteChecklistItem':
+        return (
+          <>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.user.displayName}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> deleted checklist item </Typography>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.data.checklistItemTitle}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> from </Typography>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.data.checklistTitle}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> in this card</Typography>
+          </>
+        )
+
+      case 'addEditComment':
+        return (
+          <>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.user.displayName}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> commented: </Typography>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.data.commentText}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> on this card</Typography>
+            {activity.data.commentType === 'edit' && (
+              <>
+                <Typography variant="body2" sx={{ display: 'inline' }}> (edited)</Typography>
+              </>
+            )}
+          </>
+        )
+
+      case 'setDueDate':
+        return (
+          <>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.user.displayName}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> set this card to be due </Typography>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {new Date(activity.data.dueDate).toLocaleDateString('en-GB', {
+                year: new Date(activity.data.dueDate).getFullYear() === new Date().getFullYear() ? undefined : 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> at </Typography>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.data.dueDateTime}
+            </Typography>
+          </>
+        )
+
+      case 'removeDueDate':
+        return (
+          <>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.user.displayName}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> removed the due date from this card</Typography>
+          </>
+        )
+
+      case 'updateCardLocation':
+        return (
+          <>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.user.displayName}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> set location of this card to </Typography>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.data.location}
+            </Typography>
+          </>
+        )
+
+      case 'removeCardLocation':
+        return (
+          <>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.user.displayName}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> removed the location from this card</Typography>
+          </>
+        )
+
+      case 'closeCard':
+        return (
+          <>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.user.displayName}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> changed the status of this card to </Typography>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              closed
+            </Typography>
+          </>
+        )
+
+      case 'openCard':
+        return (
+          <>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.user.displayName}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> changed the status of this card to </Typography>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              open
+            </Typography>
+          </>
+        )
+
+      case 'moveCardToDifferentColumn':
+        return (
+          <>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.user.displayName}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> moved this card from </Typography>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.data.prevColumnTitle}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> to </Typography>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.data.nextColumnTitle}
+            </Typography>
+          </>
+        )
+
+      default:
+        return (
+          <>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.user?.displayName || 'User'}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> {activity.action || 'updated'} this card</Typography>
+          </>
+        )
+      }
+    }
+
+    return (
+      <Box sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1,
+        m: 1
+      }}>
+        <Avatar
+          src={activity.user?.avatar}
+          sx={{ width: 35, height: 35 }}
+        />
+        <Box>
+          {renderContent()}
+          <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary' }}>
+            {activity.createdAt ? moment(activity.createdAt).format('llll') : '2 hours ago'}
+          </Typography>
+        </Box>
+      </Box>
+    )
+  }
+
+  return (
+    <Box>
+      {activities.length > 0 ? (
+        activities.map((activity, index) => (
+          <CardActivityItem key={index} activity={activity} />
+        ))
+      ) : (
+        <Typography>No activities found</Typography>
+      )}
+    </Box>
+  )
+}
+
+export default CardActivitySection

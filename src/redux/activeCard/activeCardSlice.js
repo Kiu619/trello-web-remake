@@ -16,6 +16,7 @@ export const fetchCardDetailsAPI = createAsyncThunk(
       return response.data
     } catch (error) {
       // Return a rejected action with the error message
+      console.log('error', error)
       return rejectWithValue(error.response?.data || error.message)
     }
   }
@@ -37,6 +38,11 @@ const activeCardSlice = createSlice({
       state.isShowModalActiveCard = true
     },
     hideModalActiveCard: state => { state.isShowModalActiveCard = false },
+    updateCardLabelIds: (state, action) => {
+      if (state.currentActiveCard) {
+        state.currentActiveCard.labelIds = action.payload
+      }
+    },
     setCardError: (state, action) => { state.error = action.payload }
   },
   extraReducers: (builder) => {
@@ -51,7 +57,7 @@ const activeCardSlice = createSlice({
   }
 })
 
-export const { clearAndHideCurrentActiveCard, updateCurrentActiveCard, showModalActiveCard, hideModalActiveCard, setCardError } = activeCardSlice.actions
+export const { clearAndHideCurrentActiveCard, updateCurrentActiveCard, showModalActiveCard, hideModalActiveCard, setCardError, updateCardLabelIds } = activeCardSlice.actions
 
 export const selectActiveCard = (state) => state.activeCard.currentActiveCard
 export const selectIsShowModalActiveCard = (state) => state.activeCard.isShowModalActiveCard

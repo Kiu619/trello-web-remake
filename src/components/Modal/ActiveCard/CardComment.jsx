@@ -12,7 +12,7 @@ import { selectCurrentUser } from '~/redux/user/userSlice'
 import { createNewNotificationAPI } from '~/apis'
 import { socketIoIntance } from '~/socketClient'
 
-const CardActivitySection = ({ currentUser, currentBoard, column, activeCard, cardMemberIds = [], cardComments = [], onAddCardComment, onUpdateCardComment }) => {
+const CardComment = ({ currentUser, currentBoard, column, activeCard, cardMemberIds = [], cardComments = [], onAddCardComment, onUpdateCardComment }) => {
   const FE_CardMembers = cardMemberIds.map(memberId => currentBoard?.FE_allUsers.find(user => user._id === memberId)).filter(user => user?._id !== currentUser?._id)
 
   const formattedBoardMembers = FE_CardMembers.map(member => ({
@@ -469,4 +469,4 @@ const CardActivitySection = ({ currentUser, currentBoard, column, activeCard, ca
   )
 }
 
-export default CardActivitySection
+export default CardComment

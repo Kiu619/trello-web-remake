@@ -185,14 +185,14 @@ function BoardList() {
                 <SpaceDashboardIcon fontSize="small" />
                 {!isMobile && 'Boards'}
               </SidebarItem>
-              <SidebarItem>
+              {/* <SidebarItem>
                 <ListAltIcon fontSize="small" />
                 {!isMobile && 'Templates'}
-              </SidebarItem>
-              <SidebarItem>
+              </SidebarItem> */}
+              {/* <SidebarItem>
                 <HomeIcon fontSize="small" />
                 {!isMobile && 'Home'}
-              </SidebarItem>
+              </SidebarItem> */}
               {!isMobile && <Divider sx={{ my: 1 }} />}
               <SidebarItem onClick={handleOpenCreateBoardModal}>
                 <LibraryAddIcon fontSize="small" />

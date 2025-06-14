@@ -38,19 +38,50 @@ export const activeBoardSlice = createSlice({
       if (column) {
         const card = column.cards.find(card => card._id === incomingCard._id)
         if (card) {
-          // assign laf thay đổi giá trị của card bằng giá trị của incomingCard
-          // Object.assign(card, incomingCard)
-
-          // hoặc
+          // Cập nhật tất cả properties của card bao gồm labelIds
           Object.keys(incomingCard).forEach(key => {
             card[key] = incomingCard[key]
-          })
-        }
+          })}
       }
     },
     clearAndHideCurrentActiveBoard: (state) => {
       state.currentActiveBoard = null
       state.error = null // Reset trạng thái lỗi khi clear board
+    },
+    updateCardLabelInBoard: (state, action) => {
+      const incomingLabel = action.payload
+      const board = state.currentActiveBoard
+      const column = board.columns.find(column => column._id === incomingLabel.columnId)
+      if (column) {
+        const card = column.cards.find(card => card._id === incomingLabel.cardId)
+        if (card) {
+          card.labelDetails = incomingLabel.labelDetails
+        }
+      }
+    },
+    addLabelToBoard: (state, action) => {
+      const newLabel = action.payload
+      if (state.currentActiveBoard) {
+        if (!state.currentActiveBoard.labels) {
+          state.currentActiveBoard.labels = []
+        }
+        state.currentActiveBoard.labels.push(newLabel)
+      }
+    },
+    updateBoardLabel: (state, action) => {
+      const updatedLabel = action.payload
+      if (state.currentActiveBoard && state.currentActiveBoard.labels) {
+        const index = state.currentActiveBoard.labels.findIndex(label => label._id === updatedLabel._id)
+        if (index !== -1) {
+          state.currentActiveBoard.labels[index] = updatedLabel
+        }
+      }
+    },
+    deleteLabelFromBoard: (state, action) => {
+      const labelId = action.payload
+      if (state.currentActiveBoard && state.currentActiveBoard.labels) {
+        state.currentActiveBoard.labels = state.currentActiveBoard.labels.filter(label => label._id !== labelId)
+      }
     }
   },
   // extraReducers: chứa các hành động gọi api (bất đồng bộ) và cập nhật dữ liệu vào Redux
@@ -91,9 +122,18 @@ export const activeBoardSlice = createSlice({
   }
 })
 
-export const { updateCurrentActiveBoard, updateCardInBoard, clearAndHideCurrentActiveBoard } = activeBoardSlice.actions
+export const { 
+  updateCurrentActiveBoard, 
+  updateCardInBoard, 
+  clearAndHideCurrentActiveBoard, 
+  updateCardLabelInBoard,
+  addLabelToBoard,
+  updateBoardLabel,
+  deleteLabelFromBoard
+} = activeBoardSlice.actions
 
 export const selectCurrentActiveBoard = (state) => state.activeBoard.currentActiveBoard
 export const selectActiveBoardError = (state) => state.activeBoard.error
+export const selectCurrentActiveBoardLabels = (state) => state.activeBoard.currentActiveBoard?.labels || []
 
 export const activeBoardReducer = activeBoardSlice.reducer

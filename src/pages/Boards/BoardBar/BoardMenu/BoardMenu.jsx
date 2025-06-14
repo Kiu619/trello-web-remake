@@ -5,6 +5,7 @@ import GroupOutlinedIcon from '@mui/icons-material/GroupOutlined'
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined'
 import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined'
+import LabelOutlinedIcon from '@mui/icons-material/LabelOutlined'
 import { Box, Divider, Drawer, IconButton, List, ListItem, Typography } from '@mui/material'
 import { useConfirm } from 'material-ui-confirm'
 import { useState } from 'react'
@@ -16,12 +17,14 @@ import Copy from './Copy'
 import Members from './Members'
 import OpenClose from './OpenClose'
 import Activity from './Activity'
+import LabelMenu from './LabelMenu'
 
 const BoardMenu = ({ board, currentUser }) => {
   const [anchorEl, setAnchorEl] = useState(null)
   const [showAboutBoard, setShowAboutBoard] = useState(false)
   const [showMembers, setShowMembers] = useState(false)
   const [showActivity, setShowActivity] = useState(false)
+  const [showLabel, setShowLabel] = useState(false)
 
   const open = Boolean(anchorEl)
 
@@ -47,6 +50,10 @@ const BoardMenu = ({ board, currentUser }) => {
 
   const handleMembersClick = () => {
     setShowMembers(true)
+  }
+
+  const handleLabelClick = () => {
+    setShowLabel(true)
   }
 
   const confirmLeaveBoard = useConfirm()
@@ -185,6 +192,26 @@ const BoardMenu = ({ board, currentUser }) => {
           <Divider />
 
           {(board?.memberIds?.includes(currentUser?._id) || board?.ownerIds?.includes(currentUser?._id)) && board?.isClosed === false && (
+            <ListItem
+              onClick={handleLabelClick}
+              sx={{
+                cursor: 'pointer',
+                '&:hover': {
+                  color: 'primary.main',
+                  '& .primary-icon': {
+                    color: 'primary.main'
+                  }
+                }
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <LabelOutlinedIcon className='primary-icon' />
+              Label
+              </Box>
+            </ListItem>
+          )}
+
+          {(board?.memberIds?.includes(currentUser?._id) || board?.ownerIds?.includes(currentUser?._id)) && board?.isClosed === false && (
             <>
               <Copy board={board} handleMenuClose={handleMenuClose} />
               <Divider />
@@ -257,6 +284,10 @@ const BoardMenu = ({ board, currentUser }) => {
 
       {showMembers && (
         <Members currentUser={currentUser} board={board} showMembers={showMembers} setShowMembers={setShowMembers} />
+      )}
+
+      {showLabel && (
+        <LabelMenu showLabel={showLabel} setShowLabel={setShowLabel} />
       )}
     </>
   )

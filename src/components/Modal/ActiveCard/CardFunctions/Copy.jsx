@@ -57,6 +57,7 @@ function Copy({ activeCard }) {
   // Cập nhật kiểm tra điều kiện dựa trên schema
   const [checkedItems, setCheckedItems] = useState({
     memberIds: Boolean(activeCard?.memberIds?.length),
+    labels: Boolean(activeCard?.labelIds?.length),
     dueDate: Boolean(
       activeCard?.dueDate?.dueDate ||
             activeCard?.dueDate?.startDate
@@ -70,6 +71,7 @@ function Copy({ activeCard }) {
   // Hàm kiểm tra điều kiện hiển thị cho từng loại
   const shouldShowOption = {
     memberIds: () => Boolean(activeCard?.memberIds?.length),
+    labels: () => Boolean(activeCard?.labelIds?.length),
     dueDate: () => Boolean(
       activeCard?.dueDate?.dueDate ||
             activeCard?.dueDate?.startDate
@@ -252,6 +254,7 @@ function Copy({ activeCard }) {
           <Typography sx={{ fontWeight: 450, mt: 2 }}>Keeps...</Typography>
           <FormGroup sx={{ ml: 1 }}>
             {renderCheckboxOption('memberIds', 'Members', shouldShowOption.memberIds)}
+            {renderCheckboxOption('labels', 'Labels', shouldShowOption.labels)}
             {renderCheckboxOption('dueDate', 'Dates', shouldShowOption.dueDate)}
             {renderCheckboxOption('checklists', 'Checklists', shouldShowOption.checklists)}
             {renderCheckboxOption('attachments', 'Attachments', shouldShowOption.attachments)}
