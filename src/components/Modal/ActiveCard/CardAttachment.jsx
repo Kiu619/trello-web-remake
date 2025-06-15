@@ -70,14 +70,22 @@ const CardAttachment = ({ currentUser, currentBoard, column, activeCard, attachm
   const [openPop, setOpenPop] = useState(null)
   const [newAttachmentTitleValue, setNewAttachmentTitleValue] = useState('')
 
-  const displayedAttachments = showAllAttachments
-    ? attachments
-    : attachments.slice(0, 4)
+  // Chia attachments thành 2 loại
+  const googleDriveAttachments = attachments.filter(file => file.fileType === 'google_drive')
+  const regularAttachments = attachments.filter(file => file.fileType !== 'google_drive')
+
+  const displayedGoogleDriveAttachments = showAllAttachments
+    ? googleDriveAttachments
+    : googleDriveAttachments.slice(0, 4)
+
+  const displayedRegularAttachments = showAllAttachments
+    ? regularAttachments
+    : regularAttachments.slice(0, 4)
 
   const handleMoreClick = (event, file) => {
     setAnchorEl(event.currentTarget)
     setSelectedFile(file)
-    setNewAttachmentTitleValue(file.filename)
+    setNewAttachmentTitleValue(file.fileName)
   }
 
   const handleMenuClose = () => {
@@ -98,8 +106,14 @@ const CardAttachment = ({ currentUser, currentBoard, column, activeCard, attachm
   }
 
   const handleAttachmentClick = (file) => {
-    setSelectedFile(file)
-    setPreviewDialogOpen(true)
+    if (file.fileType === 'google_drive') {
+      // Mở Google Drive file trong tab mới
+      window.open(file.webViewLink, '_blank')
+    } else {
+      // Hiển thị preview cho file thường
+      setSelectedFile(file)
+      setPreviewDialogOpen(true)
+    }
   }
 
   const handleOpenPopover = (event) => {
@@ -111,8 +125,8 @@ const CardAttachment = ({ currentUser, currentBoard, column, activeCard, attachm
   }
 
   const handleEditAttachment = () => {
-    if (newAttachmentTitleValue.trim() || newAttachmentTitleValue !== selectedFile.filename) {
-      const attachmentToEdit = { ...selectedFile, filename: newAttachmentTitleValue }
+    if (newAttachmentTitleValue.trim() || newAttachmentTitleValue !== selectedFile.fileName) {
+      const attachmentToEdit = { ...selectedFile, fileName: newAttachmentTitleValue }
       onEditCardAttachment({ ...attachmentToEdit, action: 'EDIT' })
       setNewAttachmentTitleValue('')
       handleClosePopover()
@@ -132,7 +146,7 @@ const CardAttachment = ({ currentUser, currentBoard, column, activeCard, attachm
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <AttachFileIcon />
           <Typography variant="span" sx={{ fontWeight: '600', fontSize: '20px' }}>
-              Attachment
+            Attachments
           </Typography>
         </Box>
         {activeCard?.isClosed === false && column?.isClosed === false && (activeCard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && (
@@ -143,61 +157,142 @@ const CardAttachment = ({ currentUser, currentBoard, column, activeCard, attachm
             color="info"
             size="small"
           >
-              Add
+            Add
             <VisuallyHiddenInput type="file" onChange={onAddCardAttachment} />
           </Button>
         )}
       </Box>
 
-      <List sx={{ ml: 2 }}>
-        {displayedAttachments.map((file) => (
-          <AttachmentItem
-            key={file._id}
-            onClick={() => handleAttachmentClick(file)}
-            secondaryAction={
-              activeCard?.isClosed === false && column?.isClosed === false && (activeCard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && (
-                <IconButton
-                  edge="end"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleMoreClick(e, file)
-                  }}
-                >
-                  <MoreHorizIcon />
-                </IconButton>
-              )
-            }
-          >
-            {file?.fileType === 'jpg' || file?.fileType === 'jpeg' || file?.fileType === 'png' || file?.fileType === 'gif' || file?.fileType === 'jfif'
-              ? <img src={file.url} alt={file.filename} style={{ width: 50, height: 40, borderRadius: 5, marginRight: 16 }} />
-              : <FilePreviewBox>{file?.fileType.toUpperCase()}</FilePreviewBox>
-            }
-            <ListItemText
-              primary={
-                <Typography variant="body2" sx={{ fontWeight: '550' }}>
-                  {file.filename}
-                </Typography>
-              }
-              secondary={
-                <Typography>
-                    Added {moment(file.uploadedAt).format('llll')}
-                </Typography>
-              }
-            />
-          </AttachmentItem>
-        ))}
+      {/* Links Section - Google Drive Files */}
+      {googleDriveAttachments.length > 0 && (
+        <Box sx={{ mt: 2 }}>
+          <Typography variant="h6" sx={{ fontWeight: '600', fontSize: '16px', mb: 1, ml: 2 }}>
+            Links
+          </Typography>
+          <List sx={{ ml: 2 }}>
+            {displayedGoogleDriveAttachments.map((file) => (
+              <AttachmentItem
+                key={file._id}
+                onClick={() => handleAttachmentClick(file)}
+                secondaryAction={
+                  activeCard?.isClosed === false && column?.isClosed === false && (activeCard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && (
+                    <IconButton
+                      edge="end"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleMoreClick(e, file)
+                      }}
+                    >
+                      <MoreHorizIcon />
+                    </IconButton>
+                  )
+                }
+              >
+                {/* Google Drive Logo */}
+                <Box sx={{
+                  width: 50,
+                  height: 40,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginRight: 2
+                }}>
+                  <img
+                    src="https://ssl.gstatic.com/docs/doclist/images/drive_2022q3_32dp.png"
+                    alt="Google Drive"
+                    style={{
+                      width: 32,
+                      height: 32,
+                      objectFit: 'contain'
+                    }}
+                  />
+                </Box>
+                <ListItemText
+                  primary={
+                    <Typography variant="body2" sx={{ fontWeight: '550' }}>
+                      {file.fileName}
+                    </Typography>
+                  }
+                  secondary={
+                    <Typography>
+                      Added {moment(file.createdAt).format('llll')}
+                    </Typography>
+                  }
+                />
+              </AttachmentItem>
+            ))}
 
-        {attachments.length > 4 && (
-          <ToggleButton
-            onClick={toggleAttachmentsDisplay}
-            startIcon={showAllAttachments ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-            variant="text"
-            size="small"
-          >
-            {showAllAttachments ? 'Show fewer attachments' : `View all attachments (${attachments.length})`}
-          </ToggleButton>
-        )}
-      </List>
+            {googleDriveAttachments.length > 4 && (
+              <ToggleButton
+                onClick={toggleAttachmentsDisplay}
+                startIcon={showAllAttachments ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                variant="text"
+                size="small"
+              >
+                {showAllAttachments ? 'Show fewer links' : `View all links (${googleDriveAttachments.length})`}
+              </ToggleButton>
+            )}
+          </List>
+        </Box>
+      )}
+
+      {/* Files Section - Regular Uploaded Files */}
+      {regularAttachments.length > 0 && (
+        <Box sx={{ mt: googleDriveAttachments.length > 0 ? 3 : 2 }}>
+          <Typography variant="h6" sx={{ fontWeight: '600', fontSize: '16px', mb: 1, ml: 2 }}>
+            Files
+          </Typography>
+          <List sx={{ ml: 2 }}>
+            {displayedRegularAttachments.map((file) => (
+              <AttachmentItem
+                key={file._id}
+                onClick={() => handleAttachmentClick(file)}
+                secondaryAction={
+                  activeCard?.isClosed === false && column?.isClosed === false && (activeCard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && (
+                    <IconButton
+                      edge="end"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleMoreClick(e, file)
+                      }}
+                    >
+                      <MoreHorizIcon />
+                    </IconButton>
+                  )
+                }
+              >
+                {file?.fileType === 'jpg' || file?.fileType === 'jpeg' || file?.fileType === 'png' || file?.fileType === 'gif' || file?.fileType === 'jfif'
+                  ? <img src={file.url} alt={file.fileName} style={{ width: 50, height: 40, borderRadius: 5, marginRight: 16 }} />
+                  : <FilePreviewBox>{file?.fileType?.toUpperCase()}</FilePreviewBox>
+                }
+                <ListItemText
+                  primary={
+                    <Typography variant="body2" sx={{ fontWeight: '550' }}>
+                      {file.fileName}
+                    </Typography>
+                  }
+                  secondary={
+                    <Typography>
+                      Added {moment(file.uploadedAt).format('llll')}
+                    </Typography>
+                  }
+                />
+              </AttachmentItem>
+            ))}
+
+            {regularAttachments.length > 4 && (
+              <ToggleButton
+                onClick={toggleAttachmentsDisplay}
+                startIcon={showAllAttachments ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                variant="text"
+                size="small"
+              >
+                {showAllAttachments ? 'Show fewer files' : `View all files (${regularAttachments.length})`}
+              </ToggleButton>
+            )}
+          </List>
+        </Box>
+      )}
 
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
         <MenuItem>
@@ -212,12 +307,16 @@ const CardAttachment = ({ currentUser, currentBoard, column, activeCard, attachm
               Edit
           </Button>
         </MenuItem>
-        <MenuItem>
-          <FileDownloadHandler
-            file={selectedFile}
-            onDownloadComplete={handleMenuClose}
-          />
-        </MenuItem>
+        {selectedFile?.fileType === 'google_drive' ? null : (
+          <MenuItem>
+            {/* Nếu là google drive thì không hiển thị download */}
+
+            <FileDownloadHandler
+              file={selectedFile}
+              onDownloadComplete={handleMenuClose}
+            />
+          </MenuItem>
+        )}
         <MenuItem>
           <Button
             onClick={handleDeleteClick}
@@ -235,7 +334,7 @@ const CardAttachment = ({ currentUser, currentBoard, column, activeCard, attachm
       <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
         <DialogTitle>Delete Attachment</DialogTitle>
         <DialogContent>
-            Are you sure you want to delete "{selectedFile?.filename}"?
+            Are you sure you want to delete "{selectedFile?.fileName}"?
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>

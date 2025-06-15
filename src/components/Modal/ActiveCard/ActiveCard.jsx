@@ -1,5 +1,4 @@
 import AddOutlinedIcon from '@mui/icons-material/AddOutlined'
-import AddToDriveOutlinedIcon from '@mui/icons-material/AddToDriveOutlined'
 import AttachFileOutlinedIcon from '@mui/icons-material/AttachFileOutlined'
 import CancelIcon from '@mui/icons-material/Cancel'
 import CreditCardIcon from '@mui/icons-material/CreditCard'
@@ -46,6 +45,7 @@ import CardUserGroup from './CardUserGroup'
 import CardLabel from './CardLabel'
 import { Button, Chip } from '@mui/material'
 const CardActivitySection = lazy(() => import('./CardActivitySection'))
+import GoogleDrive from './CardFunctions/GoogleDrive'
 
 const SidebarItem = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -557,7 +557,7 @@ function ActiveCard() {
             {(activeCard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && column?.isClosed === false && activeCard?.isClosed === false ? (
               <Stack direction="column" spacing={1}>
                 <Typography sx={{ fontWeight: '600', color: 'primary.main', mb: 1 }}>Power-Ups</Typography>
-                <SidebarItem><AddToDriveOutlinedIcon fontSize="small" />Google Drive</SidebarItem>
+                <GoogleDrive />
                 <SidebarItem><AddOutlinedIcon fontSize="small" />Add Power-Ups</SidebarItem>
               </Stack>
             ) : null}

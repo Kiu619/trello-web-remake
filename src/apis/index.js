@@ -270,3 +270,35 @@ export const deleteLabelAPI = async (labelId) => {
   const response = await authorizedAxiosInstance.delete(`${API_ROOT}/v1/label/${labelId}`)
   return response.data
 }
+
+// Google Drive API
+export const getGoogleDriveAuthUrlAPI = async () => {
+  const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/google-drive/auth`)
+  return response.data
+}
+
+export const getGoogleDriveFilesAPI = async (pageToken = null, query = null) => {
+  const params = {}
+  if (pageToken) params.pageToken = pageToken
+  if (query) params.query = query
+
+  const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/google-drive/files`, { params })
+  return response.data
+}
+
+export const attachGoogleDriveFileToCardAPI = async (cardId, fileId) => {
+  const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/google-drive/attach/${cardId}`, { fileId })
+  return response.data
+}
+
+export const getGoogleDriveConnectionStatusAPI = async () => {
+  const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/google-drive/status`)
+  return response.data
+}
+
+export const disconnectGoogleDriveAPI = async () => {
+  const response = await authorizedAxiosInstance.delete(`${API_ROOT}/v1/google-drive/disconnect`)
+  return response.data
+}
+
+
