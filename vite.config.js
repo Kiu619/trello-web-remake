@@ -8,6 +8,7 @@ export default defineConfig({
   define: {
     'process.env': process.env
   },
+  base: '/',
   optimizeDeps: {
     include: [
       '@emotion/react', 
