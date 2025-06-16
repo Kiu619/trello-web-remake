@@ -2,8 +2,8 @@ import { Box, Button, Container, Typography } from '@mui/material'
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import AppBar from '~/components/AppBar/AppBar'
-import Disable2FA from '~/components/TwoFA/disable-2fa'
-import Setup2FA from '~/components/TwoFA/setup-2fa'
+import Disable2FA from '~/pages/TwoFA/Disable2FA'
+import Setup2FA from '~/pages/TwoFA/Setup2FA'
 import { selectCurrentUser } from '~/redux/user/userSlice'
 
 function Settings() {

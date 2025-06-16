@@ -8,16 +8,18 @@ import Board from './pages/Boards/_id'
 import { selectCurrentUser, selectIs2FAVerified } from './redux/user/userSlice'
 import MyAccount from './pages/MyAccount/MyAccount'
 import Settings from './pages/Settings/Settings'
-import Require2FA from './components/TwoFA/require-2fa'
+import TwoFactorVerification from './pages/TwoFA/TwoFactorVerification'
 import InvaldUrl from './pages/ErrorPages/InvalidUrl'
 import NotFoundPage from './pages/NotFoundPage/NotFoundPage'
+import EmailVerificationDemo from './pages/TwoFA/EmailVerificationDemo'
 
 const PrivateRoute = ({ user, is_2fa_verified }) => {
   if (!user) {
     return <Navigate to="/login" replace={true} />
   }
   if (user.isRequire2fa && !is_2fa_verified) {
-    return <Require2FA />
+    return <TwoFactorVerification />
+    // return <Require2FA />
   }
   return <Outlet />
 }
@@ -48,6 +50,8 @@ function App() {
       <Route path="/forgot-password" element={<Auth />} />
       <Route path="/account/verification" element={<AccountVerification />} />
       <Route path="*" element={<NotFoundPage />} />
+
+      <Route path="/two-factor-demo" element={<TwoFactorVerification />} />
     </Routes>
   )
 }

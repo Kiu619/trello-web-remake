@@ -207,7 +207,12 @@ const CardChecklist = ({ currentUser, currentBoard, column, activeCard, cardMemb
           </IconButton>
         )}
       </Box>
-      <LinearProgress variant="determinate" value={calculateProgress()} />
+      <Box sx={{ mt: 1 }}>
+        <Typography variant="body2" color="textSecondary">
+          {cardChecklist.items.filter(item => item.isChecked).length} of {cardChecklist.items.length} items completed
+        </Typography>
+        <LinearProgress variant="determinate" value={calculateProgress()} />
+      </Box>
 
       {cardChecklist.items?.map((item, index) => (
         <Box sx={{

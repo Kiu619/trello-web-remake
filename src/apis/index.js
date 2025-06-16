@@ -177,6 +177,12 @@ export const verifyAccountAPI = async (data) => {
   return response.data
 }
 
+export const resendVerificationEmailAPI = async (email) => {
+  const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/user/resend-verification`, { email })
+  toast.success('Verification email has been resent. Please check your email.')
+  return response.data
+}
+
 export const refreshTokenApi = async () => {
   const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/user/refresh_token`)
   return response.data
@@ -205,6 +211,16 @@ export const verify2FA_API = async (otpToken) => {
 
 export const disable2FA_API = async (otpToken) => {
   const response = await authorizedAxiosInstance.put(`${API_ROOT}/v1/user/disable_2fa`, { otpToken })
+  return response.data
+}
+
+export const send2FAEmailOTP_API = async () => {
+  const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/user/send_2fa_email_otp`)
+  return response.data
+}
+
+export const verify2FAEmail_API = async (otpCode) => {
+  const response = await authorizedAxiosInstance.put(`${API_ROOT}/v1/user/verify_2fa_email`, { otpCode })
   return response.data
 }
 

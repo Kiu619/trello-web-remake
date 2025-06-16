@@ -83,16 +83,15 @@ const GoogleDrive = ({ onAttachFile, onAttachFolder }) => {
   const checkGoogleDriveConnection = async () => {
     setLoading(true)
     setError('')
-    
+
     try {
       const response = await getGoogleDriveConnectionStatusAPI()
       setIsConnected(response.connected)
-      console.log(response)
-      
+
       if (response.connected && response.tokens.access_token) {
         setAccessToken(response.tokens.access_token)
       }
-      
+
       if (!response.connected && response.reason) {
         console.log('Google Drive connection status:', response.reason)
       }
@@ -244,14 +243,14 @@ const GoogleDrive = ({ onAttachFile, onAttachFolder }) => {
             }}>
               <CircularProgress size={24} />
               <Typography variant="body2" sx={{ ml: 1 }}>
-                Đang kiểm tra kết nối...
+                Checking connection...
               </Typography>
             </Box>
           ) : !isConnected ? (
             // Chưa kết nối Google Drive
             <Box sx={{ textAlign: 'center' }}>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Kết nối tài khoản Google của bạn để attach files từ Google Drive
+                Connect your Google account to attach files from Google Drive
               </Typography>
 
               <Button
@@ -265,7 +264,7 @@ const GoogleDrive = ({ onAttachFile, onAttachFolder }) => {
                   }
                 }}
               >
-                Kết nối Google Drive
+                Connect Google Drive
               </Button>
             </Box>
           ) : (
@@ -291,7 +290,7 @@ const GoogleDrive = ({ onAttachFile, onAttachFolder }) => {
 
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography variant="caption" color="text.secondary">
-                  Đã kết nối
+                  Connected
                 </Typography>
 
                 <Button
@@ -306,7 +305,7 @@ const GoogleDrive = ({ onAttachFile, onAttachFolder }) => {
                     }
                   }}
                 >
-                  Ngắt kết nối
+                  Disconnect
                 </Button>
               </Box>
             </Box>
