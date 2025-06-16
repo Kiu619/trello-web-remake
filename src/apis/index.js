@@ -266,6 +266,11 @@ export const fetchUserActivitiesAPI = async (params) => {
   return response.data
 }
 
+export const fetchUserActivityInCardAPI = async (params) => {
+  const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/activity/user/card`, { params })
+  return response.data
+}
+
 // Label API
 export const fetchLabelsAPI = async (boardId) => {
   const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/label/${boardId}`)
@@ -313,7 +318,7 @@ export const getGoogleDriveConnectionStatusAPI = async () => {
 }
 
 export const disconnectGoogleDriveAPI = async () => {
-  const response = await authorizedAxiosInstance.delete(`${API_ROOT}/v1/google-drive/disconnect`)
+  const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/google-drive/disconnect`)
   return response.data
 }
 

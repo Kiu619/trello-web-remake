@@ -4,7 +4,7 @@ import { useState, lazy, Suspense } from 'react'
 // Sử dụng lazy load cho component UserActivities
 const UserActivities = lazy(() => import('./Modal/UserActivities/UserActivities'))
 
-const Avatar = ({ user }) => {
+const Avatar = ({ user, cardId = null }) => {
   const [anchorEl, setAnchorEl] = useState(null)
   const [isShowModalUserActivities, setIsShowModalUserActivities] = useState(false)
 
@@ -92,7 +92,7 @@ const Avatar = ({ user }) => {
                 handleClosePopover()
               }}
             >
-              View member&apos;s board activity
+              {cardId ? 'View member\'s card activity' : 'View member\'s board activity'}
             </Typography>
           </Box>
         </Box>
@@ -104,6 +104,7 @@ const Avatar = ({ user }) => {
             isShowModalUserActivities={isShowModalUserActivities}
             setIsShowModalUserActivities={setIsShowModalUserActivities}
             user={user}
+            cardId={cardId}
           />
         </Suspense>
       )}

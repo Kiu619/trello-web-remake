@@ -628,26 +628,6 @@ function Dates({
               </TimePickerWrapper>
             )}
 
-            {/* <Box sx={{ mt: 2 }}>
-              <Typography sx={{ mb: 1 }}>Set due date reminder</Typography>
-              <Select
-                // value={reminderSetting}
-                // onChange={(e) => setReminderSetting(e.target.value)}
-                value={dayBeforeToRemind}
-                onChange={(e) => setDayBeforeToRemind(e.target.value)}
-                fullWidth
-                size="small"
-              >
-                <MenuItem value='1'>1 Day before</MenuItem>
-                <MenuItem value="2">2 Days before</MenuItem>
-                <MenuItem value="3">3 Days before</MenuItem>
-              </Select>
-            </Box>
-
-            <Typography sx={{ mt: 2, color: 'text.secondary', fontSize: '0.875rem' }}>
-              Reminders will be sent to all members and watchers of this card.
-            </Typography> */}
-
             <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
               <Button
                 variant="contained"

@@ -43,9 +43,10 @@ import OpenClose from './CardFunctions/OpenClose'
 import LocationMap from './CardLocationMap'
 import CardUserGroup from './CardUserGroup'
 import CardLabel from './CardLabel'
-import { Button, Chip } from '@mui/material'
+import { Button, Chip, Radio, Checkbox, Tooltip } from '@mui/material'
 const CardActivitySection = lazy(() => import('./CardActivitySection'))
 import GoogleDrive from './CardFunctions/GoogleDrive'
+import { CheckBox } from '@mui/icons-material'
 
 const SidebarItem = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -171,6 +172,10 @@ function ActiveCard() {
     callApiUpdateCard({ title: newTitle.trim() })
   }
 
+  const onUpdateCardCompleted = (isCompleted) => {
+    callApiUpdateCard({ isCompleted })
+  }
+
   const onUpdateDueDate = (dueDateData) => {
     // callApiUpdateCard({ dueDate: dueDateData })
     callApiUpdateCard({ dueDate: dueDateData })
@@ -247,31 +252,7 @@ function ActiveCard() {
   }
 
   const onUpdateChecklistItem = (incomingChecklistItemInfo) => {
-    if (incomingChecklistItemInfo.assignMember) {
-      const otherMembers = activeCard.memberIds.filter(memberId => memberId !== currentUser._id)
-
-      otherMembers.forEach(memberId => {
-        createNewNotificationAPI({
-          type: 'assignment',
-          userId: memberId,
-          details: {
-            boardId: currentBoard._id,
-            boardTitle: currentBoard.title,
-            cardId: activeCard._id,
-            cardTitle: activeCard.title,
-            checklistTitle: incomingChecklistItemInfo.cardChecklist.title,
-            senderId: currentUser._id,
-            senderName: currentUser.username
-          }
-        }).then(() => {
-          socketIoIntance.emit('FE_FETCH_NOTI', { userId: memberId })
-        })
-      })
-
-      callApiUpdateCard({ incomingChecklistItemInfo })
-    } else {
-      callApiUpdateCard({ incomingChecklistItemInfo })
-    }
+    callApiUpdateCard({ incomingChecklistItemInfo })
   }
 
   const updateLocation = (location) => {
@@ -324,18 +305,26 @@ function ActiveCard() {
           </Box>
         }
         <Box sx={{ mb: 1, mt: -3, pr: 2.5, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <CreditCardIcon />
+          {/* <CreditCardIcon /> */}
 
           {/* Feature 01: Xử lý tiêu đề của Card */}
           {(currentBoard?.memberIds?.includes(currentUser?._id) || currentBoard?.ownerIds?.includes(currentUser?._id)) && activeCard?.isClosed === false && column?.isClosed === false ? (
-            <ToggleFocusInput
-              inputFontSize='22px'
-              value={activeCard?.title || ''}
-              onChangedValue={onUpdateCardTitle}
-            />)
-            : (
-              <Typography variant="h5" sx={{ fontWeight: '600', fontSize: '22px' }}>{activeCard?.title}</Typography>
-            )}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
+              <Tooltip title={activeCard?.isCompleted ? 'Mark as not  completed' : 'Mark as completed'}>
+                <Checkbox
+                  checked={activeCard?.isCompleted}
+                  onChange={(e) => onUpdateCardCompleted(e.target.checked)}
+                />
+              </Tooltip>
+              <ToggleFocusInput
+                inputFontSize='22px'
+                value={activeCard?.title || ''}
+                onChangedValue={onUpdateCardTitle}
+              />
+            </Box>
+          ) : (
+            <Typography variant="h5" sx={{ fontWeight: '600', fontSize: '22px' }}>{activeCard?.title}</Typography>
+          )}
         </Box>
 
         <Grid container sx={{ m: 0 }} className='nghia'>

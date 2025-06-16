@@ -1,10 +1,10 @@
-import { fetchCardActivityAPI } from '~/apis'
-import { useEffect, useState } from 'react'
-import { Box, Typography, Avatar } from '@mui/material'
-import { Link } from 'react-router-dom'
+import { Box, Typography } from '@mui/material'
 import moment from 'moment'
+import { useEffect, useState } from 'react'
+import { fetchCardActivityAPI } from '~/apis'
+import Avatar from '~/components/Avatar'
 
-const CardActivitySection = ({ currentUser, currentBoard, activeCard }) => {
+const CardActivitySection = ({ activeCard }) => {
 
   const [activities, setActivities] = useState([])
 
@@ -123,6 +123,20 @@ const CardActivitySection = ({ currentUser, currentBoard, activeCard }) => {
           </>
         )
 
+      case 'attachGoogleDriveFile':
+        return (
+          <>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.user.displayName}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> attached a Google Drive file </Typography>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.data.fileName}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> to this card </Typography>
+          </>
+        )
+
       case 'createChecklist':
         return (
           <>
@@ -227,6 +241,52 @@ const CardActivitySection = ({ currentUser, currentBoard, activeCard }) => {
           </>
         )
 
+      case 'checkChecklistItem':
+        return (
+          <>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.user.displayName}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> mark checklist item </Typography>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.data.checklistItemTitle}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> as done in this card</Typography>
+          </>
+        )
+
+      case 'uncheckChecklistItem':
+        return (
+          <>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.user.displayName}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> uncheck checklist item </Typography>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.data.checklistItemTitle}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> as undone in this card</Typography>
+          </>
+        )
+
+      case 'assignChecklistItem':
+        return (
+          <>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.user.displayName}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> assigned checklist item </Typography>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.data.checklistItemTitle}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> to </Typography>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.data.assigneeDisplayName}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> in this card</Typography>
+          </>
+        )
+
       case 'addEditComment':
         return (
           <>
@@ -326,6 +386,25 @@ const CardActivitySection = ({ currentUser, currentBoard, activeCard }) => {
           </>
         )
 
+      case 'completeCard':
+        return (
+          <>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.user.displayName}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> marked this card as completed</Typography>
+          </> 
+        )
+
+      case 'uncompleteCard':
+        return (
+          <>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+              {activity.user.displayName}
+            </Typography>
+            <Typography variant="body2" sx={{ display: 'inline' }}> marked this card as not completed</Typography>
+          </>
+        )
       case 'moveCardToDifferentColumn':
         return (
           <>
@@ -362,10 +441,11 @@ const CardActivitySection = ({ currentUser, currentBoard, activeCard }) => {
         gap: 1,
         m: 1
       }}>
-        <Avatar
+        {/* <Avatar
           src={activity.user?.avatar}
           sx={{ width: 35, height: 35 }}
-        />
+        /> */}
+        <Avatar user={activity.user} cardId={activeCard?._id} />
         <Box>
           {renderContent()}
           <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary' }}>

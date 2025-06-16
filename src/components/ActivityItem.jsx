@@ -1,9 +1,7 @@
-import ArrowBackIosNewOutlinedIcon from '@mui/icons-material/ArrowBackIosNewOutlined'
-import { Avatar, Box, Divider, Drawer, Typography } from '@mui/material'
-import { Link } from 'react-router-dom'
+import { Box, Typography } from '@mui/material'
 import moment from 'moment'
-import { useEffect, useState } from 'react'
-import { fetchBoardActivityAPI } from '~/apis'
+import { Link } from 'react-router-dom'
+import Avatar from './Avatar'
 
 const ActivityItem = ({ activity, handleCloseModal }) => {
   const renderContent = () => {
@@ -520,6 +518,27 @@ const ActivityItem = ({ activity, handleCloseModal }) => {
         </>
       )
 
+    case 'attachGoogleDriveFile':
+      return (
+        <>
+          <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+            {activity.user.displayName}
+          </Typography>
+          <Typography variant="body2" sx={{ display: 'inline' }}> attached a Google Drive file </Typography>
+          <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+            {activity.data.fileName}
+          </Typography>
+          <Typography variant="body2" sx={{ display: 'inline' }}> to </Typography>
+          <Link
+            to={`/board/${activity.boardId}/card/${activity.cardId}`}
+            style={{ textDecoration: 'none', color: '#5394EE', fontSize: '0.875rem', fontWeight: 'bold' }}
+            onClick={handleCloseModal}
+          >
+            {activity.data.cardTitle}
+          </Link>
+        </>
+      )
+
     case 'createChecklist':
       return (
         <>
@@ -665,6 +684,73 @@ const ActivityItem = ({ activity, handleCloseModal }) => {
           </Link>
         </>
       )
+
+    case 'assignChecklistItem':
+      return (
+        <>
+          <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+            {activity.user.displayName}
+          </Typography>
+          <Typography variant="body2" sx={{ display: 'inline' }}> assigned checklist item </Typography>
+          <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+            {activity.data.checklistItemTitle}
+          </Typography>
+          <Typography variant="body2" sx={{ display: 'inline' }}> to </Typography>
+          <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+            {activity.data.assigneeDisplayName}
+          </Typography>
+          <Typography variant="body2" sx={{ display: 'inline' }}> in </Typography>
+          <Link
+            to={`/board/${activity.boardId}/card/${activity.cardId}`}
+            style={{ textDecoration: 'none', color: '#5394EE', fontSize: '0.875rem', fontWeight: 'bold' }}
+            onClick={handleCloseModal}
+          >
+            {activity.data.cardTitle}
+          </Link>
+        </> 
+      )
+
+    case 'checkChecklistItem':
+      return (
+        <>
+          <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+            {activity.user.displayName}
+          </Typography>
+          <Typography variant="body2" sx={{ display: 'inline' }}> mark checklist item </Typography>
+          <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+            {activity.data.checklistItemTitle}
+          </Typography>
+          <Typography variant="body2" sx={{ display: 'inline' }}> as done in </Typography>
+          <Link
+            to={`/board/${activity.boardId}/card/${activity.cardId}`}
+            style={{ textDecoration: 'none', color: '#5394EE', fontSize: '0.875rem', fontWeight: 'bold' }}
+            onClick={handleCloseModal}
+          >
+            {activity.data.cardTitle}
+          </Link>
+        </>
+      )
+
+    case 'uncheckChecklistItem':
+      return (
+        <>
+          <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+            {activity.user.displayName}
+          </Typography>
+          <Typography variant="body2" sx={{ display: 'inline' }}> uncheck checklist item </Typography>
+          <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+            {activity.data.checklistItemTitle}
+          </Typography>
+          <Typography variant="body2" sx={{ display: 'inline' }}> as undone in </Typography>
+          <Link
+            to={`/board/${activity.boardId}/card/${activity.cardId}`}
+            style={{ textDecoration: 'none', color: '#5394EE', fontSize: '0.875rem', fontWeight: 'bold' }}
+            onClick={handleCloseModal}
+          >
+            {activity.data.cardTitle}
+          </Link>
+        </> 
+      ) 
 
     case 'addEditComment':
       return (
@@ -832,6 +918,41 @@ const ActivityItem = ({ activity, handleCloseModal }) => {
           </Typography>
         </>
       )
+
+    case 'completeCard':
+      return (
+        <>
+          <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+            {activity.user.displayName}
+          </Typography>
+          <Typography variant="body2" sx={{ display: 'inline' }}> marked this card as completed </Typography>
+          <Link
+            to={`/board/${activity.boardId}/card/${activity.cardId}`}
+            style={{ textDecoration: 'none', color: '#5394EE', fontSize: '0.875rem', fontWeight: 'bold' }}
+            onClick={handleCloseModal}
+          >
+            {activity.data.cardTitle}
+          </Link>
+        </>
+      )
+
+    case 'uncompleteCard':
+      return (
+        <>
+          <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'inline' }}>
+            {activity.user.displayName}
+          </Typography>
+          <Typography variant="body2" sx={{ display: 'inline' }}> marked this card as not completed </Typography>
+          <Link
+            to={`/board/${activity.boardId}/card/${activity.cardId}`}
+            style={{ textDecoration: 'none', color: '#5394EE', fontSize: '0.875rem', fontWeight: 'bold' }}
+            onClick={handleCloseModal}
+          >
+            {activity.data.cardTitle}
+          </Link>
+        </>
+      )
+      
 
     case 'copyCardToSameBoard':
       return (
@@ -1034,9 +1155,12 @@ const ActivityItem = ({ activity, handleCloseModal }) => {
       m: 1
     }}>
       <Avatar
+        user={activity.user}
+      />
+      {/* <Avatar
         src={activity.user?.avatar}
         sx={{ width: 35, height: 35 }}
-      />
+      /> */}
       <Box>
         {renderContent()}
         <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary' }}>

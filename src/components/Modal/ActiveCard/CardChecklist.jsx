@@ -2,12 +2,18 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
 import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt'
 import TaskAltOutlinedIcon from '@mui/icons-material/TaskAltOutlined'
+import WatchLaterOutlinedIcon from '@mui/icons-material/WatchLaterOutlined'
+import AccessTimeIcon from '@mui/icons-material/AccessTime'
 import { Box, Button, Checkbox, FormControlLabel, IconButton, LinearProgress, Popover, TextField, Tooltip, Typography } from '@mui/material'
 import Avatar from '@mui/material/Avatar'
 import Badge from '@mui/material/Badge'
 import { useState } from 'react'
 import { toast } from 'react-toastify'
 import ToggleFocusInput from '~/components/Form/ToggleFocusInput'
+import moment from 'moment'
+import ChecklistItemDates from './CardFunctions/ChecklistItemDates'
+import { createNewNotificationAPI } from '~/apis'
+import { socketIoIntance } from '~/socketClient'
 
 const CardChecklist = ({ currentUser, currentBoard, column, activeCard, cardMemberIds = [], cardChecklist, onUpdateChecklist, onUpdateChecklistItem }) => {
   const FE_CardMembers = cardMemberIds.map(memberId => currentBoard?.FE_allUsers.find(user => user._id === memberId))
@@ -86,7 +92,9 @@ const CardChecklist = ({ currentUser, currentBoard, column, activeCard, cardMemb
         items: cardChecklist.items,
         title: value,
         isChecked: cardChecklist.items?.find(item => item._id === itemId).isChecked,
-        assignedTo: cardChecklist.items?.find(item => item._id === itemId).assignedTo
+        assignedTo: cardChecklist.items?.find(item => item._id === itemId).assignedTo,
+        dueDate: cardChecklist.items?.find(item => item._id === itemId).dueDate,
+        dueDateTime: cardChecklist.items?.find(item => item._id === itemId).dueDateTime
       }
       onUpdateChecklistItem(incomingChecklistItemInfo)
     }
@@ -103,7 +111,9 @@ const CardChecklist = ({ currentUser, currentBoard, column, activeCard, cardMemb
         items: cardChecklist.items,
         title: item.title,
         isChecked: !item.isChecked,
-        assignedTo: item.assignedTo
+        assignedTo: item.assignedTo,
+        dueDate: item.dueDate,
+        dueDateTime: item.dueDateTime
       }
       onUpdateChecklistItem(incomingChecklistItemInfo)
     } else {
@@ -158,6 +168,23 @@ const CardChecklist = ({ currentUser, currentBoard, column, activeCard, cardMemb
       incomingChecklistItemInfo.assignMember = user
       incomingChecklistItemInfo.board = currentBoard
       incomingChecklistItemInfo.cardChecklist = cardChecklist
+
+      //thông báo cho user
+      createNewNotificationAPI({
+        type: 'assignment',
+        userId: user._id,
+        details: {
+          boardId: currentBoard._id,
+          boardTitle: currentBoard.title,
+          cardId: activeCard._id,
+          cardTitle: activeCard.title,
+          checklistTitle: incomingChecklistItemInfo.cardChecklist.title,
+          senderId: currentUser._id,
+          senderName: currentUser.username
+        }
+      }).then(() => {
+        socketIoIntance.emit('FE_FETCH_NOTI', { userId: user._id })
+      })
     }
     // console.log('incomingChecklistItemInfo', incomingChecklistItemInfo)
     onUpdateChecklistItem(incomingChecklistItemInfo)
@@ -173,6 +200,37 @@ const CardChecklist = ({ currentUser, currentBoard, column, activeCard, cardMemb
     if (!anchorPopoverElement) setAnchorPopoverElement(event.currentTarget)
     else setAnchorPopoverElement(null)
   }
+
+  // Checklist Item Dates Popover (làm giống assign member)
+  const [checklistItemDateAnchor, setChecklistItemDateAnchor] = useState(null)
+  const [selectedChecklistItem, setSelectedChecklistItem] = useState(null)
+  const isOpenDatePopover = Boolean(checklistItemDateAnchor)
+  const datePopoverId = isOpenDatePopover ? 'checklist-item-dates-popover' : undefined
+
+  const handleOpenItemDates = (event, item) => {
+    setChecklistItemDateAnchor(event.currentTarget)
+    setSelectedChecklistItem(item)
+  }
+
+  const handleCloseDatePopover = () => {
+    setChecklistItemDateAnchor(null)
+    setSelectedChecklistItem(null)
+  }
+
+  const isOverdue = (dueDate, dueDateTime) => {
+    if (!dueDate || !dueDateTime) return false
+
+    // Parse dueDate to remove timezone
+    const dueDateObj = new Date(dueDate)
+    const [hours, minutes] = dueDateTime.split(':')
+
+    // Set hours and minutes for the due date
+    dueDateObj.setHours(parseInt(hours), parseInt(minutes), 0, 0)
+
+    // Compare with current date
+    return dueDateObj < new Date()
+  }
+
 
   return (
     <Box sx={{ mt: 3 }}>
@@ -200,7 +258,7 @@ const CardChecklist = ({ currentUser, currentBoard, column, activeCard, cardMemb
             }}
             onClick={(e) => {
               e.stopPropagation(),
-              handleOpenPopover(e, cardChecklist._id)
+                handleOpenPopover(e, cardChecklist._id)
             }}
           >
             <DeleteOutlineIcon />
@@ -227,6 +285,15 @@ const CardChecklist = ({ currentUser, currentBoard, column, activeCard, cardMemb
                 disabled={(!activeCard?.memberIds?.includes(currentUser?._id) && !currentBoard?.ownerIds?.includes(currentUser?._id)) || activeCard?.isClosed === true || column?.isClosed === true}
                 checked={item.isChecked}
                 onChange={() => handleCheckboxChange(item._id)}
+                sx={{
+                  '& .MuiSvgIcon-root': {
+                    fontSize: 20,
+                    borderRadius: '50%'
+                  },
+                  '&.Mui-checked': {
+                    color: '#026aa7'
+                  }
+                }}
               />
             }
           />
@@ -249,6 +316,9 @@ const CardChecklist = ({ currentUser, currentBoard, column, activeCard, cardMemb
                 backgroundColor: 'rgba(0, 0, 0, 0.1)',
                 '.icon-buttons': {
                   display: 'flex'
+                },
+                '.due-date-display': {
+                  display: 'none'
                 }
               },
               width: '100%',
@@ -256,12 +326,64 @@ const CardChecklist = ({ currentUser, currentBoard, column, activeCard, cardMemb
               borderRadius: 2,
               justifyContent: 'space-between'
             }} onClick={() => setIsEdit(index)}>
-              <Typography sx={{ ml: 1, fontWeight: 'bold' }}>{item?.title}</Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', ml: 1, flex: 1 }}>
+                <Typography sx={{ fontWeight: 'bold' }}>{item?.title}</Typography>
+
+                {/* Hiển thị due date nếu có */}
+                {item.dueDate && (
+                  <Box
+                    className="due-date-display"
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      mt: 0.5,
+                      gap: 0.5
+                    }}
+                  >
+                    <AccessTimeIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        backgroundColor: item.isChecked
+                          ? '#4caf50' // Màu xanh lá nếu đã check
+                          : isOverdue(item.dueDate, item.dueDateTime)
+                            ? '#f44336' // Màu đỏ nếu quá hạn
+                            : (theme) => theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', // Màu mặc định
+                        px: 1,
+                        py: 0.25,
+                        borderRadius: 1,
+                        fontSize: '11px'
+                      }}
+                    >
+                      {moment(item.dueDate).format('MMM D')}
+                      {item.dueDateTime && ` at ${item.dueDateTime}`}
+                    </Typography>
+                  </Box>
+                )}
+              </Box>
               {(column?.isClosed === false && activeCard?.isClosed === false && currentBoard.ownerIds.includes(currentUser._id)) && (
                 <Box className="icon-buttons" sx={{
                   display: 'none',
                   alignItems: 'center'
                 }}>
+                  <IconButton
+                    sx={{
+                      ml: 'auto',
+                      mr: 1,
+                      '&:hover': {
+                        bgcolor: 'rgba(0, 0, 0, 0.27)'
+                      },
+                      padding: 0.3,
+                      bgcolor: 'rgba(0, 0, 0, 0.2)'
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleOpenItemDates(e, item)
+                    }}
+                  >
+                    <WatchLaterOutlinedIcon />
+                  </IconButton>
+
                   <IconButton
                     sx={{
                       ml: 'auto',
@@ -427,6 +549,32 @@ const CardChecklist = ({ currentUser, currentBoard, column, activeCard, cardMemb
             </Tooltip>
           )}
         </Box>
+      </Popover>
+
+      {/* Checklist Item Dates Popover */}
+      <Popover
+        id={datePopoverId}
+        open={isOpenDatePopover}
+        anchorEl={checklistItemDateAnchor}
+        onClose={handleCloseDatePopover}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'center' }}
+        PaperProps={{
+          sx: {
+            width: '340px',
+            borderRadius: '8px',
+            mt: 1
+          }
+        }}
+      >
+        {selectedChecklistItem && (
+          <ChecklistItemDates
+            checklistItem={selectedChecklistItem}
+            onUpdateChecklistItem={onUpdateChecklistItem}
+            cardChecklist={cardChecklist}
+            handleClosePopover={handleCloseDatePopover}
+          />
+        )}
       </Popover>
     </Box>
   )

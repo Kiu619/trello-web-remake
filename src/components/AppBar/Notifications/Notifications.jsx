@@ -196,7 +196,8 @@ function Notifications() {
             )
             break
 
-          case 'dueDateInCard':
+          
+            case 'dueDateInCard':
             notificationContent = (
               <Box onClick={handleClose} sx={{ maxWidth: '100%', wordBreak: 'break-word', whiteSpace: 'pre-wrap', display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Link to={`/board/${notification?.details?.boardId}/card/${notification?.details?.cardId}`} style={{ textDecoration: 'none' }}>
@@ -210,6 +211,81 @@ function Notifications() {
               </Box>
             )
             break
+
+            case 'reminderDueDateInCard':
+            notificationContent = (
+              <Box onClick={handleClose} sx={{ maxWidth: '100%', wordBreak: 'break-word', whiteSpace: 'pre-wrap', display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Link to={`/board/${notification?.details?.boardId}/card/${notification?.details?.cardId}`} style={{ textDecoration: 'none' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: theme => theme.palette.mode === 'dark' ? '#fff' : '#000' }}>
+                    <WatchLaterOutlinedIcon />
+                    <Box>
+                      Due date in card: <strong>{notification?.details?.cardTitle}</strong> in the board <strong>{notification?.details?.boardTitle}</strong> is coming soon
+                    </Box>
+                  </Box>
+                </Link>
+              </Box>
+            )
+            break
+
+            case 'alertOverDueDateInCard':
+            notificationContent = (
+              <Box onClick={handleClose} sx={{ maxWidth: '100%', wordBreak: 'break-word', whiteSpace: 'pre-wrap', display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Link to={`/board/${notification?.details?.boardId}/card/${notification?.details?.cardId}`} style={{ textDecoration: 'none' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: theme => theme.palette.mode === 'dark' ? '#fff' : '#000' }}>
+                    <WatchLaterOutlinedIcon />
+                    <Box>
+                      Due date in card: <strong>{notification?.details?.cardTitle}</strong> in the board <strong>{notification?.details?.boardTitle}</strong> is overdue
+                    </Box>
+                  </Box>
+                </Link>
+              </Box>
+            )
+            break
+
+          case 'dueDateInChecklistItem':
+            notificationContent = (
+              <Box onClick={handleClose} sx={{ maxWidth: '100%', wordBreak: 'break-word', whiteSpace: 'pre-wrap', display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Link to={`/board/${notification?.details?.boardId}/card/${notification?.details?.cardId}`} style={{ textDecoration: 'none' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: theme => theme.palette.mode === 'dark' ? '#fff' : '#000' }}>
+                    <WatchLaterOutlinedIcon />
+                    <Box>
+                      <strong>{notification?.details?.senderName}</strong> had set a due date in the checklist item <strong>{notification?.details?.checklistItemTitle}</strong> in the card <strong>{notification?.details?.cardTitle}</strong> in the board <strong>{notification?.details?.boardTitle}</strong>
+                    </Box>
+                  </Box>
+                </Link>
+              </Box>
+            )
+            break
+
+          case 'reminderDueDateInChecklistItem':
+            notificationContent = (
+              <Box onClick={handleClose} sx={{ maxWidth: '100%', wordBreak: 'break-word', whiteSpace: 'pre-wrap', display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Link to={`/board/${notification?.details?.boardId}/card/${notification?.details?.cardId}`} style={{ textDecoration: 'none' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: theme => theme.palette.mode === 'dark' ? '#fff' : '#000' }}>
+                    <WatchLaterOutlinedIcon />
+                    <Box>
+                      Due date in checklist item: <strong>{notification?.details?.checklistItemTitle}</strong> in the checklist <strong>{notification?.details?.checklistTitle}</strong> in the card <strong>{notification?.details?.cardTitle}</strong> in the board <strong>{notification?.details?.boardTitle}</strong> is coming soon
+                    </Box>
+                  </Box>
+                </Link>
+              </Box>
+            )
+            break
+
+          case 'alertOverDueDateInChecklistItem':
+            notificationContent = (
+              <Box onClick={handleClose} sx={{ maxWidth: '100%', wordBreak: 'break-word', whiteSpace: 'pre-wrap', display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Link to={`/board/${notification?.details?.boardId}/card/${notification?.details?.cardId}`} style={{ textDecoration: 'none' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: theme => theme.palette.mode === 'dark' ? '#fff' : '#000' }}>
+                    <WatchLaterOutlinedIcon />
+                    <Box>
+                      Due date in checklist item: <strong>{notification?.details?.checklistItemTitle}</strong> in the checklist <strong>{notification?.details?.checklistTitle}</strong> in the card <strong>{notification?.details?.cardTitle}</strong> in the board <strong>{notification?.details?.boardTitle}</strong> is overdue
+                    </Box>
+                  </Box>
+                </Link>
+              </Box>
+            )
+            break 
 
           case 'remindDueDateInCard':
             notificationContent = (

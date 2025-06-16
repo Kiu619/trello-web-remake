@@ -12,6 +12,8 @@ import { socketIoIntance } from '~/socketClient'
 import { useTheme } from '@emotion/react'
 import { useDebounceFn } from '~/customHooks/useDebounceFn'
 import FloatChatbotButton from '~/components/ChatBot/FloatChatbotButton'
+import { useSelector } from 'react-redux'
+import { selectCurrentUser } from '~/redux/user/userSlice'
 
 const ACTIVE_DRAG_ITEM_TYPE = {
   COLUMN: 'COLUMN',
@@ -20,6 +22,8 @@ const ACTIVE_DRAG_ITEM_TYPE = {
 
 const BoardContent = memo((props) => {
   const { board, moveColumns, moveCardInTheSameColumns, moveCardToDifferentColumn } = props
+
+  const currentUser = useSelector(selectCurrentUser)
 
   const mouseSensor = useSensor(MouseSensor, { activationConstraint: { distance: 10 } })
   const touchSensor = useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 500 } })
@@ -274,7 +278,7 @@ const BoardContent = memo((props) => {
           </DragOverlay>
         </Box>
       </DndContext>
-      <FloatChatbotButton />
+      {(board?.memberIds?.includes(currentUser?._id) || board?.ownerIds?.includes(currentUser?._id)) && <FloatChatbotButton />}
     </>
   )
 })

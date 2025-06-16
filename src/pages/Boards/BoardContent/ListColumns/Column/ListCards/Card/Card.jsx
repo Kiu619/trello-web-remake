@@ -1,7 +1,7 @@
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Attachment, Comment, Group, TaskAltOutlined } from '@mui/icons-material'
-import { Box, Button, CardActions, CardContent, CardMedia, Chip, Tooltip } from '@mui/material'
+import { Box, Button, CardActions, CardContent, CardMedia, Checkbox, Chip, Tooltip } from '@mui/material'
 import MuiCard from '@mui/material/Card'
 import Typography from '@mui/material/Typography'
 import { memo } from 'react'
@@ -92,7 +92,13 @@ const Card = memo(({ card }) => {
           '&:last-child': { paddingBottom: 1.5 }
         }}
       >
-        <Typography>{card?.title}</Typography>
+        {/* <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}> */}
+          {/* <Tooltip title={card?.isCompleted ? 'Mark as not  completed' : 'Mark as completed'}>
+            <Checkbox
+              checked={card?.isCompleted}
+            />
+          </Tooltip> */}
+          <Typography>{card?.title}</Typography>
       </CardContent>
 
       {shouldShowCardActions() && (

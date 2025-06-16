@@ -3,47 +3,33 @@ import CancelIcon from '@mui/icons-material/Cancel'
 import { Box, Modal, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
-import { fetchUserActivitiesAPI, fetchUserActivityInCardAPI } from '~/apis'
+import { fetchUserActivityInCardAPI } from '~/apis'
 import ActivityItem from '~/components/ActivityItem'
-import { selectCurrentActiveBoard } from '~/redux/activeBoard/activeBoardSlice'
+import { selectActiveCard } from '~/redux/activeCard/activeCardSlice'
 
-const UserActivities = ({ isShowModalUserActivities, setIsShowModalUserActivities, user, cardId = null }) => {
+const UserActivitiesInCard = ({ isShowModalUserActivities, setIsShowModalUserActivities, user }) => {
   const handleCloseModal = () => {
     setIsShowModalUserActivities(false)
   }
 
-  const board = useSelector(selectCurrentActiveBoard)
+  const card = useSelector(selectActiveCard)
   const [activities, setActivities] = useState([])
-  
   useEffect(() => {
     const fetchActivity = async () => {
       try {
-        let res
-        if (cardId) {
-          // Nếu có cardId, gọi API để lấy hoạt động của user trong card
-          res = await fetchUserActivityInCardAPI({
-            userId: user?._id,
-            cardId: cardId
-          })
-        } else {
-          // Nếu không có cardId, gọi API để lấy hoạt động của user trong board
-          res = await fetchUserActivitiesAPI({
-            userId: user?._id,
-            boardId: board?._id
-          })
-        }
+        const res = await fetchUserActivityInCardAPI({
+          userId: user?._id,
+          cardId: card?._id
+        })
         setActivities(res || [])
       } catch (error) {
         setActivities([])
       }
     }
-    
-    if (isShowModalUserActivities && user?._id) {
-      if (cardId || board?._id) {
-        fetchActivity()
-      }
+    if (isShowModalUserActivities && user?._id && card?._id) {
+      fetchActivity()
     }
-  }, [isShowModalUserActivities, user?._id, board?._id, cardId])
+  }, [isShowModalUserActivities, user?._id, card?._id])
 
   return (
     <Modal
@@ -71,7 +57,7 @@ const UserActivities = ({ isShowModalUserActivities, setIsShowModalUserActivitie
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <FormatAlignLeft className='primary-icon' />
             <Typography sx={{ fontWeight: 'bold' }} variant="h6">
-              {user?.displayName} - {cardId ? 'Card Activities' : 'Board Activities'}
+              {user?.displayName}
             </Typography>
           </Box>
           <CancelIcon color="error" sx={{ cursor: 'pointer', '&:hover': { color: 'error.light' } }} onClick={handleCloseModal} />
@@ -90,4 +76,4 @@ const UserActivities = ({ isShowModalUserActivities, setIsShowModalUserActivitie
   )
 }
 
-export default UserActivities
+export default UserActivitiesInCard

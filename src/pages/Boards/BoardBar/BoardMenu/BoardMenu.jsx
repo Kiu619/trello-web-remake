@@ -1,4 +1,5 @@
 import { FormatAlignLeft } from '@mui/icons-material'
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
 import CancelIcon from '@mui/icons-material/Cancel'
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
 import GroupOutlinedIcon from '@mui/icons-material/GroupOutlined'
@@ -10,7 +11,7 @@ import { Box, Divider, Drawer, IconButton, List, ListItem, Typography } from '@m
 import { useConfirm } from 'material-ui-confirm'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { deleteBoardAPI, leaveBoardAPI } from '~/apis'
+import { createNewNotificationAPI, deleteBoardAPI, leaveBoardAPI } from '~/apis'
 import { socketIoIntance } from '~/socketClient'
 import AboutThisBoard from './AboutThisBoard'
 import Copy from './Copy'
@@ -25,6 +26,7 @@ const BoardMenu = ({ board, currentUser }) => {
   const [showMembers, setShowMembers] = useState(false)
   const [showActivity, setShowActivity] = useState(false)
   const [showLabel, setShowLabel] = useState(false)
+  const [isSendRequest, setIsSendRequest] = useState(false)
 
   const open = Boolean(anchorEl)
 
@@ -100,6 +102,25 @@ const BoardMenu = ({ board, currentUser }) => {
       .catch(() => {
         // User cancel
       })
+  }
+
+  const handleSendRequestToJoinBoard = () => {
+    board?.ownerIds.forEach(ownerId => {
+      createNewNotificationAPI({
+        type: 'requestToJoinBoard',
+        userId: ownerId,
+        details: {
+          boardId: board._id,
+          boardTitle: board.title,
+          senderId: currentUser._id,
+          senderName: currentUser.username,
+          status: 'PENDING'
+        }
+      }).then(() => {
+        setIsSendRequest(true)
+        socketIoIntance.emit('FE_FETCH_NOTI', { userId: ownerId })
+      })
+    })
   }
 
   return (
@@ -269,6 +290,26 @@ const BoardMenu = ({ board, currentUser }) => {
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <DeleteOutlineIcon className='danger-icon' />
                 Delete board
+              </Box>
+            </ListItem>
+          )}
+          {!board?.ownerIds.includes(currentUser._id) && !board?.memberIds.includes(currentUser._id) && (
+            <ListItem
+              onClick={handleSendRequestToJoinBoard}
+              disabled={isSendRequest}
+              sx={{
+                cursor: 'pointer',
+                '&:hover': {
+                  color: 'primary.main',
+                  '& .primary-icon': {
+                    color: 'primary.main'
+                  }
+                }
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <AddCircleOutlineIcon />
+                Send request to join board
               </Box>
             </ListItem>
           )}
